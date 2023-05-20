@@ -146,8 +146,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c36064e40063e3845863ba57b2699094, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  iM: {fileID: 0}
   maxHealth: 10
   curHealth: 10
+  wick: {fileID: 992215441798335023}
+  superFlame: {fileID: 981900983305208017, guid: d62386d52e2132445853c011e64b4536,
+    type: 3}
 --- !u!33 &992215440510591733
 MeshFilter:
   m_ObjectHideFlags: 0

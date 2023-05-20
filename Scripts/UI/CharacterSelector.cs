@@ -51,6 +51,11 @@ public class CharacterSelector : MonoBehaviour
     float p3Clicked = 0;
     float p4Clicked = 0;
 
+    public Transform borderTop;
+    public Transform borderRight;
+    public Transform borderBot;
+    public Transform borderLeft;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -211,10 +216,10 @@ public class CharacterSelector : MonoBehaviour
 
     void SelectorMove()
     {
-        p1Selector.transform.position += GetPlayerInput(db.settings.p1Buttons) * Time.deltaTime;
-        p2Selector.transform.position += GetPlayerInput(db.settings.p2Buttons) * Time.deltaTime;
-        p3Selector.transform.position += GetPlayerInput(db.settings.p3Buttons) * Time.deltaTime;
-        p4Selector.transform.position += GetPlayerInput(db.settings.p4Buttons) * Time.deltaTime;
+        p1Selector.transform.position += GetPlayerInput(db.settings.p1Buttons, p1Selector.transform.position) * Time.deltaTime;
+        p2Selector.transform.position += GetPlayerInput(db.settings.p2Buttons, p2Selector.transform.position) * Time.deltaTime;
+        p3Selector.transform.position += GetPlayerInput(db.settings.p3Buttons, p3Selector.transform.position) * Time.deltaTime;
+        p4Selector.transform.position += GetPlayerInput(db.settings.p4Buttons, p4Selector.transform.position) * Time.deltaTime;
 
         //Check if it is over anything
         #region P1
@@ -434,26 +439,26 @@ public class CharacterSelector : MonoBehaviour
         #endregion
     }
 
-    Vector3 GetPlayerInput(PlayerButtons pB)
+    Vector3 GetPlayerInput(PlayerButtons pB,Vector3 curPos)
     {
         Vector3 result = Vector3.zero;
 
-        if(Input.GetKey(pB.bump))
+        if(Input.GetKey(pB.bump) && curPos.y < borderTop.position.y)
         {
             result.y += 1;
         }
 
-        if(Input.GetKey(pB.super))
+        if(Input.GetKey(pB.super) && curPos.y > borderBot.position.y)
         {
             result.y -= 1;
         }
 
-        if(Input.GetKey(pB.right))
+        if(Input.GetKey(pB.right) && curPos.x < borderRight.position.x)
         {
             result.x += 1;
         }
 
-        if(Input.GetKey(pB.left))
+        if(Input.GetKey(pB.left) && curPos.x > borderLeft.position.x)
         {
             result.x -= 1;
         }

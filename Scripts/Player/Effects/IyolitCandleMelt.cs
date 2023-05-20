@@ -14,6 +14,10 @@ public class IyolitCandleMelt : MonoBehaviour
     float damage = 40;
     string tagHit = "Ball";
 
+    public Transform wick;
+    public GameObject superFlame;
+    public GameObject superFlameGo;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,9 +29,36 @@ public class IyolitCandleMelt : MonoBehaviour
     void Update()
     {
         //Check For Consistant Damage
-        if(iM.CurrentWick() == transform)
+        if(iM.SuperOn() || (iM.CurrentCandle() == transform && iM.bumpActive))
         {
-            curHealth -= (damage/100) * Time.deltaTime;
+            //Spawn Flame On Candle that also makes flame embers per sec
+            if (superFlameGo == null)
+            {
+                superFlameGo = Instantiate(superFlame, wick.position, wick.rotation);
+
+                PlayerGrab cpG = superFlameGo.GetComponent<PlayerGrab>();
+
+                if (cpG != null)
+                {
+                    cpG.player = pG.player;
+                }
+
+            }
+
+            curHealth -= ((damage / 100) * Time.deltaTime) * 2;
+        }
+        else
+        {
+            if(superFlameGo != null)
+            {
+                Destroy(superFlameGo);
+                superFlameGo = null;
+            }
+
+            if (iM.CurrentCandle() == transform)
+            {
+                curHealth -= (damage / 100) * Time.deltaTime;
+            }
         }
 
         SizeChange();
@@ -84,6 +115,21 @@ public class IyolitCandleMelt : MonoBehaviour
 
                 //Send out Ball hit to all
                 curHealth -= baseDamage * damage;
+            }
+
+            if (iM.CurrentCandle() == transform || iM.SuperOn())
+            {
+                Rigidbody bRb = collision.gameObject.GetComponent<Rigidbody>();
+
+                if(bRb != null)
+                {
+                    Vector3 bVe = bRb.velocity;
+                    bVe /= 2;
+                    bRb.velocity = bVe;
+
+                    //Make a splat noise and some particles wax at hit point
+
+                }
             }
         }
     }

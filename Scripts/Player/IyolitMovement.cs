@@ -15,6 +15,11 @@ public class IyolitMovement : MonoBehaviour
     public float percentDis = 0;
     public float percentFC = 0;
     bool ready = false;
+    public float superOn = 0;
+    public float superTime = 3;
+    float superCooldown = 5;
+    float superCooldownTimer = 0;
+    public bool bumpActive = false;
 
     // Start is called before the first frame update
     void Start()
@@ -109,9 +114,44 @@ public class IyolitMovement : MonoBehaviour
                 //Destroy the player
                 gameObject.SetActive(false);
             }
+
+            if (superOn > 0)
+            {
+                superOn -= Time.deltaTime;
+            }
+
+            bumpActive = Input.GetKey(pG.player.keys.bump);
+
+            if(superCooldownTimer < superCooldown)
+            {
+                superCooldownTimer += Time.deltaTime;
+            }
+
+            pG.player.player.superReadyPercent = superCooldownTimer / superCooldown;
+
+            if(pG.player.player.superReadyPercent < 0)
+            {
+                pG.player.player.superReadyPercent = 0;
+            }
+            else if(pG.player.player.superReadyPercent > 1)
+            {
+                pG.player.player.superReadyPercent = 1;
+            }
+
+
+            if (Input.GetKeyDown(pG.player.keys.super) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
+            {
+                superOn = superTime;
+                superCooldownTimer = 0;
+                pG.player.CostSuper(pG.player.player.superCost);
+            }
         }
     }
 
+    public bool SuperOn()
+    {
+        return superOn > 0;
+    }
 
     public void AddPosition(Transform trans,bool lastOne = false)
     {
@@ -137,7 +177,7 @@ public class IyolitMovement : MonoBehaviour
         }
     }
 
-    public Transform CurrentWick()
+    public Transform CurrentCandle()
     {
         Transform result = null;
 

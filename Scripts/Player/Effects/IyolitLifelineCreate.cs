@@ -21,7 +21,7 @@ public class IyolitLifelineCreate : MonoBehaviour
     {
         pG = GetComponent<PlayerGrab>();
         iM = pG.player.GetComponent<IyolitMovement>();
-        SpawnCandles();
+        Invoke("SpawnCandles",.5f);
     }
 
     // Update is called once per frame
@@ -84,7 +84,7 @@ public class IyolitLifelineCreate : MonoBehaviour
 
         for (int i = 0; i < candlesToSpawn; i++)
         {
-            GameObject go = Instantiate(candle, pos + (transform.right * (segment_Distance * i)),Quaternion.identity);
+            GameObject go = Instantiate(candle, pos + (transform.right * (segment_Distance * i)),transform.rotation);
 
             IyolitCandleMelt iCM = go.GetComponent<IyolitCandleMelt>();
 
@@ -104,6 +104,11 @@ public class IyolitLifelineCreate : MonoBehaviour
 
             candles.Add(iCM);
             iM.AddPosition(go.transform.GetChild(0).GetChild(0),i == candlesToSpawn - 1);
+        }
+
+        if(pG.player.keys.dirShown == "D" || pG.player.keys.dirShown == "R")
+        {
+            iM.positions.Reverse();
         }
 
         ready = true;

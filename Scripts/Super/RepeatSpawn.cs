@@ -40,9 +40,9 @@ public class RepeatSpawn : MonoBehaviour
         if (timeTillReset >= cooldown && spawnedAmount <= mS)
         {
             Vector3 spawnPos = transform.position;
-            spawnPos += transform.up * spawnPosOffset.y * Random.Range(spawnPosRangeMin.y, spawnPosRangeMax.y);
-            spawnPos += transform.right * spawnPosOffset.x * Random.Range(spawnPosRangeMin.x, spawnPosRangeMax.x);
-            spawnPos += transform.forward * spawnPosOffset.z * Random.Range(spawnPosRangeMin.z, spawnPosRangeMax.z);
+            spawnPos += transform.up * (spawnPosOffset.y + Random.Range(spawnPosRangeMin.y, spawnPosRangeMax.y));
+            spawnPos += transform.right * (spawnPosOffset.x + Random.Range(spawnPosRangeMin.x, spawnPosRangeMax.x));
+            spawnPos += transform.forward * (spawnPosOffset.z + Random.Range(spawnPosRangeMin.z, spawnPosRangeMax.z));
 
             Vector3 spawnRot = transform.rotation.eulerAngles;
             spawnRot.y += spawnRotOffset.y + Random.Range(spawnRotRangeMin.y, spawnRotRangeMax.y);

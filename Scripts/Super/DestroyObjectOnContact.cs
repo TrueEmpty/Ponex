@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class DestroyObjectOnContact : MonoBehaviour
 {
-    public string tagHit = "Ball";
+    public List<string> tagHit = new List<string>();
     public float delay = .1f;
+    public bool selfDestroy = false;
 
     // Start is called before the first frame update
     void Start()
@@ -18,9 +19,9 @@ public class DestroyObjectOnContact : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.transform.tag.ToLower().Trim() == tagHit.ToLower().Trim())
+        if (tagHit.Exists(x=> x.ToLower().Trim() == collision.transform.tag.ToLower().Trim()))
         {
-            StartCoroutine(DestroyObject(collision.gameObject,delay));
+            StartCoroutine(DestroyObject(selfDestroy ? gameObject : collision.gameObject,delay));
         }
     }
 
