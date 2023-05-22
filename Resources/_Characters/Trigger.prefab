@@ -107,6 +107,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8124347176006103352}
+  - component: {fileID: -5332368240146878414}
   - component: {fileID: 3874730072440248873}
   - component: {fileID: 3874730072440248872}
   - component: {fileID: 3874730072440248875}
@@ -139,6 +140,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-5332368240146878414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5108246835623641899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffd10a85a34b2c644b7d893e72627fba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &3874730072440248873
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,7 +208,6 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: abd7b48ce71de964dadcf7d8372c0ebd, type: 3}
     active: 1
     computer: 0
-    distanceFromLifeline: {x: 0, y: 0, z: 0}
   nickName: 
   team: 0
   position: 1
@@ -204,11 +216,11 @@ MonoBehaviour:
     right: 100
     bump: 119
     super: 115
-    aLeft: 97
-    aRight: 100
-    aBump: 119
-    aSuper: 115
-  score: 0
+    dirShown: Up
+    dirDesc: Up
+  canMove: []
+  canBump: []
+  canSuper: []
 --- !u!54 &3874730072440248875
 Rigidbody:
   m_ObjectHideFlags: 0

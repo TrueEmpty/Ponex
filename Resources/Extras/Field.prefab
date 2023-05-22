@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2704144294990579676}
   - component: {fileID: 2704144294990579679}
+  - component: {fileID: -5928423891872341850}
   m_Layer: 0
   m_Name: Field
   m_TagString: Field
@@ -46,10 +47,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   field:
     name: 
-    aurtor: 
+    arthur: 
     size: 10
     parts: []
     portrait: {fileID: 0}
     icon: {fileID: 0}
     active: 1
   spawning: 0
+  createMode: 0
+  started: 0
+  ball:
+    name: 
+    prefab: {fileID: 0}
+    startSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+--- !u!114 &-5928423891872341850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2704144294990579677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffd10a85a34b2c644b7d893e72627fba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

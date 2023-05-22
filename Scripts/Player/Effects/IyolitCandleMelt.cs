@@ -80,6 +80,11 @@ public class IyolitCandleMelt : MonoBehaviour
     {
         if(curHealth <= 0)
         {
+            if(superFlameGo != null)
+            {
+                Destroy(superFlameGo);
+            }
+
             Destroy(gameObject);
         }
     }

@@ -89,6 +89,44 @@ public class MenuControl : MonoBehaviour
         }
     }
 
+    public void BackUnitl(string menu)
+    {
+        bool keepGoing = true;
+
+        while (keepGoing)
+        {
+            BackMenu();
+
+            if(openMenu[openMenu.Count - 1].ToLower().Trim() == menu.ToLower().Trim())
+            {
+                keepGoing = false;
+            }
+            else if(openMenu.Count <= 1)
+            {
+                keepGoing = false;
+            }
+        }
+    }
+
+    public void BackUnitlPrev(string menu)
+    {
+        bool keepGoing = true;
+
+        while (keepGoing)
+        {
+            BackMenu();
+
+            if (openMenu[openMenu.Count - 2].ToLower().Trim() == menu.ToLower().Trim())
+            {
+                keepGoing = false;
+            }
+            else if (openMenu.Count <= 2)
+            {
+                keepGoing = false;
+            }
+        }
+    }
+
     public void ToggleMenu(string menuName)
     {
         //Debug.Log("Test Toggle");

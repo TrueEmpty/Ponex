@@ -20,6 +20,17 @@ public class PlayerButtons
 
     }
 
+    public PlayerButtons(PlayerButtons pb)
+    {
+        left = pb.left;
+        right = pb.right;
+        bump = pb.bump;
+        super = pb.super;
+
+        dirShown = pb.dirShown;
+        dirDesc = pb.dirDesc;
+    }
+
     public PlayerButtons(KeyCode Left, KeyCode Right, KeyCode Bump, KeyCode Super)
     {
         left = Left;

@@ -429,6 +429,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7228200059807893180}
+  - component: {fileID: -7810288894241468943}
   - component: {fileID: 5914598984665035949}
   - component: {fileID: 5914598984665035948}
   - component: {fileID: 5914598984665035952}
@@ -460,6 +461,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-7810288894241468943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5914598984665035951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffd10a85a34b2c644b7d893e72627fba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &5914598984665035949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -536,7 +549,11 @@ MonoBehaviour:
     right: 100
     bump: 119
     super: 115
-  score: 0
+    dirShown: Up
+    dirDesc: Up
+  canMove: []
+  canBump: []
+  canSuper: []
 --- !u!114 &5914598984665035953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -555,6 +572,8 @@ MonoBehaviour:
   rightObj: {fileID: 151058463175250226}
   leftObj: {fileID: 2313033963064336480}
   centerObj: {fileID: 2313033962977037484}
+  rotAmountL: 0
+  rotAmountR: 0
 --- !u!54 &5914598984665035955
 Rigidbody:
   m_ObjectHideFlags: 0

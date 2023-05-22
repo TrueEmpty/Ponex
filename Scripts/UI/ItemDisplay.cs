@@ -27,6 +27,9 @@ public class ItemDisplay : MonoBehaviour
     public bool p4Selected = false;
     public Color inactiveColor = Color.black;
 
+    public CharacterSelector cS;
+    //public ButtonClickedEvent onClick;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -66,6 +69,27 @@ public class ItemDisplay : MonoBehaviour
                     portrait.color = inactiveColor;
                 }
             }
+        }
+    }
+
+    void OnClick(int player)
+    {
+        switch(player)
+        {
+            case 1:
+                cS.p1Selected = selection;
+                break;
+            case 2:
+                cS.p2Selected = selection;
+                break;
+            case 3:
+                cS.p3Selected = selection;
+                break;
+            case 4:
+                cS.p4Selected = selection;
+                break;
+            default:
+                break;
         }
     }
 }

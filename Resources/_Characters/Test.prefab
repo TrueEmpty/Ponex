@@ -107,6 +107,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1000764564893908230}
+  - component: {fileID: 8147265594890932161}
   - component: {fileID: 3756110212550744923}
   - component: {fileID: 941564564455569126}
   - component: {fileID: 1057202746340783278}
@@ -139,6 +140,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8147265594890932161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6229090789647900146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffd10a85a34b2c644b7d893e72627fba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &3756110212550744923
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194,7 +207,6 @@ MonoBehaviour:
     icon: {fileID: 0}
     active: 0
     computer: 0
-    distanceFromLifeline: {x: 0, y: 0, z: 0}
   nickName: 
   team: 0
   position: 1
@@ -203,11 +215,11 @@ MonoBehaviour:
     right: 100
     bump: 119
     super: 115
-    aLeft: 97
-    aRight: 100
-    aBump: 119
-    aSuper: 115
-  score: 0
+    dirShown: Up
+    dirDesc: Up
+  canMove: []
+  canBump: []
+  canSuper: []
 --- !u!54 &1057202746340783278
 Rigidbody:
   m_ObjectHideFlags: 0

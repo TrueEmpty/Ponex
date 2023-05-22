@@ -65,8 +65,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   playerChildName: Right
+  followParent: 0
   offset: {x: 0, y: 0, z: 0}
   autoOffset: 1
+  reverseFollow: 0
 --- !u!33 &5464540073308092966
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -159,7 +161,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tagHit: Ball
-  damage: 1
+  damageIncrease: 0
 --- !u!1 &5464540073599567351
 GameObject:
   m_ObjectHideFlags: 0
@@ -169,6 +171,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5464540073599567350}
+  - component: {fileID: 6615831054480173514}
   - component: {fileID: 5464540073599567348}
   - component: {fileID: 5464540073599567353}
   - component: {fileID: 5464540073599567349}
@@ -199,6 +202,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6615831054480173514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5464540073599567351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffd10a85a34b2c644b7d893e72627fba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &5464540073599567348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,7 +264,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tagHit: Ball
-  damage: 1
+  damageIncrease: 0
 --- !u!114 &5464540073599567355
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -405,7 +420,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tagHit: Ball
-  damage: 1
+  damageIncrease: 0
 --- !u!1 &5464540073974426659
 GameObject:
   m_ObjectHideFlags: 0
@@ -471,8 +486,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   playerChildName: Left
+  followParent: 0
   offset: {x: 0, y: 0, z: 0}
   autoOffset: 1
+  reverseFollow: 0
 --- !u!33 &5464540073974426663
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -565,4 +582,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tagHit: Ball
-  damage: 1
+  damageIncrease: 0

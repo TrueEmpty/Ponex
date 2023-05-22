@@ -45,6 +45,20 @@ public class Database : MonoBehaviour
 
     public List<TypeIdentifier> typeIds = new List<TypeIdentifier>();
 
+    public Transform borderTop;
+    public Transform borderRight;
+    public Transform borderBot;
+    public Transform borderLeft;
+
+    public GameObject borderASelectors;
+
+    public GameObject showWinner;
+    public GameObject showWinnerContent;
+    public GameObject winnerDisplay;
+    public GameObject winnerTitle;
+    public GameObject winnersTitle;
+    List<GameObject> winnerGos = new List<GameObject>();
+
     private void Awake()
     {
         if (instance == null)
@@ -81,9 +95,31 @@ public class Database : MonoBehaviour
             lightGo.SetActive(!(gamestate == GameState.Playing || gamestate == GameState.StartUp));
         }
 
+        if(borderASelectors != null)
+        {
+            borderASelectors.SetActive(!(gamestate == GameState.Playing || gamestate == GameState.StartUp));
+        }
+
         if (loadingGo != null)
         {
             loadingGo.SetActive(gamestate == GameState.Loading);
+        }
+
+        if (showWinner != null)
+        {
+            showWinner.SetActive(gamestate == GameState.Winner);
+        }
+
+        if(gamestate != GameState.Winner)
+        {
+            if(winnerGos.Count > 0)
+            {
+                for(int i = winnerGos.Count - 1; i >= 0; i--)
+                {
+                    Destroy(winnerGos[i]);
+                    winnerGos.RemoveAt(i);
+                }
+            }
         }
 
         switch(gamestate)
@@ -98,50 +134,94 @@ public class Database : MonoBehaviour
                 GameRunning();
                 break;
             case GameState.Winner:
-                DisplayWinners();
                 break;
         }
     }
 
-    void DisplayWinners()
+    void DisplayWinners(List<PlayerWinStats> allPlayers)
     {
-        
+        gamestate = GameState.Winner;
+
+        if (allPlayers != null)
+        {
+            for(int i = 0; i < allPlayers.Count; i++)
+            {
+                GameObject go = Instantiate(winnerDisplay, showWinnerContent.transform);
+
+                WinnerDisplay wD = go.GetComponent<WinnerDisplay>();
+
+                if(wD != null)
+                {
+                    wD.Setup(allPlayers[i]);
+                }
+
+                winnerGos.Add(go);
+            }
+        }
+
+        ClearAll();
+    }
+
+    void ClearAll()
+    {
+        GameObject[] allGo = GameObject.FindObjectsOfType<GameObject>();
+
+        if (allGo.Length > 0)
+        {
+            for (int i = allGo.Length - 1; i >= 0; i--)
+            {
+                allGo[i].SendMessage("ClearAllForNewGame", SendMessageOptions.DontRequireReceiver);
+
+                if(allGo[i] != null)
+                {
+                    if(!allGo[i].activeInHierarchy)
+                    {
+                        Destroy(allGo[i]);
+                    }
+                }
+            }
+        }
     }
 
     void GameRunning()
     {
         //Check for winner
-        GameObject[] alllifelines = GameObject.FindGameObjectsWithTag("Lifeline");
+        GameObject[] allPlayers = GameObject.FindGameObjectsWithTag("Player");
 
         //If there is only 1 team left they win
-        if (alllifelines.Length > 0)
+        if (allPlayers.Length > 0)
         {
-            List<int> lifelineTeams = new List<int>();
+            List<PlayerWinStats> teams = new List<PlayerWinStats>();
+            int teamCount = 0;
 
-            for (int i = 0; i < alllifelines.Length; i++)
+            for (int i = 0; i < allPlayers.Length; i++)
             {
-                PlayerGrab pG = alllifelines[i].GetComponent<PlayerGrab>();
+                Player p = allPlayers[i].GetComponent<Player>();
 
-                if (pG != null)
+                if (p != null)
                 {
-                    if (!lifelineTeams.Contains(pG.player.team))
+                    if(p.player.currentHealth > 0)
                     {
-                        lifelineTeams.Add(pG.player.team);
+                        if (!teams.Exists(x=> x.team == p.team))
+                        {
+                            teamCount++;
+                        }
+                    }
+
+                    if(!teams.Exists(x=> x.team == p.team && x.nickName == p.nickName && x.position == p.position))
+                    {
+                        teams.Add(new PlayerWinStats(p));
                     }
                 }
             }
 
-            switch (lifelineTeams.Count)
+            switch (teamCount)
             {
                 case 0: //There was a draw somehow
-                    mD.Write("Draw");
-                    DestroyGameplayObjects();
-                    gamestate = GameState.Winner;
+                    DisplayWinners(teams);
                     break;
                 case 1: //There are winners display them
-                    //db.mD.Write("Draw");
-                    DestroyGameplayObjects();
-                    gamestate = GameState.Winner;
+                    DisplayWinners(teams);
                     break;
                 default: //No Winner keep playing
                     break;
@@ -149,16 +229,14 @@ public class Database : MonoBehaviour
         }
         else //Somthing happened there are no winners (Draw)
         {
-            mD.Write("Draw");
-            DestroyGameplayObjects();
-            gamestate = GameState.Winner;
+            DisplayWinners(null);
         }
 
     }
 
-    public void DestroyGameplayObjects()
+    public void ChangeGameState(int state)
     {
-
+        gamestate = (GameState)state;
     }
 
     public void StartSaveData()
