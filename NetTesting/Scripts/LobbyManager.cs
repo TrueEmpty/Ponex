@@ -25,8 +25,7 @@ public class LobbyManager : MonoBehaviour
         {
             Destroy(this);
         }
-        players.Add(new LobbyPlayer("", "", 0, 0));
-        print(JsonUtility.ToJson(this));
+        //players.Add(new LobbyPlayer("", "", 0, 0));
     }
 
     // Start is called before the first frame update

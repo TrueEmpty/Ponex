@@ -94,7 +94,6 @@ public class LoginManager : MonoBehaviour
     {
         signIn.SetActive(!nS.IsLoggedIn);
         profile.SetActive(nS.IsLoggedIn);
-        cM.gameObject.SetActive(nS.IsLoggedIn);
         create.SetActive(screen.ToLower().Trim() == "create new");
         login.SetActive(screen.ToLower().Trim() == "login");
         friends.SetActive(nS.IsLoggedIn && friendDisplay);

@@ -63,6 +63,7 @@ public class ChatManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        holder.SetActive(nS.IsLoggedIn);
         if(dirty)
         {
             string chatText = "";

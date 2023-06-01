@@ -10,7 +10,7 @@ public class TestMenuing : MonoBehaviour
     public Screens screens = Screens.None;
 
     #region Main
-    public GameObject offlineScreen;
+    public Button onlineButton;
     public GameObject onlineMainScreen;
     #endregion
 
@@ -46,7 +46,7 @@ public class TestMenuing : MonoBehaviour
             lobbyJoinKey.text = nS.RelayJoinCode;
         }
 
-        offlineScreen.SetActive(screens == Screens.Pre);
+        onlineButton.enabled = nS.IsLoggedIn;
         onlineMainScreen.SetActive(screens == Screens.Main);
         lobbyScreen.SetActive(screens == Screens.Lobby);
         joiningScreen.SetActive(screens == Screens.Join);
