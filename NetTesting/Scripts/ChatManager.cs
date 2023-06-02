@@ -41,6 +41,9 @@ public class ChatManager : MonoBehaviour
     float loadlocalChats = -1;
     float loadloaclChatsTimer = 2;
 
+    bool min = false;
+    public GameObject chatArea;
+
     private void Awake()
     {
         if (instance == null)
@@ -64,7 +67,9 @@ public class ChatManager : MonoBehaviour
     void Update()
     {
         holder.SetActive(nS.IsLoggedIn);
-        if(dirty)
+        chatArea.SetActive(!min);
+
+        if (dirty)
         {
             string chatText = "";
             Chat c = chats.Find(x => x.cid == roomID);
@@ -203,6 +208,11 @@ public class ChatManager : MonoBehaviour
 
         dirty = true;
         creatingChat = false;
+    }
+
+    public void MinimizeChat()
+    {
+        min = !min;
     }
 
     public void GetChat(CallbackVar cbV)

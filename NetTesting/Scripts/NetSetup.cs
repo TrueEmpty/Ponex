@@ -229,7 +229,7 @@ public class Client
 
     public bool isOnline
     {
-        get { return (DateTime.Now - DateTime.Parse(online)).Minutes <= 5; }
+        get { return (DateTime.Now - DateTime.Parse(online)).Minutes <= 1; }
     }
 
     public override string ToString()

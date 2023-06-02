@@ -70,7 +70,10 @@ public class SelectionHighlight : MonoBehaviour
 
                 if(butt != null)
                 {
-                    butt.onClick.Invoke();
+                    if(butt.enabled)
+                    {
+                        butt.onClick.Invoke();
+                    }
                 }
                 else
                 {
