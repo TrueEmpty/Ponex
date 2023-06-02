@@ -18,7 +18,7 @@ public class AINetwork : MonoBehaviour
     public bool right = false;
     #endregion
 
-    IEnumerator PlainActions()
+    IEnumerator PlanActions()
     {
 
         yield return null;
