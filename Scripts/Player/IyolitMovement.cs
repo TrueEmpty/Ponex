@@ -85,7 +85,7 @@ public class IyolitMovement : MonoBehaviour
 
                 if (currentPosition == lastPosition && !moving)
                 {
-                    if (Input.GetKeyDown(pG.player.keys.right))
+                    if (pG.player.keys.KeyPressed(Direction.Right))
                     {
                         currentPosition++;
 
@@ -95,7 +95,7 @@ public class IyolitMovement : MonoBehaviour
                         }
                     }
 
-                    if (Input.GetKeyDown(pG.player.keys.left))
+                    if (pG.player.keys.KeyPressedDown(Direction.Left))
                     {
                         currentPosition--;
 
@@ -120,9 +120,9 @@ public class IyolitMovement : MonoBehaviour
                 superOn -= Time.deltaTime;
             }
 
-            bumpActive = Input.GetKey(pG.player.keys.bump);
+            bumpActive = pG.player.keys.KeyPressed(Direction.Bump);
 
-            if(superCooldownTimer < superCooldown)
+            if (superCooldownTimer < superCooldown)
             {
                 superCooldownTimer += Time.deltaTime;
             }
@@ -139,7 +139,7 @@ public class IyolitMovement : MonoBehaviour
             }
 
 
-            if (Input.GetKeyDown(pG.player.keys.super) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
+            if (pG.player.keys.KeyPressed(Direction.Super) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
             {
                 superOn = superTime;
                 superCooldownTimer = 0;

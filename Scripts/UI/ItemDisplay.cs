@@ -28,7 +28,6 @@ public class ItemDisplay : MonoBehaviour
     public Color inactiveColor = Color.black;
 
     public CharacterSelector cS;
-    //public ButtonClickedEvent onClick;
 
     // Start is called before the first frame update
     void Start()

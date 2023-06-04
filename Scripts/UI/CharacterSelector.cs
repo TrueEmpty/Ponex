@@ -164,7 +164,6 @@ public class CharacterSelector : MonoBehaviour
             {
                 for (int i = 0; i < transform.childCount; i++)
                 {
-
                     ItemDisplay iD = transform.GetChild(i).GetComponent<ItemDisplay>();
 
                     if (iD != null)

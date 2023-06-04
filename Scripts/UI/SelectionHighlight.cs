@@ -49,13 +49,13 @@ public class SelectionHighlight : MonoBehaviour
 
         //Check if it is over anything
         #region P1
-        if (Input.GetKey(pB.left) && Input.GetKey(pB.right))
+        if (pB.KeyPressed(Direction.Left) && pB.KeyPressed(Direction.Right))
         {
             clicked += Time.deltaTime;
         }
 
-        if (!Input.GetKey(pB.left) && !Input.GetKey(pB.right) &&
-            !Input.GetKey(pB.bump) && !Input.GetKey(pB.super))
+        if (!pB.KeyPressed(Direction.Left) && !pB.KeyPressed(Direction.Right) &&
+            !pB.KeyPressed(Direction.Bump) && !pB.KeyPressed(Direction.Super))
         {
             clicked = 0;
         }
@@ -88,22 +88,22 @@ public class SelectionHighlight : MonoBehaviour
     {
         Vector3 result = Vector3.zero;
 
-        if (Input.GetKey(pB.bump) && curPos.y < db.borderTop.position.y)
+        if (pB.KeyPressed(Direction.Bump) && curPos.y < db.borderTop.position.y)
         {
             result.y += 1;
         }
 
-        if (Input.GetKey(pB.super) && curPos.y > db.borderBot.position.y)
+        if (pB.KeyPressed(Direction.Super) && curPos.y > db.borderBot.position.y)
         {
             result.y -= 1;
         }
 
-        if (Input.GetKey(pB.right) && curPos.x < db.borderRight.position.x)
+        if (pB.KeyPressed(Direction.Right) && curPos.x < db.borderRight.position.x)
         {
             result.x += 1;
         }
 
-        if (Input.GetKey(pB.left) && curPos.x > db.borderLeft.position.x)
+        if (pB.KeyPressed(Direction.Left) && curPos.x > db.borderLeft.position.x)
         {
             result.x -= 1;
         }

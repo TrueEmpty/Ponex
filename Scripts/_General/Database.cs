@@ -80,7 +80,12 @@ public class Database : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(!loading)
+        settings.p1Buttons.ButtonPressUpdate();
+        settings.p2Buttons.ButtonPressUpdate();
+        settings.p3Buttons.ButtonPressUpdate();
+        settings.p4Buttons.ButtonPressUpdate();
+
+        if (!loading)
         {
             //Dont forget to remove later
             if (Input.GetKey(KeyCode.F1) && !saving)

@@ -7,9 +7,9 @@ public class StageSelector : MonoBehaviour
 {
     Database db;
 
-    List<Field> curFields = new List<Field>();
+    public List<Field> curFields = new List<Field>();
     [SerializeField]
-    List<RawImage> stageScreens = new List<RawImage>();
+    List<StageDsplay> stageScreens = new List<StageDsplay>();
 
     public int stageSelected = 0;
     public int groupCount = 0;
@@ -34,7 +34,6 @@ public class StageSelector : MonoBehaviour
 
         GetStageScreens();
         GetCurrentFieldsWithSkippingInserted();
-        LoadStages();
     }
 
     // Update is called once per frame
@@ -42,11 +41,9 @@ public class StageSelector : MonoBehaviour
     {
         if(stageSelected >= 0 && stageSelected < curFields.Count)
         {
-            SelectorMove();
             ShowSelection();
         }
     }
-    
 
     void GetStageScreens()
     {
@@ -56,14 +53,16 @@ public class StageSelector : MonoBehaviour
             {
                 for (int i = 0; i < transform.childCount; i++)
                 {
+                    StageDsplay sD = transform.GetChild(i).GetComponent<StageDsplay>();
 
-                    RawImage rI = transform.GetChild(i).GetComponent<RawImage>();
-
-                    if (rI != null)
+                    if (sD != null)
                     {
-                        if (!stageScreens.Contains(rI))
+                        if (!stageScreens.Contains(sD))
                         {
-                            stageScreens.Add(rI);
+                            sD.inactiveColor = inactiveColor;
+                            sD.selection = i;
+                            sD.sS = this;
+                            stageScreens.Add(sD);
                         }
                     }
                 }
@@ -80,11 +79,11 @@ public class StageSelector : MonoBehaviour
         {
             for(int i = 0; i < db.fields.Count; i++)
             {
-                bool stay = (stageScreens[fI].gameObject.name.Contains("Skip"));
+                bool stay = (stageScreens[fI].skip);
 
                 while (stay)
                 {
-                    curFields.Add(new Field());
+                    curFields.Add(new Field(false));
                     fI++;
 
                     if (fI >= stageScreens.Count)
@@ -92,7 +91,7 @@ public class StageSelector : MonoBehaviour
                         fI = 0;
                     }
 
-                    stay = (stageScreens[fI].gameObject.name.Contains("Skip"));
+                    stay = (stageScreens[fI].skip);
                 }
 
                 curFields.Add(db.fields[i]);
@@ -106,201 +105,8 @@ public class StageSelector : MonoBehaviour
         }
     }
 
-    public void LoadStages()
-    {
-        //Will be based off GroupNum Range Skipping index 3,4,5,6 | 15,16,17,18 | 27,28,29,30 (12)
-        if (stageScreens.Count > 12)
-        {
-            int tC = 0;
-
-            for (int i = 0; i < stageScreens.Count; i++)
-            {
-                tC = (groupCount * stageScreens.Count) + i;
-
-                if (tC >= 0 && tC < curFields.Count)
-                {
-                    Field st = curFields[tC];
-
-                    if (st.icon != null)
-                    {
-                        stageScreens[i].enabled = true;
-                        stageScreens[i].texture = st.icon;
-
-                        if (st.active)
-                        {
-                            stageScreens[i].color = Color.white;
-                        }
-                        else
-                        {
-                            stageScreens[i].color = inactiveColor;
-                        }
-                    }
-                    else
-                    {
-                        stageScreens[i].enabled = false;
-                    }
-                }
-                else
-                {
-                    stageScreens[i].enabled = false;
-                }
-            }
-        }
-    }
-
-    void SelectorMove()
-    {
-        if (db != null && active)
-        {
-            #region Up
-            if (Input.GetKey(db.settings.p1Buttons.bump) || Input.GetKey(db.settings.p2Buttons.super) ||
-                    Input.GetKey(db.settings.p3Buttons.right) || Input.GetKey(db.settings.p4Buttons.right))
-            {
-                //Move Up
-                if (minClick < Time.time)
-                {
-                    bool moveOn = false;
-                    int tic = 0;
-                    int orgSelected = stageSelected;
-
-                    while (!moveOn && tic <= lockedInt)
-                    {
-                        stageSelected = UpOption(stageSelected);
-                        minClick = Time.time + nextClick;
-
-                        if (db.fields[stageSelected].active)
-                        {
-                            moveOn = true;
-                        }
-                        tic++;
-                    }
-
-                    if (!moveOn)
-                    {
-                        stageSelected = orgSelected;
-                    }
-                }
-            }           
-            #endregion
-
-            #region Down
-            if(Input.GetKey(db.settings.p1Buttons.super) || Input.GetKey(db.settings.p2Buttons.bump) ||
-                    Input.GetKey(db.settings.p3Buttons.left) || Input.GetKey(db.settings.p4Buttons.left))
-            {
-                //Move Down
-                if (minClick < Time.time)
-                {
-                    bool moveOn = false;
-                    int tic = 0;
-                    int orgSelected = stageSelected;
-
-                    while (!moveOn && tic <= lockedInt)
-                    {
-                        stageSelected = DownOption(stageSelected);
-                        minClick = Time.time + nextClick;
-
-                        if (db.fields[stageSelected].active)
-                        {
-                            moveOn = true;
-                        }
-                        tic++;
-                    }
-
-                    if (!moveOn)
-                    {
-                        stageSelected = orgSelected;
-                    }
-                }
-            }
-            #endregion
-
-            #region Left
-            if (Input.GetKey(db.settings.p1Buttons.left) || Input.GetKey(db.settings.p2Buttons.left) ||
-                    Input.GetKey(db.settings.p3Buttons.bump) || Input.GetKey(db.settings.p4Buttons.super))
-            {
-                //Move Left
-                if (minClick < Time.time)
-                {
-                    bool moveOn = false;
-                    int tic = 0;
-                    int orgSelected = stageSelected;
-
-                    while (!moveOn && tic <= lockedInt)
-                    {
-                        stageSelected = LeftOption(stageSelected);
-                        minClick = Time.time + nextClick;
-
-                        if (db.fields[stageSelected].active)
-                        {
-                            moveOn = true;
-                        }
-                        tic++;
-                    }
-
-                    if (!moveOn)
-                    {
-                        stageSelected = orgSelected;
-                    }
-                }
-            }
-            #endregion
-
-            #region Right
-            if (Input.GetKey(db.settings.p1Buttons.right) || Input.GetKey(db.settings.p2Buttons.right) ||
-                     Input.GetKey(db.settings.p3Buttons.super) || Input.GetKey(db.settings.p4Buttons.bump))
-            {
-                //Move Left
-                if (minClick < Time.time)
-                {
-                    bool moveOn = false;
-                    int tic = 0;
-                    int orgSelected = stageSelected;
-
-                    while (!moveOn && tic <= lockedInt)
-                    {
-                        stageSelected = RightOption(stageSelected);
-                        minClick = Time.time + nextClick;
-
-                        if(stageSelected > 0 && stageSelected < db.fields.Count)
-                        if (db.fields[stageSelected].active)
-                        {
-                            moveOn = true;
-                        }
-                        tic++;
-                    }
-
-                    if (!moveOn)
-                    {
-                        stageSelected = orgSelected;
-                    }
-                }
-            }
-            #endregion
-        }
-    }
-
     void ShowSelection()
     {
-        if(stageScreens.Count > 0)
-        {
-            for(int i = 0; i < stageScreens.Count; i++)
-            {
-                Outline sSoL = stageScreens[i].GetComponent<Outline>();
-
-                if (sSoL != null)
-                {
-                    if (i == stageSelected)
-                    {
-                        sSoL.effectColor = selectedColor;
-                    }
-                    else
-                    {
-                        sSoL.effectColor = Color.clear;
-                    }
-                }
-            }
-        }
-
         Field tSS = GetCurrentField();
 
         stageName.text = tSS.name;
@@ -314,7 +120,7 @@ public class StageSelector : MonoBehaviour
         return result;
     }
 
-    int TrueStageSelected(int sS)
+    public int TrueStageSelected(int sS)
     {
         return (groupCount * stageScreens.Count) + sS;
     }
@@ -609,7 +415,6 @@ public class StageSelector : MonoBehaviour
         if (tss >= 0 && tss < curFields.Count)
         {
             groupCount += dir;
-            LoadStages();
         }
     }
 
@@ -617,6 +422,5 @@ public class StageSelector : MonoBehaviour
     public void AddGameplayInfo()
     {
         GetCurrentFieldsWithSkippingInserted();
-        LoadStages();
     }
 }

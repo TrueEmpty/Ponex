@@ -33,7 +33,7 @@ public class GarmenModeSwitch : MonoBehaviour
         Player p = pG.player;
         ready += Time.deltaTime;
 
-        if (Input.GetKeyDown(p.keys.super) && ready >= cooldown)
+        if (p.keys.KeyPressed(Direction.Super) && ready >= cooldown)
         {
             driveMode = !driveMode;
             ready = 0;

@@ -22,12 +22,12 @@ public class GarmenAimFire : MonoBehaviour
         {
             int rotDir = 0;
 
-            if (Input.GetKey(pG.player.keys.right) && rotAmount > -90)
+            if (pG.player.keys.KeyPressed(Direction.Right) && rotAmount > -90)
             {
                 rotDir -= 1;
             }
 
-            if (Input.GetKey(pG.player.keys.left) && rotAmount < 90)
+            if (pG.player.keys.KeyPressed(Direction.Left) && rotAmount < 90)
             {
                 rotDir += 1;
             }

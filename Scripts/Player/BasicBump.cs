@@ -36,7 +36,7 @@ public class BasicBump : MonoBehaviour
 
         pG.player.player.bumpReadyPercent = bP;
 
-        if (Input.GetKeyDown(pG.player.keys.bump))
+        if (pG.player.keys.KeyPressedDown(Direction.Bump))
         {
             if (timeTillReset >= bumpCooldown && pG.player.CanBump)
             {

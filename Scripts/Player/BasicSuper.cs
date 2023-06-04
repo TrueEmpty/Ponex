@@ -36,7 +36,7 @@ public class BasicSuper : MonoBehaviour
 
         player.player.superReadyPercent = sP;
 
-        if (Input.GetKeyDown(player.keys.super) && player.player.superAmount >= player.player.superCost && timeTillReset >= superCooldown)
+        if (player.keys.KeyPressedDown(Direction.Super) && player.player.superAmount >= player.player.superCost && timeTillReset >= superCooldown)
         {
             if(super != null)
             {

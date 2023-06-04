@@ -21,6 +21,10 @@ public class Field
     public Field()
     {
     }
+    public Field(bool setActive)
+    {
+        active = setActive;
+    }
 
     public void CreateUID()
     {
