@@ -42,7 +42,7 @@ public class BasicDash : MonoBehaviour
 
         if (notDashing)
         {
-            if (player.keys.KeyPressedDown(Direction.Left) && canDash >= dC)
+            if (ButtonManager.KeyDown(player.keys.left) && canDash >= dC)
             {
                 if (firstclick == 0)
                 {
@@ -61,7 +61,7 @@ public class BasicDash : MonoBehaviour
                 }
             }
 
-            if (player.keys.KeyPressedDown(Direction.Right) && canDash >= dC)
+            if (ButtonManager.KeyDown(player.keys.right) && canDash >= dC)
             {
                 if (firstclick == 0)
                 {

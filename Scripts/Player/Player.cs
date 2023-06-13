@@ -33,8 +33,6 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        keys.ButtonPressUpdate();
-
         if (canMove.Count > 0)
         {
             for(int i = canMove.Count -1; i >= 0; i--)

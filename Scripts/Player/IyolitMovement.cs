@@ -85,7 +85,7 @@ public class IyolitMovement : MonoBehaviour
 
                 if (currentPosition == lastPosition && !moving)
                 {
-                    if (pG.player.keys.KeyPressed(Direction.Right))
+                    if (ButtonManager.KeyDown(pG.player.keys.right))
                     {
                         currentPosition++;
 
@@ -95,7 +95,7 @@ public class IyolitMovement : MonoBehaviour
                         }
                     }
 
-                    if (pG.player.keys.KeyPressedDown(Direction.Left))
+                    if (ButtonManager.KeyDown(pG.player.keys.left))
                     {
                         currentPosition--;
 
@@ -120,7 +120,7 @@ public class IyolitMovement : MonoBehaviour
                 superOn -= Time.deltaTime;
             }
 
-            bumpActive = pG.player.keys.KeyPressed(Direction.Bump);
+            bumpActive = ButtonManager.KeyDown(pG.player.keys.bump);
 
             if (superCooldownTimer < superCooldown)
             {

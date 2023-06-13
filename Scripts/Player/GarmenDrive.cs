@@ -21,12 +21,12 @@ public class GarmenDrive : MonoBehaviour
         {
             int moveDir = 0;
 
-            if (pG.player.keys.KeyPressed(Direction.Right) && !Physics.Raycast(transform.position,transform.right, serachLength, layers))
+            if (ButtonManager.KeyPressed(pG.player.keys.right) && !Physics.Raycast(transform.position,transform.right, serachLength, layers))
             {
                 moveDir += 1;
             }
 
-            if (pG.player.keys.KeyPressed(Direction.Left) && !Physics.Raycast(transform.position, transform.right*-1, serachLength, layers))
+            if (ButtonManager.KeyPressed(pG.player.keys.left) && !Physics.Raycast(transform.position, transform.right*-1, serachLength, layers))
             {
                 moveDir -= 1;
             }

@@ -28,12 +28,12 @@ public class BasePlayerMove : MonoBehaviour
     {
         int moveDir = 0;
 
-        if (p.keys.KeyPressed(Direction.Right))
+        if (ButtonManager.KeyPressed(p.keys.right))
         {
                 moveDir += 1;
         }
 
-        if (p.keys.KeyPressed(Direction.Left))
+        if (ButtonManager.KeyPressed(p.keys.left))
         {
                 moveDir -= 1;
         }
