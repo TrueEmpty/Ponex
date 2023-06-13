@@ -139,7 +139,7 @@ public class IyolitMovement : MonoBehaviour
             }
 
 
-            if (pG.player.keys.KeyPressed(Direction.Super) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
+            if (ButtonManager.KeyPressed(pG.player.keys.left) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
             {
                 superOn = superTime;
                 superCooldownTimer = 0;

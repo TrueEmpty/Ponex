@@ -42,44 +42,44 @@ public class TicPlayerMove : MonoBehaviour
     {
         if (p.keys.dirShown == "U" || p.keys.dirShown == "L")
         {
-            if (p.keys.KeyPressed(Direction.Right) && rMove == 0)
+            if (ButtonManager.KeyPressed(p.keys.right) && rMove == 0)
             {
                 rMove = 1;
             }
 
-            if (p.keys.KeyPressed(Direction.Left) && lMove == 0)
+            if (ButtonManager.KeyPressed(p.keys.left) && lMove == 0)
             {
                 lMove = 1;
             }
 
-            if (p.keys.KeyPressed(Direction.Bump) && cMove == 0)
+            if (ButtonManager.KeyPressed(p.keys.bump) && cMove == 0)
             {
                 cMove = 1;
             }
 
-            if (p.keys.KeyPressed(Direction.Super) && cMove == 0)
+            if (ButtonManager.KeyPressed(p.keys.super) && cMove == 0)
             {
                 cMove = -1;
             }
         }
         else
         {
-            if (p.keys.KeyPressed(Direction.Right) && lMove == 0)
+            if (ButtonManager.KeyPressed(p.keys.right) && lMove == 0)
             {
                 lMove = 1;
             }
 
-            if (p.keys.KeyPressed(Direction.Left) && rMove == 0)
+            if (ButtonManager.KeyPressed(p.keys.left) && rMove == 0)
             {
                 rMove = 1;
             }
 
-            if (p.keys.KeyPressed(Direction.Bump) && cMove == 0)
+            if (ButtonManager.KeyPressed(p.keys.bump) && cMove == 0)
             {
                 cMove = 1;
             }
 
-            if (p.keys.KeyPressed(Direction.Super) && cMove == 0)
+            if (ButtonManager.KeyPressed(p.keys.super) && cMove == 0)
             {
                 cMove = -1;
             }
