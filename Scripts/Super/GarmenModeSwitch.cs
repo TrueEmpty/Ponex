@@ -5,6 +5,7 @@ using UnityEngine;
 public class GarmenModeSwitch : MonoBehaviour
 {
     PlayerGrab pG;
+    ButtonManager bm;
     public GameObject hub;
     [SerializeField]
     bool driveMode = false;
@@ -25,6 +26,7 @@ public class GarmenModeSwitch : MonoBehaviour
     void Start()
     {
         pG = GetComponent<PlayerGrab>();
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -33,7 +35,7 @@ public class GarmenModeSwitch : MonoBehaviour
         Player p = pG.player;
         ready += Time.deltaTime;
 
-        if (ButtonManager.KeyPressed(p.keys.super) && ready >= cooldown)
+        if (bm.KeyPressed(p.keys.super) && ready >= cooldown)
         {
             driveMode = !driveMode;
             ready = 0;

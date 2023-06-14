@@ -6,6 +6,7 @@ public class TicPlayerMove : MonoBehaviour
 {
     float canMove = 1;
     Player p;
+    ButtonManager bm;
 
     public int lMove = 0;
     public int rMove = 0;
@@ -30,6 +31,7 @@ public class TicPlayerMove : MonoBehaviour
     {
         p = GetComponent<Player>();
         cStart = centerObj.transform.position;
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -42,44 +44,44 @@ public class TicPlayerMove : MonoBehaviour
     {
         if (p.keys.dirShown == "U" || p.keys.dirShown == "L")
         {
-            if (ButtonManager.KeyPressed(p.keys.right) && rMove == 0)
+            if (bm.KeyPressed(p.keys.right) && rMove == 0)
             {
                 rMove = 1;
             }
 
-            if (ButtonManager.KeyPressed(p.keys.left) && lMove == 0)
+            if (bm.KeyPressed(p.keys.left) && lMove == 0)
             {
                 lMove = 1;
             }
 
-            if (ButtonManager.KeyPressed(p.keys.bump) && cMove == 0)
+            if (bm.KeyPressed(p.keys.bump) && cMove == 0)
             {
                 cMove = 1;
             }
 
-            if (ButtonManager.KeyPressed(p.keys.super) && cMove == 0)
+            if (bm.KeyPressed(p.keys.super) && cMove == 0)
             {
                 cMove = -1;
             }
         }
         else
         {
-            if (ButtonManager.KeyPressed(p.keys.right) && lMove == 0)
+            if (bm.KeyPressed(p.keys.right) && lMove == 0)
             {
                 lMove = 1;
             }
 
-            if (ButtonManager.KeyPressed(p.keys.left) && rMove == 0)
+            if (bm.KeyPressed(p.keys.left) && rMove == 0)
             {
                 rMove = 1;
             }
 
-            if (ButtonManager.KeyPressed(p.keys.bump) && cMove == 0)
+            if (bm.KeyPressed(p.keys.bump) && cMove == 0)
             {
                 cMove = 1;
             }
 
-            if (ButtonManager.KeyPressed(p.keys.super) && cMove == 0)
+            if (bm.KeyPressed(p.keys.super) && cMove == 0)
             {
                 cMove = -1;
             }

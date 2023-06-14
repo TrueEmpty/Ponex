@@ -6,6 +6,7 @@ using UnityEngine;
 public class IyolitMovement : MonoBehaviour
 {
     public PlayerGrab pG;
+    ButtonManager bm;
     public List<Transform> positions = new List<Transform>();
     public int currentPosition = 0;
     public int lastPosition = 0;
@@ -25,6 +26,7 @@ public class IyolitMovement : MonoBehaviour
     void Start()
     {
         pG = GetComponent<PlayerGrab>();
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -85,7 +87,7 @@ public class IyolitMovement : MonoBehaviour
 
                 if (currentPosition == lastPosition && !moving)
                 {
-                    if (ButtonManager.KeyDown(pG.player.keys.right))
+                    if (bm.KeyDown(pG.player.keys.right))
                     {
                         currentPosition++;
 
@@ -95,7 +97,7 @@ public class IyolitMovement : MonoBehaviour
                         }
                     }
 
-                    if (ButtonManager.KeyDown(pG.player.keys.left))
+                    if (bm.KeyDown(pG.player.keys.left))
                     {
                         currentPosition--;
 
@@ -120,7 +122,7 @@ public class IyolitMovement : MonoBehaviour
                 superOn -= Time.deltaTime;
             }
 
-            bumpActive = ButtonManager.KeyDown(pG.player.keys.bump);
+            bumpActive = bm.KeyDown(pG.player.keys.bump);
 
             if (superCooldownTimer < superCooldown)
             {
@@ -139,7 +141,7 @@ public class IyolitMovement : MonoBehaviour
             }
 
 
-            if (ButtonManager.KeyPressed(pG.player.keys.left) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
+            if (bm.KeyPressed(pG.player.keys.left) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
             {
                 superOn = superTime;
                 superCooldownTimer = 0;

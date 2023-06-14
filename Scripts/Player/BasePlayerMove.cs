@@ -6,6 +6,7 @@ using UnityEngine;
 public class BasePlayerMove : MonoBehaviour
 {
     Rigidbody rb;
+    ButtonManager bm;
     float canMove = 1;
     Player p;
 
@@ -14,6 +15,7 @@ public class BasePlayerMove : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         p = GetComponent<Player>();
+        bm = ButtonManager.instance;
 
         rb.useGravity = false;
     }
@@ -28,12 +30,12 @@ public class BasePlayerMove : MonoBehaviour
     {
         int moveDir = 0;
 
-        if (ButtonManager.KeyPressed(p.keys.right))
+        if (bm.KeyPressed(p.keys.right))
         {
                 moveDir += 1;
         }
 
-        if (ButtonManager.KeyPressed(p.keys.left))
+        if (bm.KeyPressed(p.keys.left))
         {
                 moveDir -= 1;
         }

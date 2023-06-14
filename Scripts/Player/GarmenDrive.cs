@@ -5,6 +5,7 @@ using UnityEngine;
 public class GarmenDrive : MonoBehaviour
 {
     PlayerGrab pG;
+    ButtonManager bm;
     public LayerMask layers = new LayerMask();
     float serachLength = 2.4f;
 
@@ -12,6 +13,7 @@ public class GarmenDrive : MonoBehaviour
     void Start()
     {
         pG = GetComponent<PlayerGrab>();
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -21,12 +23,12 @@ public class GarmenDrive : MonoBehaviour
         {
             int moveDir = 0;
 
-            if (ButtonManager.KeyPressed(pG.player.keys.right) && !Physics.Raycast(transform.position,transform.right, serachLength, layers))
+            if (bm.KeyPressed(pG.player.keys.right) && !Physics.Raycast(transform.position,transform.right, serachLength, layers))
             {
                 moveDir += 1;
             }
 
-            if (ButtonManager.KeyPressed(pG.player.keys.left) && !Physics.Raycast(transform.position, transform.right*-1, serachLength, layers))
+            if (bm.KeyPressed(pG.player.keys.left) && !Physics.Raycast(transform.position, transform.right*-1, serachLength, layers))
             {
                 moveDir -= 1;
             }

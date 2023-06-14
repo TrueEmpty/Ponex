@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class PlayerButtonSetupTest : MonoBehaviour
 {
     Database db;
+    ButtonManager bm;
     string listening = null;
 
     public Text p1L;
@@ -20,6 +20,7 @@ public class PlayerButtonSetupTest : MonoBehaviour
     void Start()
     {
         db = Database.instance;
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -57,7 +58,7 @@ public class PlayerButtonSetupTest : MonoBehaviour
                 }
             }
 
-            List<ButtonCapture> kp = ButtonManager.AllKeysPressed();
+            List<ButtonCapture> kp = bm.AllKeysPressed();
 
 
             if (kp.Count > 0)

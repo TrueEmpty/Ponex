@@ -16,11 +16,13 @@ public class BasicDash : MonoBehaviour
     float canDash = 0;
 
     Player player;
+    ButtonManager bm;
 
     // Start is called before the first frame update
     void Start()
     {
         player = GetComponent<Player>();
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -42,7 +44,7 @@ public class BasicDash : MonoBehaviour
 
         if (notDashing)
         {
-            if (ButtonManager.KeyDown(player.keys.left) && canDash >= dC)
+            if (bm.KeyDown(player.keys.left) && canDash >= dC)
             {
                 if (firstclick == 0)
                 {
@@ -61,7 +63,7 @@ public class BasicDash : MonoBehaviour
                 }
             }
 
-            if (ButtonManager.KeyDown(player.keys.right) && canDash >= dC)
+            if (bm.KeyDown(player.keys.right) && canDash >= dC)
             {
                 if (firstclick == 0)
                 {

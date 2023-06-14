@@ -6,6 +6,7 @@ public class BasicSuper : MonoBehaviour
 {
     Player player;
     Rigidbody rb;
+    ButtonManager bm;
 
     public float superCooldown = 3;
     float timeTillReset = 0;
@@ -18,6 +19,7 @@ public class BasicSuper : MonoBehaviour
     {
         player = GetComponent<Player>();
         rb = GetComponent<Rigidbody>();
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -36,7 +38,7 @@ public class BasicSuper : MonoBehaviour
 
         player.player.superReadyPercent = sP;
 
-        if (ButtonManager.KeyDown(player.keys.super) && player.player.superAmount >= player.player.superCost && timeTillReset >= superCooldown)
+        if (bm.KeyDown(player.keys.super) && player.player.superAmount >= player.player.superCost && timeTillReset >= superCooldown)
         {
             if(super != null)
             {

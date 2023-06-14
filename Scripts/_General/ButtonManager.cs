@@ -7,7 +7,10 @@ public class ButtonManager : MonoBehaviour
 {
     public static ButtonManager instance;
 
-    public static List<ButtonCapture> buttonCaptures = new List<ButtonCapture>();
+    [SerializeField]
+    public List<ButtonCapture> buttonCaptures = new List<ButtonCapture>();
+
+    List<string> dontAddAxis = new List<string>() {"Submit","Cancel","Horizontal","Vertical"};
 
     private void Awake()
     {
@@ -43,9 +46,12 @@ public class ButtonManager : MonoBehaviour
                 var axis = axisArray.GetArrayElementAtIndex(i);
 
                 var name = axis.FindPropertyRelative("m_Name").stringValue;
-
-                buttonCaptures.Add(new ButtonCapture("+ " + name.ToString(),name.ToString(),true));
-                buttonCaptures.Add(new ButtonCapture("- " + name.ToString(), name.ToString(),false));
+                
+                if(!dontAddAxis.Contains(name))
+                {
+                    buttonCaptures.Add(new ButtonCapture("+ " + name.ToString(), name.ToString(), true));
+                    buttonCaptures.Add(new ButtonCapture("- " + name.ToString(), name.ToString(), false));
+                }
             }
         }     
     }
@@ -85,27 +91,27 @@ public class ButtonManager : MonoBehaviour
         }
     }
 
-    public static ButtonCapture GetButton(KeyCode keycode)
+    public ButtonCapture GetButton(KeyCode keycode)
     {
         return buttonCaptures.Find(x => (KeyCode)x.Value == keycode);
     }
 
-    public static ButtonCapture GetButton(string axis,bool positive = true)
+    public ButtonCapture GetButton(string axis,bool positive = true)
     {
         return buttonCaptures.Find(x => (string)x.Value == axis && x.axisPositive == positive);
     }
 
-    public static ButtonCapture GetButton(string title)
+    public ButtonCapture GetButton(string title)
     {
         return buttonCaptures.Find(x => x.name == title);
     }
 
-    public static List<ButtonCapture> AllKeysPressed()
+    public List<ButtonCapture> AllKeysPressed()
     {
         return buttonCaptures.FindAll(x => x.state >= 0);
     }
 
-    public static bool KeyPressed(string name)
+    public bool KeyPressed(string name)
     {
         bool result = false;
         ButtonCapture bC = GetButton(name);
@@ -118,7 +124,7 @@ public class ButtonManager : MonoBehaviour
         return result;
     }
 
-    public static bool KeyDown(string name)
+    public bool KeyDown(string name)
     {
         bool result = false;
         ButtonCapture bC = GetButton(name);
@@ -131,7 +137,7 @@ public class ButtonManager : MonoBehaviour
         return result;
     }
 
-    public static bool KeyUp(string name)
+    public bool KeyUp(string name)
     {
         bool result = false;
         ButtonCapture bC = GetButton(name);
@@ -144,7 +150,7 @@ public class ButtonManager : MonoBehaviour
         return result;
     }
 
-    public static bool KeyPressed(List<string> names, bool allPressed  = false)
+    public bool KeyPressed(List<string> names, bool allPressed  = false)
     {
         bool result = false;
         
@@ -174,7 +180,7 @@ public class ButtonManager : MonoBehaviour
         return result;
     }
 
-    public static bool KeyDown(List<string> names, bool allPressed = false)
+    public bool KeyDown(List<string> names, bool allPressed = false)
     {
         bool result = false;
 
@@ -204,7 +210,7 @@ public class ButtonManager : MonoBehaviour
         return result;
     }
 
-    public static bool KeyUp(List<string> names, bool allPressed = false)
+    public bool KeyUp(List<string> names, bool allPressed = false)
     {
         bool result = false;
 

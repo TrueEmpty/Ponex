@@ -5,6 +5,8 @@ using UnityEngine;
 public class GarmenAimFire : MonoBehaviour
 {
     PlayerGrab pG;
+    ButtonManager bm;
+
     public Transform hub;
     public float speed = 1;
     public float rotAmount = 0;
@@ -13,6 +15,7 @@ public class GarmenAimFire : MonoBehaviour
     void Start()
     {
         pG = GetComponent<PlayerGrab>();
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -22,12 +25,12 @@ public class GarmenAimFire : MonoBehaviour
         {
             int rotDir = 0;
 
-            if (ButtonManager.KeyPressed(pG.player.keys.right) && rotAmount > -90)
+            if (bm.KeyPressed(pG.player.keys.right) && rotAmount > -90)
             {
                 rotDir -= 1;
             }
 
-            if (ButtonManager.KeyPressed(pG.player.keys.left) && rotAmount < 90)
+            if (bm.KeyPressed(pG.player.keys.left) && rotAmount < 90)
             {
                 rotDir += 1;
             }

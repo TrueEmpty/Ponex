@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class SelectionHighlight : MonoBehaviour
 {
     Database db;
+    ButtonManager bm;
     public GameObject selectedUI;
 
     public List<string> names = new List<string>();
@@ -18,6 +19,7 @@ public class SelectionHighlight : MonoBehaviour
     void Start()
     {
         db = Database.instance;
+        bm = ButtonManager.instance;
     }
 
     void Update()
@@ -49,13 +51,13 @@ public class SelectionHighlight : MonoBehaviour
 
         //Check if it is over anything
         #region P1
-        if (ButtonManager.KeyPressed(pB.left) && ButtonManager.KeyPressed(pB.right))
+        if (bm.KeyPressed(pB.left) && bm.KeyPressed(pB.right))
         {
             clicked += Time.deltaTime;
         }
 
-        if (!ButtonManager.KeyPressed(pB.left) && !ButtonManager.KeyPressed(pB.right) &&
-            !ButtonManager.KeyPressed(pB.bump) && !ButtonManager.KeyPressed(pB.super))
+        if (!bm.KeyPressed(pB.left) && !bm.KeyPressed(pB.right) &&
+            !bm.KeyPressed(pB.bump) && !bm.KeyPressed(pB.super))
         {
             clicked = 0;
         }
@@ -88,22 +90,22 @@ public class SelectionHighlight : MonoBehaviour
     {
         Vector3 result = Vector3.zero;
 
-        if (ButtonManager.KeyPressed(pB.bump) && curPos.y < db.borderTop.position.y)
+        if (bm.KeyPressed(pB.bump) && curPos.y < db.borderTop.position.y)
         {
             result.y += 1;
         }
 
-        if (ButtonManager.KeyPressed(pB.super) && curPos.y > db.borderBot.position.y)
+        if (bm.KeyPressed(pB.super) && curPos.y > db.borderBot.position.y)
         {
             result.y -= 1;
         }
 
-        if (ButtonManager.KeyPressed(pB.right) && curPos.x < db.borderRight.position.x)
+        if (bm.KeyPressed(pB.right) && curPos.x < db.borderRight.position.x)
         {
             result.x += 1;
         }
 
-        if (ButtonManager.KeyPressed(pB.left) && curPos.x > db.borderLeft.position.x)
+        if (bm.KeyPressed(pB.left) && curPos.x > db.borderLeft.position.x)
         {
             result.x -= 1;
         }

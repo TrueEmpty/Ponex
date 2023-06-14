@@ -6,6 +6,7 @@ public class BasicBump : MonoBehaviour
 {
     PlayerGrab pG;
     Rigidbody rb;
+    ButtonManager bm;
 
     public float bumpCooldown = 2;
     float timeTillReset = 0;
@@ -18,6 +19,7 @@ public class BasicBump : MonoBehaviour
     {
         pG = GetComponent<PlayerGrab>();
         rb = GetComponent<Rigidbody>();
+        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -36,7 +38,7 @@ public class BasicBump : MonoBehaviour
 
         pG.player.player.bumpReadyPercent = bP;
 
-        if (ButtonManager.KeyDown(pG.player.keys.bump))
+        if (bm.KeyDown(pG.player.keys.bump))
         {
             if (timeTillReset >= bumpCooldown && pG.player.CanBump)
             {
