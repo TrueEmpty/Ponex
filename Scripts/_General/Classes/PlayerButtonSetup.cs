@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerButtonSetupTest : MonoBehaviour
+public class PlayerButtonSetup : MonoBehaviour
 {
     Database db;
     ButtonManager bm;
