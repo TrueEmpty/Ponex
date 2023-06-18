@@ -7,7 +7,7 @@ public class PlayerButtonSetup : MonoBehaviour
 {
     Database db;
     ButtonManager bm;
-    string listening = null;
+    public string listening = null;
 
     public Text info;
 
@@ -112,6 +112,7 @@ public class PlayerButtonSetup : MonoBehaviour
             int pI = -1;
             string dir = "";
             string direction = "";
+            bool continueOn = false;
 
             string[] split = listening.Split(',');
 
@@ -135,7 +136,26 @@ public class PlayerButtonSetup : MonoBehaviour
                     case "D":
                         direction = "Down";
                         break;
-                }
+                    case "FL":
+                        direction = "Left";
+                        dir = "L";
+                        continueOn = true;
+                        break;
+                    case "FR":
+                        direction = "Right";
+                        dir = "R";
+                        continueOn = true;
+                        break;
+                    case "FU":
+                        direction = "Up";
+                        dir = "U";
+                        continueOn = true;
+                        break;
+                    case "FD":
+                        direction = "Down";
+                        dir = "D";
+                        break;
+                }   
             }
 
             List<ButtonCapture> kp = bm.AllKeysPressed();
@@ -385,7 +405,31 @@ public class PlayerButtonSetup : MonoBehaviour
                         break;
                     }
 
-                    listening = null;
+                    if(continueOn)
+                    {
+                        switch(dir)
+                        {
+                            case "L":
+                                dir = "FR";
+                                listening = split[0] + "," + dir + "," + split[2];
+                                break;
+                            case "R":
+                                dir = "FU";
+                                listening = split[0] + "," + dir + "," + split[2];
+                                break;
+                            case "U":
+                                dir = "FD";
+                                listening = split[0] + "," + dir + "," + split[2];
+                                break;
+                            case "D":
+                                listening = null;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        listening = null;
+                    }
                 }
             }
 

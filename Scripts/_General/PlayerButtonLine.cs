@@ -78,6 +78,27 @@ public class PlayerButtonLine : MonoBehaviour
                 {
                     pName2.text = (playerIndex == 0) ? "Player " + playerNumber : "";
                 }
+
+                if(pBS.listening != null && pBS.listening != "")
+                {
+                    int pL = -1;
+                    int pI = -1;
+                    string dir = "";
+
+                    string[] split = pBS.listening.Split(',');
+
+                    if (split.Length > 2)
+                    {
+                        pL = int.Parse(split[0]);
+                        dir = split[1];
+                        pI = int.Parse(split[2]);
+                    }
+
+                    left_I.color = (playerNumber == pL.ToString() && (dir == "L" || dir == "FL") && playerIndex == pI) ? Color.yellow : Color.white;
+                    right_I.color = (playerNumber == pL.ToString() && (dir == "R" || dir == "FR") && playerIndex == pI) ? Color.yellow : Color.white;
+                    up_I.color = (playerNumber == pL.ToString() && (dir == "U" || dir == "FU") && playerIndex == pI) ? Color.yellow : Color.white;
+                    down_I.color = (playerNumber == pL.ToString() && (dir == "D" || dir == "FD") && playerIndex == pI) ? Color.yellow : Color.white;
+                }
             }
             else
             {
@@ -96,10 +117,100 @@ public class PlayerButtonLine : MonoBehaviour
 
     public void AddNew()
     {
+        Database db = Database.instance;
+        PlayerButtons pb = null;
 
+        switch(int.Parse(playerNumber))
+        {
+            case 1:
+                pb = db.settings.p1Buttons;
+                break;
+            case 2:
+                pb = db.settings.p2Buttons;
+                break;
+            case 3:
+                pb = db.settings.p3Buttons;
+                break;
+            case 4:
+                pb = db.settings.p4Buttons;
+                break;
+            case 5:
+                pb = db.settings.p5Buttons;
+                break;
+            case 6:
+                pb = db.settings.p6Buttons;
+                break;
+            case 7:
+                pb = db.settings.p7Buttons;
+                break;
+            case 8:
+                pb = db.settings.p8Buttons;
+                break;
+        }
+
+        if(pb != null)
+        {
+            pb.left.Add("UnBound");
+            pb.right.Add("UnBound");
+            pb.bump.Add("UnBound");
+            pb.super.Add("UnBound");
+        }
     }
+
     public void Remove()
     {
+        Database db = Database.instance;
+        PlayerButtons pb = null;
 
+        switch (int.Parse(playerNumber))
+        {
+            case 1:
+                pb = db.settings.p1Buttons;
+                break;
+            case 2:
+                pb = db.settings.p2Buttons;
+                break;
+            case 3:
+                pb = db.settings.p3Buttons;
+                break;
+            case 4:
+                pb = db.settings.p4Buttons;
+                break;
+            case 5:
+                pb = db.settings.p5Buttons;
+                break;
+            case 6:
+                pb = db.settings.p6Buttons;
+                break;
+            case 7:
+                pb = db.settings.p7Buttons;
+                break;
+            case 8:
+                pb = db.settings.p8Buttons;
+                break;
+        }
+
+        if (pb != null)
+        {
+            if(playerIndex >= 0 && playerIndex < pb.left.Count)
+            {
+                pb.left.RemoveAt(playerIndex);
+            }
+
+            if (playerIndex >= 0 && playerIndex < pb.right.Count)
+            {
+                pb.right.RemoveAt(playerIndex);
+            }
+
+            if (playerIndex >= 0 && playerIndex < pb.bump.Count)
+            {
+                pb.bump.RemoveAt(playerIndex);
+            }
+
+            if (playerIndex >= 0 && playerIndex < pb.super.Count)
+            {
+                pb.super.RemoveAt(playerIndex);
+            }
+        }
     }
 }

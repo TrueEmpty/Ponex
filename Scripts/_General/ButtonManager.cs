@@ -30,7 +30,7 @@ public class ButtonManager : MonoBehaviour
         System.Array values = System.Enum.GetValues(typeof(KeyCode));
         foreach (KeyCode code in values)
         {
-            buttonCaptures.Add(new ButtonCapture("Key " + code,code));
+            buttonCaptures.Add(new ButtonCapture("Keycode." + code.ToString(),code));
         }
 
         var inputManager = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/InputManager.asset")[0];
