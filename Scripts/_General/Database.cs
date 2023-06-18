@@ -59,6 +59,8 @@ public class Database : MonoBehaviour
     public GameObject winnersTitle;
     List<GameObject> winnerGos = new List<GameObject>();
 
+    List<GameObject> showSelectors = new List<GameObject>();
+
     private void Awake()
     {
         if (instance == null)
@@ -96,8 +98,8 @@ public class Database : MonoBehaviour
         }
 
         if(borderASelectors != null)
-        {
-            borderASelectors.SetActive(!(gamestate == GameState.Playing || gamestate == GameState.StartUp));
+        {            
+            borderASelectors.SetActive(showSelectors.Exists(x=> x.activeInHierarchy));
         }
 
         if (loadingGo != null)
@@ -232,6 +234,14 @@ public class Database : MonoBehaviour
             DisplayWinners(null);
         }
 
+    }
+
+    public void SubscribeToSelectors(GameObject gameObj)
+    {
+        if (!showSelectors.Contains(gameObj))
+        {
+            showSelectors.Add(gameObj);
+        }
     }
 
     public void ChangeGameState(int state)

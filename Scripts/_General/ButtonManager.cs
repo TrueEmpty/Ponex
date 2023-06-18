@@ -46,11 +46,21 @@ public class ButtonManager : MonoBehaviour
                 var axis = axisArray.GetArrayElementAtIndex(i);
 
                 var name = axis.FindPropertyRelative("m_Name").stringValue;
-                
-                if(!dontAddAxis.Contains(name))
+                axis.Next(true);
+                axis.Next(false);
+                var descriptive_name = axis.stringValue;
+
+                if (!dontAddAxis.Contains(name))
                 {
-                    buttonCaptures.Add(new ButtonCapture("+ " + name.ToString(), name.ToString(), true));
-                    buttonCaptures.Add(new ButtonCapture("- " + name.ToString(), name.ToString(), false));
+                    if(descriptive_name.ToLower().Trim() == "positive" || descriptive_name.ToLower().Trim() == "")
+                    {
+                        buttonCaptures.Add(new ButtonCapture("+ " + name.ToString(), name.ToString(), true));
+                    }
+
+                    if (descriptive_name.ToLower().Trim() == "negitive" || descriptive_name.ToLower().Trim() == "")
+                    {
+                        buttonCaptures.Add(new ButtonCapture("- " + name.ToString(), name.ToString(), false));
+                    }
                 }
             }
         }     
@@ -63,13 +73,13 @@ public class ButtonManager : MonoBehaviour
             for(int i = 0; i < buttonCaptures.Count; i++)
             {
                 ButtonCapture bc = buttonCaptures[i];
-                bool pressed = false;
 
                 if (bc.Pressed())
                 {
                     if (bc.state < 0)
                     {
                         bc.state = 0;
+                        //Debug.Log("Pressed \n" + bc.StringOut());
                     }
                     else
                     {

@@ -7,8 +7,6 @@ public class OptionMove : MonoBehaviour
     public bool active = true;
     public Database db;
     public OptionSelector oS;
-    float minClick = 0;
-    float nextClick = .5f;
 
     // Start is called before the first frame update
     void Start()
@@ -17,8 +15,9 @@ public class OptionMove : MonoBehaviour
         {
             db = Database.instance;
         }
+        db.SubscribeToSelectors(gameObject);
 
-        if(oS == null)
+        if (oS == null)
         {
             oS = GetComponent<OptionSelector>();
         }

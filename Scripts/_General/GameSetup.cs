@@ -20,6 +20,7 @@ public class GameSetup : MonoBehaviour
     void Start()
     {
         db = Database.instance;
+        db.SubscribeToSelectors(gameObject);
     }
 
     // Update is called once per frame

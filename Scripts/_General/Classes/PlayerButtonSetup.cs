@@ -15,6 +15,7 @@ public class PlayerButtonSetup : MonoBehaviour
     public GameObject playerButtonLine;
 
     public List<string> buttonShowList = new();
+    bool nextInput = true;
     
     // Start is called before the first frame update
     void Start()
@@ -75,13 +76,13 @@ public class PlayerButtonSetup : MonoBehaviour
             {
                 lineS = p + ",";
                 lineS += i + ",";
-                lineS += (cPB.left.Count > i) ? cPB.left : "UnBound";
+                lineS += (cPB.left.Count > i) ? cPB.left[i] : "UnBound";
                 lineS += ",";
-                lineS += (cPB.right.Count > i) ? cPB.right : "UnBound";
+                lineS += (cPB.right.Count > i) ? cPB.right[i] : "UnBound";
                 lineS += ",";
-                lineS += (cPB.bump.Count > i) ? cPB.bump : "UnBound";
+                lineS += (cPB.bump.Count > i) ? cPB.bump[i] : "UnBound";
                 lineS += ",";
-                lineS += (cPB.super.Count > i) ? cPB.super : "UnBound";
+                lineS += (cPB.super.Count > i) ? cPB.super[i] : "UnBound";
                 newList.Add(lineS);
             }
         }
@@ -105,8 +106,9 @@ public class PlayerButtonSetup : MonoBehaviour
     void Listener()
     {
         info.gameObject.SetActive(listening != null);
+        List<ButtonCapture> kp = bm.AllKeysPressed();
 
-        if(listening != null)
+        if (listening != null && nextInput)
         {
             int pL = -1;
             int pI = -1;
@@ -158,12 +160,10 @@ public class PlayerButtonSetup : MonoBehaviour
                 }   
             }
 
-            List<ButtonCapture> kp = bm.AllKeysPressed();
-
 
             if (kp.Count > 0)
             {
-                if (kp.Exists(x=> (KeyCode)x.Value == KeyCode.Escape))
+                if (kp.Exists(x=> x.name == "KeyCode.Escape"))
                 {
                     listening = null;
                 }
@@ -430,10 +430,18 @@ public class PlayerButtonSetup : MonoBehaviour
                     {
                         listening = null;
                     }
+
+                    nextInput = false;
                 }
             }
 
             info.text = "Press a button to set it to Player " + pL.ToString() + "'s " + direction;
+        }
+
+
+        if (kp.Count == 0 && !nextInput)
+        {
+            nextInput = true;
         }
     }
 

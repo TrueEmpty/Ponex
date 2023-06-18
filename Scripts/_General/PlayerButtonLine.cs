@@ -99,6 +99,13 @@ public class PlayerButtonLine : MonoBehaviour
                     up_I.color = (playerNumber == pL.ToString() && (dir == "U" || dir == "FU") && playerIndex == pI) ? Color.yellow : Color.white;
                     down_I.color = (playerNumber == pL.ToString() && (dir == "D" || dir == "FD") && playerIndex == pI) ? Color.yellow : Color.white;
                 }
+                else
+                {
+                    left_I.color = Color.white;
+                    right_I.color = Color.white;
+                    up_I.color = Color.white;
+                    down_I.color = Color.white;
+                }
             }
             else
             {
@@ -150,10 +157,10 @@ public class PlayerButtonLine : MonoBehaviour
 
         if(pb != null)
         {
-            pb.left.Add("UnBound");
-            pb.right.Add("UnBound");
-            pb.bump.Add("UnBound");
-            pb.super.Add("UnBound");
+            pb.left.Add("Not Set");
+            pb.right.Add("Not Set");
+            pb.bump.Add("Not Set");
+            pb.super.Add("Not Set");
         }
     }
 
