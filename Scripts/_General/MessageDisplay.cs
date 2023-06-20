@@ -5,7 +5,20 @@ using UnityEngine.UI;
 
 public class MessageDisplay : MonoBehaviour
 {
+    public static MessageDisplay instance;
     public Text message;
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(this);
+        }
+    }
 
     // Update is called once per frame
     void Update()

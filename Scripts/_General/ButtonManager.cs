@@ -27,11 +27,13 @@ public class ButtonManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        /*
+        //Load keycodes
         System.Array values = System.Enum.GetValues(typeof(KeyCode));
         foreach (KeyCode code in values)
         {
             buttonCaptures.Add(new ButtonCapture("Keycode." + code.ToString(),code));
-        }
+        }*/
 
         var inputManager = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/InputManager.asset")[0];
 
@@ -312,13 +314,13 @@ public class ButtonCapture
     public bool Pressed()
     {
         switch (type)
-        {
+        {            
             case ButtonType.KeyCode:
                 return Input.GetKey(keycode);
             case ButtonType.Axis:
-                return axisPositive ? Input.GetAxis(axis) > .01f : Input.GetAxis(axis) < -.01f;
+                return axisPositive ? Input.GetAxis(axis) > Database.instance.settings.sensitivity : Input.GetAxis(axis) < -Database.instance.settings.sensitivity;
             default:
-                return axisPositive ? Input.GetAxis(axis) > .01f : Input.GetAxis(axis) < -.01f;
+                return axisPositive ? Input.GetAxis(axis) > Database.instance.settings.sensitivity : Input.GetAxis(axis) < -Database.instance.settings.sensitivity;
         }
     }
 

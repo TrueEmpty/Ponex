@@ -7,10 +7,12 @@ using UnityEngine.UI;
 public class FieldCreator : MonoBehaviour
 {
     Database db;
+    MessageDisplay mD;
+
     public FieldInfo fI;
 
     public Transform fieldHolder;
-    public Transform fieldObj;
+    public GameObject fieldObj;
 
     public GameObject typeSelector;
     string typeSelected = "";
@@ -40,12 +42,12 @@ public class FieldCreator : MonoBehaviour
     public RawImage partsImageDisplay;
 
     public bool overrideAdminField = false;
-    public Text messageGO;
 
     // Start is called before the first frame update
     void Start()
     {
         db = Database.instance;
+        mD = MessageDisplay.instance;
 
         Invoke("RefreshTypes", 1);
     }
@@ -83,8 +85,13 @@ public class FieldCreator : MonoBehaviour
         size = Mathf.RoundToInt(slider.value);
         sizeText.text = "Size (" + size + ")";
 
-        //Change Camera Pos
-
+        //Change Field Pos
+        if (fI != null)
+        {
+            Vector3 pos = fI.transform.position;
+            pos.z = size;
+            fI.transform.position = pos;
+        }
     }
 
     public void LoadField(Field fi)
@@ -183,12 +190,15 @@ public class FieldCreator : MonoBehaviour
     {
         typeShown = "BlaBlaBla";
 
-        fI.field.uid = db.fields[0].uid;
-        fI.field.name = db.fields[0].name;
-        fI.field.arthur = db.fields[0].arthur;
+        if(fI != null)
+        {
+            fI.field.uid = db.fields[0].uid;
+            fI.field.name = db.fields[0].name;
+            fI.field.arthur = db.fields[0].arthur;
 
-        nameText.text = fI.field.name;
-        creatorText.text = fI.field.arthur;
+            nameText.text = fI.field.name;
+            creatorText.text = fI.field.arthur;
+        }
     }
 
     // Update is called once per frame
@@ -197,8 +207,6 @@ public class FieldCreator : MonoBehaviour
         AddContents();
         SelectingPart();
         UpdatePartsOptions();
-
-        messageGO.gameObject.SetActive(messageGO.text != "" && messageGO.text != null);
     }
 
     public void UpdatePartsOptions()
@@ -247,30 +255,32 @@ public class FieldCreator : MonoBehaviour
                     }
                 }
             }
-            else
-            {
-                PartMovement();
-            }
         }
-        else
+
+        if(selected_Part != null)
         {
-            selected_Part = null;
+            PartMovement();
         }
     }
 
     public void PartMovement()
     {
-        RaycastHit hit;
-        Vector3 sp = selected_Part.position;
+        PartInfo pI = selected_Part.transform.gameObject.GetComponent<PartInfo>();
 
-        if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition),out hit,1000, 3))
+        if(pI.part.canMove)
         {
-            sp = hit.point - offsetPoint;
+            RaycastHit hit;
+            Vector3 sp = selected_Part.position;
+
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 1000, 3))
+            {
+                sp = hit.point - offsetPoint;
+            }
+
+            sp.z = zPos;
+
+            selected_Part.position = sp;
         }
-
-        sp.z = zPos;
-
-        selected_Part.position = sp;
 
         if(Input.GetMouseButtonDown(1))
         {
@@ -370,7 +380,20 @@ public class FieldCreator : MonoBehaviour
             sp.z = fI.transform.position.z;
             zPos = sp.z;
 
-            Instantiate(p.prefab,sp,Quaternion.identity,fI.transform);
+            GameObject sP = Instantiate(p.prefab,sp,Quaternion.identity,fI.transform);
+
+            sP.transform.localEulerAngles = p.rotation;
+
+            if(p.scaling)
+            {
+                sP.transform.localScale = p.size * (1 + (size / 100) * 2.6f);
+            }
+            else
+            {
+                sP.transform.localScale = p.size * (1 + (size / 100) * 2.6f);
+            }
+
+            sP.GetComponent<PartInfo>().part = p;
         }
     }
 
@@ -388,20 +411,16 @@ public class FieldCreator : MonoBehaviour
     void Clear()
     {
         fI.DestroyField();
+
+        //Add Field
+        GameObject sF = Instantiate(fieldObj);
+        sF.transform.parent = fieldHolder;
+
+        fI = sF.GetComponent<FieldInfo>();
     }
 
     void WriteMessage(string message,float time = -1)
     {
-        messageGO.text = message;
-
-        if (time > 0)
-        {
-            Invoke("ClearMessage", time);
-        }
-    }
-
-    void ClearMessage()
-    {
-        messageGO.text = "";
+        mD.Write(message,time);
     }
 }

@@ -122,7 +122,7 @@ public class IyolitMovement : MonoBehaviour
                 superOn -= Time.deltaTime;
             }
 
-            bumpActive = bm.KeyDown(pG.player.keys.bump);
+            bumpActive = bm.KeyPressed(pG.player.keys.bump);
 
             if (superCooldownTimer < superCooldown)
             {
@@ -141,7 +141,7 @@ public class IyolitMovement : MonoBehaviour
             }
 
 
-            if (bm.KeyPressed(pG.player.keys.left) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
+            if (bm.KeyDown(pG.player.keys.super) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
             {
                 superOn = superTime;
                 superCooldownTimer = 0;

@@ -76,6 +76,7 @@ public class Database : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        mD = MessageDisplay.instance;
         StartCoroutine(LoadData());
     }
 
@@ -403,7 +404,7 @@ public class Database : MonoBehaviour
         #endregion
 
         #region Load Parts
-        path = "Parts";
+        /*path = "Parts";
         fullPath = Application.dataPath + root + "/" + path;
 
         //Check if path exist if not create it
@@ -441,7 +442,7 @@ public class Database : MonoBehaviour
 
                 yield return null;
             }
-
+        */
             if (parts.Count > 0)
             {
                 for (int i = 0; i < parts.Count; i++)
@@ -464,8 +465,8 @@ public class Database : MonoBehaviour
                     }
                 }
             }
-        }
-
+        //}
+        
         #endregion
 
         loading = false;

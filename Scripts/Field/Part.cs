@@ -22,6 +22,9 @@ public class Part
 
     public UniqueId uid = new UniqueId();
 
+    public bool scaling = false;
+    public bool canMove = true;
+
     public Part()
     {
     }

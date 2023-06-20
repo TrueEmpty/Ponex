@@ -12,6 +12,8 @@ public class Settings
     public PlayerButtons p7Buttons = new PlayerButtons();
     public PlayerButtons p8Buttons = new PlayerButtons();
 
+    public float sensitivity = .5f;
+
     public Settings()
     {
 

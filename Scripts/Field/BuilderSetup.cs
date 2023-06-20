@@ -25,6 +25,7 @@ public class BuilderSetup : MonoBehaviour
     void Start()
     {
         db = Database.instance;
+        db.SubscribeToSelectors(gameObject);
     }
 
     // Update is called once per frame
@@ -116,6 +117,11 @@ public class BuilderSetup : MonoBehaviour
 
             if(fe != null && copyOfField)
             {
+                fe.CreateUID();
+            }
+            else
+            {
+                fe = new Field();
                 fe.CreateUID();
             }
 
