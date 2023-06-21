@@ -96,7 +96,7 @@ public class FieldCreator : MonoBehaviour
         int fCC = fI.transform.childCount;
         if(fCC > 0)
         {
-            float sizeOut = Mathf.Lerp(1, 3.85f, ((float)(size - 10) / 90));
+            float sizeOut = Mathf.Lerp(1, 3.325f, ((float)(size - 10) / 90));
 
             for (int i = 0; i < fCC; i++)
             {
