@@ -90,7 +90,26 @@ public class FieldCreator : MonoBehaviour
         {
             Vector3 pos = Vector3.zero;
             pos.z = -size;
-            fI.transform.position = pos;
+            fI.transform.localPosition = pos;
+        }
+
+        int fCC = fI.transform.childCount;
+        if(fCC > 0)
+        {
+            float sizeOut = Mathf.Lerp(1, 3.85f, ((float)(size - 10) / 90));
+
+            for (int i = 0; i < fCC; i++)
+            {
+                PartInfo pI = fI.transform.GetChild(i).gameObject.GetComponent<PartInfo>();
+
+                if(pI != null)
+                {
+                    if(pI.part.scaling)
+                    {
+                        pI.transform.localScale = pI.part.size * sizeOut;
+                    }
+                }
+            }
         }
     }
 
