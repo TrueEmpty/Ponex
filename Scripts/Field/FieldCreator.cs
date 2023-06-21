@@ -88,8 +88,8 @@ public class FieldCreator : MonoBehaviour
         //Change Field Pos
         if (fI != null)
         {
-            Vector3 pos = fI.transform.position;
-            pos.z = size;
+            Vector3 pos = Vector3.one;
+            pos.z = -size;
             fI.transform.position = pos;
         }
     }
@@ -380,17 +380,23 @@ public class FieldCreator : MonoBehaviour
             sp.z = fI.transform.position.z;
             zPos = sp.z;
 
-            GameObject sP = Instantiate(p.prefab,sp,Quaternion.identity,fI.transform);
+            if(p.setPos)
+            {
+                sp = p.position;
+            }
 
+            GameObject sP = Instantiate(p.prefab,sp,Quaternion.identity);
+
+            sP.transform.parent = fI.transform;
             sP.transform.localEulerAngles = p.rotation;
 
             if(p.scaling)
             {
-                sP.transform.localScale = p.size * (1 + (size / 100) * 2.6f);
+                sP.transform.localScale = p.size * (size / 10);
             }
             else
             {
-                sP.transform.localScale = p.size * (1 + (size / 100) * 2.6f);
+                sP.transform.localScale = p.size;
             }
 
             sP.GetComponent<PartInfo>().part = p;
@@ -410,13 +416,26 @@ public class FieldCreator : MonoBehaviour
 
     void Clear()
     {
-        fI.DestroyField();
+        if(fI != null)
+        {
+            fI.DestroyField();
+        }
 
         //Add Field
-        GameObject sF = Instantiate(fieldObj);
+        GameObject sF = Instantiate(fieldObj,Vector3.zero,Quaternion.identity);
         sF.transform.parent = fieldHolder;
 
         fI = sF.GetComponent<FieldInfo>();
+
+        //Change Field Pos
+        if (fI != null)
+        {
+            Vector3 pos = Vector3.one;
+            pos.z = -size;
+            fI.transform.localPosition = pos;
+        }
+
+        fI.transform.localScale = Vector3.one;
     }
 
     void WriteMessage(string message,float time = -1)

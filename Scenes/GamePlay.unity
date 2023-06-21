@@ -19895,7 +19895,7 @@ MonoBehaviour:
   fieldSelect: {fileID: 1666054}
   fieldCreator: {fileID: 328496573638980033, guid: 832d6a8b7a641db4aad4315f34c558eb,
     type: 3}
-  createField: {fileID: 0}
+  createField: {fileID: 1847297379}
   fieldSelected: -1
   fieldName: {fileID: 1588118426}
   fieldArthur: {fileID: 2035495369}
@@ -34009,6 +34009,8 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
     scaling: 0
     canMove: 1
+    soloType: 1
+    setPos: 1
   - name: P4
     type: Spawn
     prefab: {fileID: 9149598380094524439, guid: e94f7fe804706374fa0e7dd654b1c2ef,
@@ -34020,6 +34022,8 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
     scaling: 0
     canMove: 1
+    soloType: 1
+    setPos: 0
   - name: Basic
     type: Border
     prefab: {fileID: 4192327221675685237, guid: 65488e78409f9e743a3244b4a42cd273,
@@ -34031,6 +34035,8 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
     scaling: 1
     canMove: 0
+    soloType: 1
+    setPos: 1
   - name: P1
     type: Spawn
     prefab: {fileID: 5076369549739974985, guid: 3d0a0e9e31da5de4a8bac0ffdfa95667,
@@ -34042,6 +34048,8 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
     scaling: 0
     canMove: 1
+    soloType: 1
+    setPos: 0
   - name: Space
     type: Background
     prefab: {fileID: 6272044091867265139, guid: 2df0172fe50ebeb409e90c2d932c2d33,
@@ -34053,6 +34061,8 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
     scaling: 1
     canMove: 0
+    soloType: 1
+    setPos: 1
   - name: P2
     type: Spawn
     prefab: {fileID: 8510052238284387355, guid: 06b2439e8099f644a90b29cea709e306,
@@ -34064,6 +34074,8 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
     scaling: 0
     canMove: 1
+    soloType: 1
+    setPos: 0
   - name: P3
     type: Spawn
     prefab: {fileID: 4035993056894371950, guid: 250790e9d9746074991cc3444cb0c04d,
@@ -34075,6 +34087,8 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
     scaling: 0
     canMove: 1
+    soloType: 1
+    setPos: 0
   - name: Ball
     type: Spawn
     prefab: {fileID: 8500937954100995255, guid: e6e5589eb5ae7fc4682d26e38901f13e,
@@ -34086,6 +34100,8 @@ MonoBehaviour:
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
     scaling: 0
     canMove: 1
+    soloType: 1
+    setPos: 1
   backgrounds:
   - {fileID: 6272044091867265139, guid: 2df0172fe50ebeb409e90c2d932c2d33, type: 3}
   gamestate: 0
@@ -47679,6 +47695,7 @@ RectTransform:
   - {fileID: 1967143437}
   - {fileID: 504717174}
   - {fileID: 1962673468}
+  - {fileID: 1847297379}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -52725,6 +52742,42 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 165.8, y: 61.6, z: 1}
   m_Center: {x: 82.51, y: -27.67, z: 0}
+--- !u!1 &1847297378
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1847297379}
+  m_Layer: 5
+  m_Name: Field Creator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1847297379
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1847297378}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1623704596}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1851844102
 GameObject:
   m_ObjectHideFlags: 0
