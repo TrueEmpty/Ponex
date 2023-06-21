@@ -89,7 +89,7 @@ public class FieldCreator : MonoBehaviour
         if (fI != null)
         {
             Vector3 pos = Vector3.zero;
-            pos.z = -size;
+            pos.z = size;
             fI.transform.localPosition = pos;
         }
 
@@ -451,7 +451,7 @@ public class FieldCreator : MonoBehaviour
         if (fI != null)
         {
             Vector3 pos = Vector3.zero;
-            pos.z = -size;
+            pos.z = size;
             fI.transform.localPosition = pos;
         }
 
