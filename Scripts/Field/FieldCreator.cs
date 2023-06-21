@@ -88,7 +88,7 @@ public class FieldCreator : MonoBehaviour
         //Change Field Pos
         if (fI != null)
         {
-            Vector3 pos = Vector3.one;
+            Vector3 pos = Vector3.zero;
             pos.z = -size;
             fI.transform.position = pos;
         }
@@ -377,7 +377,7 @@ public class FieldCreator : MonoBehaviour
         if(p.prefab != null)
         {
             Vector3 sp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            sp.z = fI.transform.position.z;
+            sp.z = fI.transform.localPosition.z;
             zPos = sp.z;
 
             if(p.setPos)
@@ -385,9 +385,10 @@ public class FieldCreator : MonoBehaviour
                 sp = p.position;
             }
 
-            GameObject sP = Instantiate(p.prefab,sp,Quaternion.identity);
+            GameObject sP = Instantiate(p.prefab);
 
             sP.transform.parent = fI.transform;
+            sP.transform.localPosition = sp;
             sP.transform.localEulerAngles = p.rotation;
 
             if(p.scaling)
@@ -422,7 +423,7 @@ public class FieldCreator : MonoBehaviour
         }
 
         //Add Field
-        GameObject sF = Instantiate(fieldObj,Vector3.zero,Quaternion.identity);
+        GameObject sF = Instantiate(fieldObj);
         sF.transform.parent = fieldHolder;
 
         fI = sF.GetComponent<FieldInfo>();
@@ -430,7 +431,7 @@ public class FieldCreator : MonoBehaviour
         //Change Field Pos
         if (fI != null)
         {
-            Vector3 pos = Vector3.one;
+            Vector3 pos = Vector3.zero;
             pos.z = -size;
             fI.transform.localPosition = pos;
         }
