@@ -34020,10 +34020,10 @@ MonoBehaviour:
     rotation: {x: 0, y: 0, z: 90}
     size: {x: 1, y: 1, z: 1}
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
-    scaling: 0
+    scaling: 1
     canMove: 1
     soloType: 1
-    setPos: 0
+    setPos: 1
   - name: Basic
     type: Border
     prefab: {fileID: 4192327221675685237, guid: 65488e78409f9e743a3244b4a42cd273,
@@ -34046,19 +34046,19 @@ MonoBehaviour:
     rotation: {x: 0, y: 0, z: 0}
     size: {x: 1, y: 1, z: 1}
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
-    scaling: 0
+    scaling: 1
     canMove: 1
     soloType: 1
-    setPos: 0
+    setPos: 1
   - name: Space
     type: Background
     prefab: {fileID: 6272044091867265139, guid: 2df0172fe50ebeb409e90c2d932c2d33,
       type: 3}
     components: []
-    position: {x: 0, y: 0, z: 1}
+    position: {x: 0, y: 0, z: 25}
     rotation: {x: 0, y: 0, z: 0}
-    size: {x: 50, y: 50, z: 1}
-    icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
+    size: {x: 55, y: 55, z: 1}
+    icon: {fileID: 2800000, guid: 0b2075791c098724cb88e9768b395bb8, type: 3}
     scaling: 1
     canMove: 0
     soloType: 1
@@ -34072,10 +34072,10 @@ MonoBehaviour:
     rotation: {x: 0, y: 0, z: 180}
     size: {x: 1, y: 1, z: 1}
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
-    scaling: 0
+    scaling: 1
     canMove: 1
     soloType: 1
-    setPos: 0
+    setPos: 1
   - name: P3
     type: Spawn
     prefab: {fileID: 4035993056894371950, guid: 250790e9d9746074991cc3444cb0c04d,
@@ -34085,10 +34085,10 @@ MonoBehaviour:
     rotation: {x: 0, y: 0, z: 270}
     size: {x: 1, y: 1, z: 1}
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
-    scaling: 0
+    scaling: 1
     canMove: 1
     soloType: 1
-    setPos: 0
+    setPos: 1
   - name: Ball
     type: Spawn
     prefab: {fileID: 8500937954100995255, guid: e6e5589eb5ae7fc4682d26e38901f13e,
@@ -34096,10 +34096,23 @@ MonoBehaviour:
     components: []
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0}
-    size: {x: 0, y: 0, z: 0}
+    size: {x: 1, y: 1, z: 1}
     icon: {fileID: 2800000, guid: 22b00443d00841048aa325e474771efe, type: 3}
-    scaling: 0
+    scaling: 1
     canMove: 1
+    soloType: 1
+    setPos: 1
+  - name: Grass
+    type: Background
+    prefab: {fileID: 1610439694750421024, guid: 7480a7d6e933cb7489b1343d0f1e51a8,
+      type: 3}
+    components: []
+    position: {x: 0, y: 0, z: 25}
+    rotation: {x: 0, y: 0, z: 0}
+    size: {x: 55, y: 55, z: 1}
+    icon: {fileID: 2800000, guid: a179dda4c97b9a84aab793354df88e0a, type: 3}
+    scaling: 1
+    canMove: 0
     soloType: 1
     setPos: 1
   backgrounds:
