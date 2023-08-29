@@ -159,6 +159,14 @@ public class GameSetup : MonoBehaviour
                         ps.computer = true;
                     }
 
+                    Player playe = new Player();
+                    playe.player = ps;
+                    playe.position = player;
+                    playe.team = player;
+                    db.players.Add(playe);
+
+                    Player cP = db.players[^1];
+
                     GameObject playerObj = null;
 
                     //Spawn Player
@@ -170,7 +178,7 @@ public class GameSetup : MonoBehaviour
                         {
                             playerObj = Instantiate(pOi.prefabs, p.transform.position,Quaternion.identity) as GameObject;
 
-                            Player pI = playerObj.GetComponent<Player>();
+                            PlayerInfo pI = playerObj.GetComponent<PlayerInfo>();
 
                             playerObj.transform.position = p.transform.position + p.transform.up * (pOi.positionOffset.y);
                             playerObj.transform.position += p.transform.right * (pOi.positionOffset.x);
@@ -180,9 +188,7 @@ public class GameSetup : MonoBehaviour
 
                             if (pI != null)
                             {
-                                pI.player = ps;
-                                pI.position = player;
-                                pI.team = player;
+                                pI.player = cP;
 
                                 GameObject pOb = Instantiate(db.playerDisplay,db.characterDisplay);
                                 PlayerDisplay poD = pOb.GetComponent<PlayerDisplay>();
@@ -214,7 +220,7 @@ public class GameSetup : MonoBehaviour
 
                             if (pG != null)
                             {
-                                pG.player = playerObj.GetComponent<Player>();
+                                pG.player = playerObj.GetComponent<PlayerInfo>();
                             }
                         }
                     }

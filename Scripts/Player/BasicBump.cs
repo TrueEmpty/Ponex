@@ -25,41 +25,44 @@ public class BasicBump : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float bP = timeTillReset / bumpCooldown;
-
-        if(bP > 1)
+        if(!pG.player.player.selection)
         {
-            bP = 1;
-        }
-        else if(bP < 0)
-        {
-            bP = 0;
-        }
+            float bP = timeTillReset / bumpCooldown;
 
-        pG.player.player.bumpReadyPercent = bP;
-
-        if (bm.KeyDown(pG.player.keys.bump))
-        {
-            if (timeTillReset >= bumpCooldown && pG.player.CanBump)
+            if (bP > 1)
             {
-                Vector3 spawnPos = transform.position;
-                spawnPos += transform.up * spawnOffset.y;
-                spawnPos += transform.right * spawnOffset.x;
-                spawnPos += transform.forward * spawnOffset.z;
-
-                GameObject go = Instantiate(bump, spawnPos, transform.rotation) as GameObject;
-
-                PlayerGrab pg = go.GetComponent<PlayerGrab>();
-
-                if (pg != null)
-                {
-                    pg.player = pG.player;
-                }
-
-                timeTillReset = 0;
+                bP = 1;
             }
-        }
+            else if (bP < 0)
+            {
+                bP = 0;
+            }
 
-        timeTillReset += Time.deltaTime;
+            pG.player.player.player.bumpReadyPercent = bP;
+
+            if (bm.KeyDown(pG.player.player.keys.bump))
+            {
+                if (timeTillReset >= bumpCooldown && pG.player.CanBump)
+                {
+                    Vector3 spawnPos = transform.position;
+                    spawnPos += transform.up * spawnOffset.y;
+                    spawnPos += transform.right * spawnOffset.x;
+                    spawnPos += transform.forward * spawnOffset.z;
+
+                    GameObject go = Instantiate(bump, spawnPos, transform.rotation) as GameObject;
+
+                    PlayerGrab pg = go.GetComponent<PlayerGrab>();
+
+                    if (pg != null)
+                    {
+                        pg.player = pG.player;
+                    }
+
+                    timeTillReset = 0;
+                }
+            }
+
+            timeTillReset += Time.deltaTime;
+        }
     }
 }

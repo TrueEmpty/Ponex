@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class PlayerGrab : MonoBehaviour
 {
-    public Player player;
+    public PlayerInfo player;
 
     private void Start()
     {
-        Player pl = GetComponent<Player>();
+        PlayerInfo pl = GetComponent<PlayerInfo>();
 
         if(pl != null)
         {

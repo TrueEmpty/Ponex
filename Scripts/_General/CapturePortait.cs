@@ -118,6 +118,16 @@ public class CapturePortait : MonoBehaviour
         {
             ChangeShowing();
         }
+
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            NextCharacter();
+        }
+
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            PrevCharacter();
+        }
     }
 
     public void ChangeShowing()
@@ -191,7 +201,7 @@ public class CapturePortait : MonoBehaviour
                             RenderTexture.active = null; // JC: added to avoid errors
                             Destroy(rt);
                             byte[] bytes = screenShot.EncodeToPNG();
-                            string filename = ScreenShotName("Icon", ch.Name);
+                            string filename = ScreenShotName("Icons", ch.Name, 1, "Characters");
                             System.IO.File.WriteAllBytes(filename, bytes);
                             Debug.Log(string.Format("Took icon screenshot to: {0}", filename));
 
@@ -223,7 +233,7 @@ public class CapturePortait : MonoBehaviour
                             RenderTexture.active = null; // JC: added to avoid errors
                             Destroy(por_rt);
                             byte[] por_bytes = por_screenShot.EncodeToPNG();
-                            string por_filename = ScreenShotName("Portrait", ch.Name);
+                            string por_filename = ScreenShotName("Portraits", ch.Name, 1, "Characters");
                             System.IO.File.WriteAllBytes(por_filename, por_bytes);
                             Debug.Log(string.Format("Took Portrait screenshot to: {0}", por_filename));
                             yield return new WaitForEndOfFrame();
@@ -262,11 +272,11 @@ public class CapturePortait : MonoBehaviour
     }
 
 
-    public static string ScreenShotName(string type, string nameOfch, int number = 1)
+    public static string ScreenShotName(string type, string nameOfch, int number = 1, string classification = "Characters")
     {
-        return string.Format("{0}/Resources/{1}/{2}_{3}.png",
+        return string.Format("{0}/Resources/{1}/{4}/{2}_{3}.png",
                              Application.dataPath,
-                             type, nameOfch, number);
+                             type, nameOfch, number, classification);
     }
 
     public void ClearHolder()
@@ -304,10 +314,19 @@ public class CapturePortait : MonoBehaviour
 
                         if (oI.prefabs != null)
                         {
-                            Vector3 naturalOffset = new Vector3(-.89f, -14.55f, -10.38f);
+                            Vector3 naturalOffset = new Vector3(-.89f, -14.35f, -10.38f);
                             Vector3 useRotation = naturalOffset + oI.rotationOffset;
 
-                            Instantiate(oI.prefabs, hP + oI.positionOffset, Quaternion.Euler(useRotation), hT);
+                            GameObject go = Instantiate(oI.prefabs, hP, Quaternion.Euler(useRotation));
+                            go.transform.parent = hT;
+                            go.transform.localScale *= .25f;
+
+                            PlayerInfo pI = go.GetComponent<PlayerInfo>();
+
+                            if(pI != null)
+                            {
+                                pI.player.selection = true;
+                            }
                         }
                     }
 

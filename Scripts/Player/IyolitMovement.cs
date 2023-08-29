@@ -32,120 +32,123 @@ public class IyolitMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(ready)
+        if(!pG.player.player.selection)
         {
-            if (positions.Count > 0)
+            if (ready)
             {
-                for (int i = positions.Count - 1; i >= 0; i--)
+                if (positions.Count > 0)
                 {
-                    if (positions[i] == null)
+                    for (int i = positions.Count - 1; i >= 0; i--)
                     {
-                        positions.RemoveAt(i);
-
-                        if(currentPosition == i)
+                        if (positions[i] == null)
                         {
-                            lastPosition = -1;
-                        }
+                            positions.RemoveAt(i);
 
-                        if(currentPosition >= positions.Count)
-                        {
-                            currentPosition = positions.Count - 1;
+                            if (currentPosition == i)
+                            {
+                                lastPosition = -1;
+                            }
+
+                            if (currentPosition >= positions.Count)
+                            {
+                                currentPosition = positions.Count - 1;
+                            }
                         }
                     }
                 }
-            }
 
-            if (positions.Count > 0)
-            {
-                if (currentPosition != lastPosition)
+                if (positions.Count > 0)
                 {
-                    if (!moving)
+                    if (currentPosition != lastPosition)
                     {
-                        moving = true;
-                        startPos = transform.position;
-                        percentDis = 0;
-                    }
-
-                    if (moving)
-                    {
-                        percentDis += pG.player.Speed * Time.deltaTime;
-                        percentFC = 1 - (Mathf.Abs(.5f - percentDis) * 2);
-
-                        if (percentDis < 1)
+                        if (!moving)
                         {
-                            transform.position = Vector3.Lerp(lastPosition < 0 ? startPos : positions[lastPosition].position, positions[currentPosition].position + (positions[currentPosition].up * (maxheight * percentFC)), percentDis);
-                        }
-                        else
-                        {
-                            transform.position = positions[currentPosition].position;
-                            lastPosition = currentPosition;
+                            moving = true;
+                            startPos = transform.position;
                             percentDis = 0;
-                            moving = false;
+                        }
+
+                        if (moving)
+                        {
+                            percentDis += pG.player.Speed * Time.deltaTime;
+                            percentFC = 1 - (Mathf.Abs(.5f - percentDis) * 2);
+
+                            if (percentDis < 1)
+                            {
+                                transform.position = Vector3.Lerp(lastPosition < 0 ? startPos : positions[lastPosition].position, positions[currentPosition].position + (positions[currentPosition].up * (maxheight * percentFC)), percentDis);
+                            }
+                            else
+                            {
+                                transform.position = positions[currentPosition].position;
+                                lastPosition = currentPosition;
+                                percentDis = 0;
+                                moving = false;
+                            }
                         }
                     }
-                }
 
-                if (currentPosition == lastPosition && !moving)
+                    if (currentPosition == lastPosition && !moving)
+                    {
+                        if (bm.KeyDown(pG.player.player.keys.right))
+                        {
+                            currentPosition++;
+
+                            if (currentPosition >= positions.Count)
+                            {
+                                currentPosition = positions.Count - 1;
+                            }
+                        }
+
+                        if (bm.KeyDown(pG.player.player.keys.left))
+                        {
+                            currentPosition--;
+
+                            if (currentPosition < 0)
+                            {
+                                currentPosition = 0;
+                            }
+                        }
+
+                        //Keep it on the Candle
+                        transform.position = positions[currentPosition].position;
+                    }
+                }
+                else
                 {
-                    if (bm.KeyDown(pG.player.keys.right))
-                    {
-                        currentPosition++;
-
-                        if (currentPosition >= positions.Count)
-                        {
-                            currentPosition = positions.Count - 1;
-                        }
-                    }
-
-                    if (bm.KeyDown(pG.player.keys.left))
-                    {
-                        currentPosition--;
-
-                        if (currentPosition < 0)
-                        {
-                            currentPosition = 0;
-                        }
-                    }
-
-                    //Keep it on the Candle
-                    transform.position = positions[currentPosition].position;
+                    //Destroy the player
+                    gameObject.SetActive(false);
                 }
-            }
-            else
-            {
-                //Destroy the player
-                gameObject.SetActive(false);
-            }
 
-            if (superOn > 0)
-            {
-                superOn -= Time.deltaTime;
-            }
+                if (superOn > 0)
+                {
+                    superOn -= Time.deltaTime;
+                }
 
-            bumpActive = bm.KeyPressed(pG.player.keys.bump);
+                bumpActive = bm.KeyPressed(pG.player.player.keys.bump);
 
-            if (superCooldownTimer < superCooldown)
-            {
-                superCooldownTimer += Time.deltaTime;
-            }
+                if (superCooldownTimer < superCooldown)
+                {
+                    superCooldownTimer += Time.deltaTime;
+                }
 
-            pG.player.player.superReadyPercent = superCooldownTimer / superCooldown;
+                pG.player.player.player.superReadyPercent = superCooldownTimer / superCooldown;
 
-            if(pG.player.player.superReadyPercent < 0)
-            {
-                pG.player.player.superReadyPercent = 0;
-            }
-            else if(pG.player.player.superReadyPercent > 1)
-            {
-                pG.player.player.superReadyPercent = 1;
-            }
+                if (pG.player.player.player.superReadyPercent < 0)
+                {
+                    pG.player.player.player.superReadyPercent = 0;
+                }
+                else if (pG.player.player.player.superReadyPercent > 1)
+                {
+                    pG.player.player.player.superReadyPercent = 1;
+                }
 
 
-            if (bm.KeyDown(pG.player.keys.super) && !SuperOn() && pG.player.CanSuper && pG.player.player.superAmount >= pG.player.player.superCost && pG.player.player.superReadyPercent >= 1)
-            {
-                superOn = superTime;
-                superCooldownTimer = 0;
-                pG.player.CostSuper(pG.player.player.superCost);
+                if (bm.KeyDown(pG.player.player.keys.super) && !SuperOn() && pG.player.CanSuper && pG.player.player.player.superAmount >= pG.player.player.player.superCost && pG.player.player.player.superReadyPercent >= 1)
+                {
+                    superOn = superTime;
+                    superCooldownTimer = 0;
+                    pG.player.CostSuper(pG.player.player.player.superCost);
+                }
             }
         }
     }

@@ -32,10 +32,10 @@ public class GarmenModeSwitch : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Player p = pG.player;
+        PlayerInfo p = pG.player;
         ready += Time.deltaTime;
 
-        if (bm.KeyPressed(p.keys.super) && ready >= cooldown)
+        if (bm.KeyPressed(p.player.keys.super) && ready >= cooldown)
         {
             driveMode = !driveMode;
             ready = 0;
@@ -50,7 +50,7 @@ public class GarmenModeSwitch : MonoBehaviour
                 constraintMExist = false;
             }
 
-            p.player.superReadyPercent = 1;
+            p.player.player.superReadyPercent = 1;
 
             //Stop ability to shoot
             if(!constraintExist)
@@ -75,7 +75,7 @@ public class GarmenModeSwitch : MonoBehaviour
                 constraintMExist = true;
             }
 
-            p.player.superReadyPercent = 0;
+            p.player.player.superReadyPercent = 0;
 
             //Continue Normal shoot ability
             if(constraintExist)

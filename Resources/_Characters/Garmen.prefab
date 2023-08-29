@@ -69,12 +69,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 363718844487811456}
+  - component: {fileID: 2703220003157953269}
   - component: {fileID: -4151944896077981357}
   - component: {fileID: 6790355374179286279}
   - component: {fileID: 363718844487811486}
   - component: {fileID: 363718844487811487}
   - component: {fileID: 363718844487811484}
-  - component: {fileID: 363718844487811485}
   - component: {fileID: 363718844487811458}
   - component: {fileID: 363718844487811459}
   m_Layer: 8
@@ -100,6 +100,63 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2703220003157953269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 363718844487811457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cc287fc5e2d5ca48ba1ba054eb2cdd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player:
+    player:
+      name: 
+      currentHealth: 10
+      maxHealth: 10
+      movementSpeed: 50
+      bumpSpeed: 50
+      bumpReadyPercent: 1
+      superAmount: 0
+      superMax: 20
+      superCost: 10
+      superReadyPercent: 1
+      dashAmount: 2
+      dashCooldown: 3
+      dashMax: 2
+      dashReadyPercent: 1
+      character:
+        prefabs: {fileID: 0}
+        positionOffset: {x: 0, y: 0, z: 0}
+        rotationOffset: {x: 0, y: 0, z: 0}
+      lifeline:
+        prefabs: {fileID: 0}
+        positionOffset: {x: 0, y: 0, z: 0}
+        rotationOffset: {x: 0, y: 0, z: 0}
+      superName: 
+      superDescription: 
+      portraitColor: {r: 0, g: 1, b: 1, a: 1}
+      portrait: {fileID: 0}
+      icon: {fileID: 0}
+      active: 0
+      computer: 0
+    nickName: 
+    team: 0
+    position: 1
+    keys:
+      left: []
+      right: []
+      bump: []
+      super: []
+      dirShown: Up
+      dirDesc: Up
+    canMove: []
+    canBump: []
+    canSuper: []
+    selection: 0
 --- !u!114 &-4151944896077981357
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,7 +209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 566a60209bb317143957229f9459741e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 363718844487811485}
+  player: {fileID: 2703220003157953269}
 --- !u!114 &363718844487811484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,64 +222,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd4a15d1710366c458c14f47483f772b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &363718844487811485
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 363718844487811457}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d962bb0c77f930c458e9d71ef2b63abb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  player:
-    name: Garmen
-    currentHealth: 13
-    maxHealth: 13
-    movementSpeed: 6
-    bumpSpeed: 10
-    bumpReadyPercent: 100
-    superAmount: 0
-    superMax: 20
-    superCost: 10
-    superReadyPercent: 100
-    dashAmount: 2
-    dashCooldown: 3
-    dashMax: 2
-    dashReadyPercent: 1
-    character:
-      prefabs: {fileID: 363718844487811457}
-      positionOffset: {x: 0, y: 0, z: 0}
-      rotationOffset: {x: 0, y: 0, z: 0}
-    lifeline:
-      prefabs: {fileID: 3137131399502602626, guid: 8b3cc6afafb82404b98b1e39949e4776,
-        type: 3}
-      positionOffset: {x: 0, y: 0, z: 0}
-      rotationOffset: {x: 0, y: 0, z: 0}
-    superName: Roll Out
-    superDescription: Garmen can change between defensive mode and Drive mode. With
-      the ability to shoot while in Defensive mode and move while in drive mode with
-      enough gas.
-    portraitColor: {r: 0.26652396, g: 0.8867924, b: 0, a: 1}
-    portrait: {fileID: 0}
-    icon: {fileID: 0}
-    active: 0
-    computer: 0
-  nickName: 
-  team: 0
-  position: 1
-  keys:
-    left: 97
-    right: 100
-    bump: 119
-    super: 115
-    dirShown: Up
-    dirDesc: Up
-  canMove: []
-  canBump: []
-  canSuper: []
 --- !u!114 &363718844487811458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,10 +242,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 363718844487811457}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 10000
   m_Drag: 0
   m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -358,9 +368,17 @@ SphereCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 363718844852497589}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &363718845446912906
@@ -471,8 +489,17 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 363718845446912906}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
+  serializedVersion: 2
   m_Radius: 0.5000001
   m_Height: 2
   m_Direction: 1
@@ -499,10 +526,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 363718845446912906}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 100000
   m_Drag: 0
   m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0

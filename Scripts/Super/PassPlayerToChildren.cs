@@ -5,8 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerGrab))]
 public class PassPlayerToChildren : MonoBehaviour
 {
-    Player player;
-    Player oldPlayer;
+    PlayerInfo player;
+    PlayerInfo oldPlayer;
 
     // Update is called once per frame
     void Update()

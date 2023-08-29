@@ -47,13 +47,13 @@ public class IyolitLifelineCreate : MonoBehaviour
                 }
             }
 
-            pG.player.player.currentHealth = Mathf.CeilToInt(totalCurHp);
+            pG.player.player.player.currentHealth = Mathf.CeilToInt(totalCurHp);
         }
     }
 
     void SpawnCandles()
     {
-        float healthPerCandle = pG.player.player.maxHealth / candlesToSpawn;
+        float healthPerCandle = pG.player.player.player.maxHealth / candlesToSpawn;
 
         Vector3 pos1 = Vector3.zero;
         Vector3 pos2 = Vector3.zero;
@@ -106,7 +106,7 @@ public class IyolitLifelineCreate : MonoBehaviour
             iM.AddPosition(go.transform.GetChild(0).GetChild(0),i == candlesToSpawn - 1);
         }
 
-        if(pG.player.keys.dirShown == "D" || pG.player.keys.dirShown == "R")
+        if(pG.player.player.keys.dirShown == "D" || pG.player.player.keys.dirShown == "R")
         {
             iM.positions.Reverse();
         }

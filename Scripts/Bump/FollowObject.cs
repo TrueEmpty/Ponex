@@ -17,6 +17,18 @@ public class FollowObject : MonoBehaviour
     void Start()
     {
         pG = GetComponent<PlayerGrab>();
+
+        if (target != null && autoOffset)
+        {
+            if (reverseFollow)
+            {
+                offset = transform.position - target.position;
+            }
+            else
+            {
+                offset = target.position - transform.position;
+            }
+        }
     }
 
     // Update is called once per frame
@@ -26,11 +38,11 @@ public class FollowObject : MonoBehaviour
         {
             if (reverseFollow)
             {
-                target.position = transform.position - offset;
+                target.position = transform.position - (transform.right * offset.x) - (transform.up * offset.y) - (transform.forward * offset.z);
             }
             else
             {
-                transform.position = target.position - offset;
+                transform.position = target.position - (target.right * offset.x) - (target.up * offset.y) - (target.forward * offset.z);
             }
         }
         else

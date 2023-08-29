@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody),typeof(Player))]
+[RequireComponent(typeof(Rigidbody),typeof(PlayerGrab))]
 public class BasePlayerMove : MonoBehaviour
 {
     Rigidbody rb;
     ButtonManager bm;
     float canMove = 1;
-    Player p;
+    PlayerGrab pg;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        p = GetComponent<Player>();
+        pg = GetComponent<PlayerGrab>();
         bm = ButtonManager.instance;
 
         rb.useGravity = false;
@@ -23,19 +23,22 @@ public class BasePlayerMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        OnMove();
+        if(!pg.player.player.selection && pg.player.CanMove)
+        {
+            OnMove();
+        }
     }
 
     void OnMove()
     {
         int moveDir = 0;
 
-        if (bm.KeyPressed(p.keys.right))
+        if (bm.KeyPressed(pg.player.player.keys.right))
         {
                 moveDir += 1;
         }
 
-        if (bm.KeyPressed(p.keys.left))
+        if (bm.KeyPressed(pg.player.player.keys.left))
         {
                 moveDir -= 1;
         }
@@ -45,7 +48,7 @@ public class BasePlayerMove : MonoBehaviour
         rotDir.y = Mathf.Abs(rotDir.y);
         rotDir.z = Mathf.Abs(rotDir.z);
 
-        rb.velocity = rotDir * moveDir * p.Speed;
+        rb.velocity = rotDir * moveDir * pg.player.Speed;
         //Debug.Log(p.position + "/ " + transform.right);
     }
 

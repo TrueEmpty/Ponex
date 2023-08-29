@@ -19,6 +19,6 @@ public class WinnerDisplay : MonoBehaviour
             nameToUse = "P" + player.position;
         }
 
-        playerName.text = nameToUse;
+        playerName.text = (player.won ? "<color=green>Winner</color>" : "<color=gray>You Lose</color>") + "\n" + nameToUse;
     }
 }

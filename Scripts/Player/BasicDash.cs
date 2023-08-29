@@ -15,87 +15,90 @@ public class BasicDash : MonoBehaviour
     public float speedMultiplyer = 4;
     float canDash = 0;
 
-    Player player;
+    PlayerGrab pG;
     ButtonManager bm;
 
     // Start is called before the first frame update
     void Start()
     {
-        player = GetComponent<Player>();
+        pG = GetComponent<PlayerGrab>();
         bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
     void Update()
     {
-        float dC = player.player.dashCooldown;
-        float dP = canDash / dC;
-
-        if (dP > 1)
+        if (!pG.player.player.selection)
         {
-            dP = 1;
-        }
-        else if (dP < 0)
-        {
-            dP = 0;
-        }
+            float dC = pG.player.player.player.dashCooldown;
+            float dP = canDash / dC;
 
-        player.player.dashReadyPercent = dP;
-
-        if (notDashing)
-        {
-            if (bm.KeyDown(player.keys.left) && canDash >= dC)
+            if (dP > 1)
             {
-                if (firstclick == 0)
+                dP = 1;
+            }
+            else if (dP < 0)
+            {
+                dP = 0;
+            }
+
+            pG.player.player.player.dashReadyPercent = dP;
+
+            if (notDashing)
+            {
+                if (bm.KeyDown(pG.player.player.keys.left) && canDash >= dC)
                 {
-                    firstclick = 1;
-                    timeTillReset = Time.time + doubleClickTime;
+                    if (firstclick == 0)
+                    {
+                        firstclick = 1;
+                        timeTillReset = Time.time + doubleClickTime;
+                    }
+                    else if (timeTillReset >= Time.time && firstclick == 1)
+                    {
+                        notDashing = false;
+                        speedIncrease = pG.player.Speed * speedMultiplyer;
+                        pG.player.Speed += speedIncrease;
+                        dashEnd = Time.time + dashTime;
+                        firstclick = 0;
+                        timeTillReset = Time.time - 1;
+                        canDash = 0;
+                    }
                 }
-                else if (timeTillReset >= Time.time && firstclick == 1)
+
+                if (bm.KeyDown(pG.player.player.keys.right) && canDash >= dC)
                 {
-                    notDashing = false;
-                    speedIncrease = player.Speed * speedMultiplyer;
-                    player.Speed += speedIncrease;
-                    dashEnd = Time.time + dashTime;
-                    firstclick = 0;
-                    timeTillReset = Time.time - 1;
-                    canDash = 0;
+                    if (firstclick == 0)
+                    {
+                        firstclick = -1;
+                        timeTillReset = Time.time + doubleClickTime;
+                    }
+                    else if (timeTillReset >= Time.time && firstclick == -1)
+                    {
+                        notDashing = false;
+                        speedIncrease = pG.player.Speed * speedMultiplyer;
+                        pG.player.Speed += speedIncrease;
+                        dashEnd = Time.time + dashTime;
+                        firstclick = 0;
+                        timeTillReset = Time.time - 1;
+                        canDash = 0;
+                    }
                 }
             }
 
-            if (bm.KeyDown(player.keys.right) && canDash >= dC)
+            if (Time.time > timeTillReset)
             {
-                if (firstclick == 0)
+                if (!notDashing && dashEnd < Time.time)
                 {
-                    firstclick = -1;
-                    timeTillReset = Time.time + doubleClickTime;
+                    pG.player.Speed -= speedIncrease;
+                    notDashing = true;
                 }
-                else if (timeTillReset >= Time.time && firstclick == -1)
-                {
-                    notDashing = false;
-                    speedIncrease = player.Speed * speedMultiplyer;
-                    player.Speed += speedIncrease;
-                    dashEnd = Time.time + dashTime;
-                    firstclick = 0;
-                    timeTillReset = Time.time - 1;
-                    canDash = 0;
-                }
-            }
-        }
 
-        if(Time.time > timeTillReset)
-        {
-            if(!notDashing && dashEnd < Time.time)
-            {
-                player.Speed -= speedIncrease;
-                notDashing = true;
+                firstclick = 0;
+                timeTillReset = Time.time - 1;
             }
 
-            firstclick = 0;
-            timeTillReset = Time.time - 1;
+
+            canDash += Time.deltaTime;
         }
-
-
-        canDash += Time.deltaTime;
     }
 }

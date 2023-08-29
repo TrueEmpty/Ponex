@@ -29,6 +29,7 @@ public class Stats
     public ObjectInfo character = null;
 
     public ObjectInfo lifeline = null;
+    public GameObject selector = null;
 
     public string superName;
     public string superDescription;

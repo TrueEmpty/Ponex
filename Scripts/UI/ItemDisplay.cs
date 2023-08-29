@@ -27,7 +27,11 @@ public class ItemDisplay : MonoBehaviour
     public bool p4Selected = false;
     public Color inactiveColor = Color.black;
 
+    public Transform charSpawn;
+
     public CharacterSelector cS;
+    GameObject playerObj;
+    float spawnScale = 1.5f;
 
     // Start is called before the first frame update
     void Start()
@@ -53,19 +57,40 @@ public class ItemDisplay : MonoBehaviour
 
             if (ct != null)
             {
+                if(ct.icon != null)
+                {
+                    portrait.texture = ct.icon;
+                }
+
                 if (ct.active)
                 {
                     active = true;
                     portrait.color = Color.white;
-
-                    if (ct.icon != null)
-                    {
-                        portrait.texture = ct.icon;
-                    }
                 }
                 else
                 {
                     portrait.color = inactiveColor;
+                }
+            }
+        }
+    }
+
+    void SpawnPlayer(int player)
+    {
+        GameObject p = gameObject;
+
+        if (p != null)
+        {
+            Stats ps = db.characters[player];
+
+            if (ps != null)
+            {
+                //Spawn Player
+                if (ps.selector != null)
+                {
+                    playerObj = Instantiate(ps.selector, p.transform.position, Quaternion.identity,charSpawn) as GameObject;
+
+                    playerObj.transform.localScale *= spawnScale;
                 }
             }
         }

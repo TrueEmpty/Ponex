@@ -21,27 +21,30 @@ public class GarmenAimFire : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(pG.player.CanBump)
+        if(!pG.player.player.selection)
         {
-            int rotDir = 0;
-
-            if (bm.KeyPressed(pG.player.keys.right) && rotAmount > -90)
+            if(pG.player.CanBump)
             {
-                rotDir -= 1;
-            }
+                int rotDir = 0;
 
-            if (bm.KeyPressed(pG.player.keys.left) && rotAmount < 90)
-            {
-                rotDir += 1;
-            }
+                if (bm.KeyPressed(pG.player.player.keys.right) && rotAmount > -90)
+                {
+                    rotDir -= 1;
+                }
 
-            if (pG.player.keys.dirShown == "D" || pG.player.keys.dirShown == "R")
-            {
-                rotDir *= -1;
-            }
+                if (bm.KeyPressed(pG.player.player.keys.left) && rotAmount < 90)
+                {
+                    rotDir += 1;
+                }
 
-            hub.Rotate(Vector3.forward * rotDir * Time.deltaTime * speed, Space.Self);
-            rotAmount += Time.deltaTime * speed * rotDir;
+                if (pG.player.player.keys.dirShown == "D" || pG.player.player.keys.dirShown == "R")
+                {
+                    rotDir *= -1;
+                }
+
+                hub.Rotate(Vector3.forward * rotDir * Time.deltaTime * speed, Space.Self);
+                rotAmount += Time.deltaTime * speed * rotDir;
+            }
         }
     }
 }

@@ -20,6 +20,7 @@ public class Database : MonoBehaviour
     public List<GameObject> backgrounds = new List<GameObject>();
 
     public GameState gamestate = GameState.Main;
+    public WinState winstate = WinState.ShowWinners;
     public Texture default_Texture;
 
     #region Gameplay
@@ -60,6 +61,7 @@ public class Database : MonoBehaviour
     List<GameObject> winnerGos = new List<GameObject>();
 
     List<GameObject> showSelectors = new List<GameObject>();
+    public List<Player> players = new List<Player>();
 
     private void Awake()
     {
@@ -83,16 +85,6 @@ public class Database : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!loading)
-        {
-            //Dont forget to remove later
-            if (Input.GetKey(KeyCode.F1) && !saving)
-            {
-                saving = true;
-                StartCoroutine(SaveData());
-            }
-        }
-
         if(lightGo != null)
         {
             lightGo.SetActive(!(gamestate == GameState.Playing || gamestate == GameState.StartUp));
@@ -100,7 +92,7 @@ public class Database : MonoBehaviour
 
         if(borderASelectors != null)
         {            
-            borderASelectors.SetActive(showSelectors.Exists(x=> x.activeInHierarchy));
+            borderASelectors.SetActive(showSelectors.Exists(x=> x.activeInHierarchy) && gamestate != GameState.Loading && gamestate != GameState.Playing);
         }
 
         if (loadingGo != null)
@@ -147,18 +139,25 @@ public class Database : MonoBehaviour
 
         if (allPlayers != null)
         {
-            for(int i = 0; i < allPlayers.Count; i++)
+            switch(winstate)
             {
-                GameObject go = Instantiate(winnerDisplay, showWinnerContent.transform);
+                case WinState.NextLevel:
+                    break;
+                default: //Show Winners
+                    for (int i = 0; i < allPlayers.Count; i++)
+                    {
+                        GameObject go = Instantiate(winnerDisplay, showWinnerContent.transform);
 
-                WinnerDisplay wD = go.GetComponent<WinnerDisplay>();
+                        WinnerDisplay wD = go.GetComponent<WinnerDisplay>();
 
-                if(wD != null)
-                {
-                    wD.Setup(allPlayers[i]);
-                }
+                        if (wD != null)
+                        {
+                            wD.Setup(allPlayers[i]);
+                        }
 
-                winnerGos.Add(go);
+                        winnerGos.Add(go);
+                    }
+                    break;
             }
         }
 
@@ -167,7 +166,7 @@ public class Database : MonoBehaviour
 
     void ClearAll()
     {
-        GameObject[] allGo = GameObject.FindObjectsOfType<GameObject>();
+        GameObject[] allGo = FindObjectsOfType<GameObject>();
 
         if (allGo.Length > 0)
         {
@@ -189,17 +188,16 @@ public class Database : MonoBehaviour
     void GameRunning()
     {
         //Check for winner
-        GameObject[] allPlayers = GameObject.FindGameObjectsWithTag("Player");
 
         //If there is only 1 team left they win
-        if (allPlayers.Length > 0)
+        if (players.Count > 0)
         {
             List<PlayerWinStats> teams = new List<PlayerWinStats>();
             int teamCount = 0;
 
-            for (int i = 0; i < allPlayers.Length; i++)
+            for (int i = 0; i < players.Count; i++)
             {
-                Player p = allPlayers[i].GetComponent<Player>();
+                Player p = players[i];
 
                 if (p != null)
                 {
@@ -213,7 +211,7 @@ public class Database : MonoBehaviour
 
                     if(!teams.Exists(x=> x.team == p.team && x.nickName == p.nickName && x.position == p.position))
                     {
-                        teams.Add(new PlayerWinStats(p));
+                        teams.Add(new PlayerWinStats(p, p.player.currentHealth > 0));
                     }
                 }
             }
@@ -277,7 +275,7 @@ public class Database : MonoBehaviour
     IEnumerator LoadData()
     {
         #region Load Fields
-        string path = "TrueEmptyFields";
+        /*string path = "TrueEmptyFields";
         string fullPath = Application.dataPath + root + "/" + path;
 
         //Check if path exist if not create it
@@ -399,7 +397,7 @@ public class Database : MonoBehaviour
                     }
                 }
             }
-        }
+        }*/
 
         #endregion
 
@@ -567,4 +565,10 @@ public enum GameState
     StartUp,
     Playing,
     Winner
+}
+
+public enum WinState
+{
+    ShowWinners,
+    NextLevel
 }

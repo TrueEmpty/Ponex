@@ -5,7 +5,7 @@ using UnityEngine;
 public class TicPlayerMove : MonoBehaviour
 {
     float canMove = 1;
-    Player p;
+    PlayerInfo p;
     ButtonManager bm;
 
     public int lMove = 0;
@@ -29,7 +29,7 @@ public class TicPlayerMove : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        p = GetComponent<Player>();
+        p = GetComponent<PlayerInfo>();
         cStart = centerObj.transform.position;
         bm = ButtonManager.instance;
     }
@@ -37,51 +37,54 @@ public class TicPlayerMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        OnMove();
+        if(!p.player.selection)
+        {
+            OnMove();
+        }
     }
 
     void OnMove()
     {
-        if (p.keys.dirShown == "U" || p.keys.dirShown == "L")
+        if (p.player.keys.dirShown == "U" || p.player.keys.dirShown == "L")
         {
-            if (bm.KeyPressed(p.keys.right) && rMove == 0)
+            if (bm.KeyPressed(p.player.keys.right) && rMove == 0)
             {
                 rMove = 1;
             }
 
-            if (bm.KeyPressed(p.keys.left) && lMove == 0)
+            if (bm.KeyPressed(p.player.keys.left) && lMove == 0)
             {
                 lMove = 1;
             }
 
-            if (bm.KeyPressed(p.keys.bump) && cMove == 0)
+            if (bm.KeyPressed(p.player.keys.bump) && cMove == 0)
             {
                 cMove = 1;
             }
 
-            if (bm.KeyPressed(p.keys.super) && cMove == 0)
+            if (bm.KeyPressed(p.player.keys.super) && cMove == 0)
             {
                 cMove = -1;
             }
         }
         else
         {
-            if (bm.KeyPressed(p.keys.right) && lMove == 0)
+            if (bm.KeyPressed(p.player.keys.right) && lMove == 0)
             {
                 lMove = 1;
             }
 
-            if (bm.KeyPressed(p.keys.left) && rMove == 0)
+            if (bm.KeyPressed(p.player.keys.left) && rMove == 0)
             {
                 rMove = 1;
             }
 
-            if (bm.KeyPressed(p.keys.bump) && cMove == 0)
+            if (bm.KeyPressed(p.player.keys.bump) && cMove == 0)
             {
                 cMove = 1;
             }
 
-            if (bm.KeyPressed(p.keys.super) && cMove == 0)
+            if (bm.KeyPressed(p.player.keys.super) && cMove == 0)
             {
                 cMove = -1;
             }

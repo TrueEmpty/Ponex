@@ -106,7 +106,31 @@ public class FieldCreator : MonoBehaviour
                 {
                     if(pI.part.scaling)
                     {
-                        pI.transform.localScale = pI.part.size * sizeOut;
+                        Vector3 scale = pI.part.size;
+                        if (pI.part.type == "Border")
+                        {
+                            //scale.x = pI.part.size.x * sizeOut;
+                            scale.y = pI.part.size.y * sizeOut;
+                            scale.z = pI.part.size.z * sizeOut;
+                        }
+                        else
+                        {
+                            scale.x = pI.part.size.x * sizeOut;
+                            scale.y = pI.part.size.y * sizeOut;
+                            //scale.z = pI.part.size.z * sizeOut;
+                        }
+                        pI.transform.localScale = scale;
+                    }
+
+                    if(!pI.part.canMove)
+                    {
+                        Vector3 np = pI.transform.localPosition;
+
+                        np.x = pI.part.position.x * sizeOut;
+                        np.y = pI.part.position.y * sizeOut;
+                        np.z = pI.part.position.z * sizeOut;
+
+                        pI.transform.localPosition = np;
                     }
                 }
             }
@@ -395,6 +419,7 @@ public class FieldCreator : MonoBehaviour
     {
         if(p.prefab != null)
         {
+            float sizeOut = Mathf.Lerp(1, 3.325f, ((float)(size - 10) / 90));
             Vector3 sp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             sp.z = fI.transform.localPosition.z;
             zPos = sp.z;
@@ -402,6 +427,8 @@ public class FieldCreator : MonoBehaviour
             if(p.setPos)
             {
                 sp = p.position;
+                sp.x *= sizeOut;
+                sp.y *= sizeOut;
             }
 
             GameObject sP = Instantiate(p.prefab);

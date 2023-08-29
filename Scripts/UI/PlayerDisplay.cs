@@ -18,7 +18,7 @@ public class PlayerDisplay : MonoBehaviour
     int superEffectDir = 1;
     public Image dash;
 
-    public Player player;
+    public PlayerInfo player;
     Database db;
 
     public Color superNotReady = Color.red;
@@ -35,13 +35,13 @@ public class PlayerDisplay : MonoBehaviour
     {
         if(player != null)
         {
-            Stats pS = player.player;
+            Stats pS = player.player.player;
 
             int shownColor = 0;
 
-            if(pS.currentHealth > 0 && player.team >= 0 && player.team < db.teamColors.Count)
+            if(pS.currentHealth > 0 && player.player.team >= 0 && player.player.team < db.teamColors.Count)
             {
-                shownColor = player.team;
+                shownColor = player.player.team;
             }
 
             background.color = db.teamColors[shownColor];
@@ -52,13 +52,13 @@ public class PlayerDisplay : MonoBehaviour
             }
             else
             {
-                if(player.nickName == "" || player.nickName == null)
+                if(player.player.nickName == "" || player.player.nickName == null)
                 {
-                    playerName.text = "P" + player.position;
+                    playerName.text = "P" + player.player.position;
                 }
                 else
                 {
-                    playerName.text = player.nickName;
+                    playerName.text = player.player.nickName;
                 }
             }
 

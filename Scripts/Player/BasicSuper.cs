@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BasicSuper : MonoBehaviour
 {
-    Player player;
+    PlayerInfo pG;
     Rigidbody rb;
     ButtonManager bm;
 
@@ -17,7 +17,7 @@ public class BasicSuper : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        player = GetComponent<Player>();
+        pG = GetComponent<PlayerInfo>();
         rb = GetComponent<Rigidbody>();
         bm = ButtonManager.instance;
     }
@@ -25,43 +25,46 @@ public class BasicSuper : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float sP = timeTillReset / superCooldown;
-
-        if (sP > 1)
+        if (!pG.player.selection)
         {
-            sP = 1;
-        }
-        else if (sP < 0)
-        {
-            sP = 0;
-        }
+            float sP = timeTillReset / superCooldown;
 
-        player.player.superReadyPercent = sP;
-
-        if (bm.KeyDown(player.keys.super) && player.player.superAmount >= player.player.superCost && timeTillReset >= superCooldown)
-        {
-            if(super != null)
+            if (sP > 1)
             {
-                Vector3 spawnPos = transform.position;
-                spawnPos += transform.up * spawnOffset.y;
-                spawnPos += transform.right * spawnOffset.x;
-                spawnPos += transform.forward * spawnOffset.z;
-
-                GameObject go = Instantiate(super, spawnPos, transform.rotation) as GameObject;
-
-                PlayerGrab pg = go.GetComponent<PlayerGrab>();
-
-                if (pg != null)
-                {
-                    pg.player = player;
-                }
-
-                timeTillReset = 0;
-
-                player.CostSuper(player.player.superCost);
+                sP = 1;
             }
-        }
+            else if (sP < 0)
+            {
+                sP = 0;
+            }
 
-        timeTillReset += Time.deltaTime;
+            pG.player.player.superReadyPercent = sP;
+
+            if (bm.KeyDown(pG.player.keys.super) && pG.player.player.superAmount >= pG.player.player.superCost && timeTillReset >= superCooldown)
+            {
+                if (super != null)
+                {
+                    Vector3 spawnPos = transform.position;
+                    spawnPos += transform.up * spawnOffset.y;
+                    spawnPos += transform.right * spawnOffset.x;
+                    spawnPos += transform.forward * spawnOffset.z;
+
+                    GameObject go = Instantiate(super, spawnPos, transform.rotation) as GameObject;
+
+                    PlayerGrab pg = go.GetComponent<PlayerGrab>();
+
+                    if (pg != null)
+                    {
+                        pg.player = pG;
+                    }
+
+                    timeTillReset = 0;
+
+                    pG.CostSuper(pG.player.player.superCost);
+                }
+            }
+
+            timeTillReset += Time.deltaTime;
+        }        
     }
 }

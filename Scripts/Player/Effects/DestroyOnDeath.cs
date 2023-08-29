@@ -20,15 +20,18 @@ public class DestroyOnDeath : MonoBehaviour
         {
             if(pG.player != null)
             {
-                if(pG.player.player.currentHealth <= 0)
+                if(!pG.player.player.selection)
                 {
-                    if(hideInstead)
+                    if (pG.player.player.player.currentHealth <= 0)
                     {
-                        gameObject.SetActive(false);
-                    }
-                    else
-                    {
-                        Destroy(gameObject);
+                        if (hideInstead)
+                        {
+                            gameObject.SetActive(false);
+                        }
+                        else
+                        {
+                            Destroy(gameObject);
+                        }
                     }
                 }
             }

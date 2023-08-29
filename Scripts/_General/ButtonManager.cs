@@ -24,16 +24,19 @@ public class ButtonManager : MonoBehaviour
         }
     }
 
+
     // Start is called before the first frame update
     void Start()
     {
-        /*
         //Load keycodes
-        System.Array values = System.Enum.GetValues(typeof(KeyCode));
+        /*System.Array values = System.Enum.GetValues(typeof(KeyCode));
         foreach (KeyCode code in values)
-        {
-            buttonCaptures.Add(new ButtonCapture("Keycode." + code.ToString(),code));
-        }*/
+        {   
+            if(!code.ToString().Contains("JoystickButton"))
+            {
+                buttonCaptures.Add(new ButtonCapture("Keycode." + code.ToString(), code));
+            }
+        }
 
         var inputManager = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/InputManager.asset")[0];
 
@@ -65,7 +68,7 @@ public class ButtonManager : MonoBehaviour
                     }
                 }
             }
-        }     
+        }     */
     }
 
     private void Update()
@@ -281,15 +284,10 @@ public class ButtonCapture
     {
         set
         {
-            if(value.GetType() == typeof(KeyCode))
+            if (value.GetType() == typeof(KeyCode))
             {
                 keycode = (KeyCode)value;
                 type = ButtonType.KeyCode;
-            }
-            else if(value.GetType() == typeof(KeyCode))
-            {
-                axis = (string)value;
-                type = ButtonType.Axis;
             }
             else
             {
@@ -299,7 +297,7 @@ public class ButtonCapture
         }
         get
         {
-            switch(type)
+            switch (type)
             {
                 case ButtonType.KeyCode:
                     return keycode;
@@ -314,7 +312,7 @@ public class ButtonCapture
     public bool Pressed()
     {
         switch (type)
-        {            
+        {
             case ButtonType.KeyCode:
                 return Input.GetKey(keycode);
             case ButtonType.Axis:

@@ -92,9 +92,17 @@ MeshCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1650685541456586422}
   m_Material: {fileID: 13400000, guid: 1e174eb9b6b3ff846abf993e513ef9a6, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 4
+  serializedVersion: 5
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -2432090755550338912, guid: 0df4c14d1d913e14f92569e7d58b054a, type: 3}
@@ -107,9 +115,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8124347176006103352}
+  - component: {fileID: 3412256524610654839}
   - component: {fileID: -5332368240146878414}
   - component: {fileID: 3874730072440248873}
-  - component: {fileID: 3874730072440248872}
   - component: {fileID: 3874730072440248875}
   - component: {fileID: 3874730072440248865}
   - component: {fileID: 3874730072440248870}
@@ -140,6 +148,63 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3412256524610654839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5108246835623641899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cc287fc5e2d5ca48ba1ba054eb2cdd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player:
+    player:
+      name: 
+      currentHealth: 10
+      maxHealth: 10
+      movementSpeed: 50
+      bumpSpeed: 50
+      bumpReadyPercent: 1
+      superAmount: 0
+      superMax: 20
+      superCost: 10
+      superReadyPercent: 1
+      dashAmount: 2
+      dashCooldown: 3
+      dashMax: 2
+      dashReadyPercent: 1
+      character:
+        prefabs: {fileID: 0}
+        positionOffset: {x: 0, y: 0, z: 0}
+        rotationOffset: {x: 0, y: 0, z: 0}
+      lifeline:
+        prefabs: {fileID: 0}
+        positionOffset: {x: 0, y: 0, z: 0}
+        rotationOffset: {x: 0, y: 0, z: 0}
+      superName: 
+      superDescription: 
+      portraitColor: {r: 0, g: 1, b: 1, a: 1}
+      portrait: {fileID: 0}
+      icon: {fileID: 0}
+      active: 0
+      computer: 0
+    nickName: 
+    team: 0
+    position: 1
+    keys:
+      left: []
+      right: []
+      bump: []
+      super: []
+      dirShown: Up
+      dirDesc: Up
+    canMove: []
+    canBump: []
+    canSuper: []
+    selection: 0
 --- !u!114 &-5332368240146878414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164,63 +229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 566a60209bb317143957229f9459741e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
---- !u!114 &3874730072440248872
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5108246835623641899}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d962bb0c77f930c458e9d71ef2b63abb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  player:
-    name: Trigger
-    currentHealth: 20
-    maxHealth: 20
-    movementSpeed: 25
-    bumpSpeed: 0.5
-    bumpReadyPercent: 1
-    superAmount: 0
-    superMax: 20
-    superCost: 20
-    superReadyPercent: 1
-    dashAmount: 2
-    dashCooldown: 0.55
-    dashMax: 2
-    dashReadyPercent: 1
-    character:
-      prefabs: {fileID: 5108246835623641899}
-      positionOffset: {x: 0, y: 4.2, z: 0}
-      rotationOffset: {x: 0, y: 0, z: 0}
-    lifeline:
-      prefabs: {fileID: 5474321750483856587, guid: b00e082693c34214a8f771b7d5e4a320,
-        type: 3}
-      positionOffset: {x: 0, y: 0, z: 0}
-      rotationOffset: {x: 0, y: 0, z: 0}
-    superName: Rapid Fire
-    superDescription: Quickly shoots more empowered bullets in rapid succession
-    portraitColor: {r: 0.7264151, g: 0.5722232, b: 0.5780803, a: 1}
-    portrait: {fileID: 2800000, guid: abd7b48ce71de964dadcf7d8372c0ebd, type: 3}
-    icon: {fileID: 2800000, guid: abd7b48ce71de964dadcf7d8372c0ebd, type: 3}
-    active: 1
-    computer: 0
-  nickName: 
-  team: 0
-  position: 1
-  keys:
-    left: 97
-    right: 100
-    bump: 119
-    super: 115
-    dirShown: Up
-    dirDesc: Up
-  canMove: []
-  canBump: []
-  canSuper: []
+  player: {fileID: 3412256524610654839}
 --- !u!54 &3874730072440248875
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -228,10 +237,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5108246835623641899}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 10000
   m_Drag: 0
   m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
