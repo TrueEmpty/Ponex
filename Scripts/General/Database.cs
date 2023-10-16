@@ -78,11 +78,31 @@ public class Database : MonoBehaviour
         }
         else
         {
-            PlayerAddCheck();
+            bool canAdd = false;
 
             if(cS == null)
             {
                 cS = CharacterSelect.instance;
+            }
+            else
+            {
+                if(cS.gameObject.activeInHierarchy)
+                {
+                    canAdd = true;
+                }
+            }
+
+            if(!canAdd)
+            {
+                if(mm.GetOpenMenu().title == "Main Menu")
+                {
+                    canAdd = true;
+                }
+            }
+
+            if(canAdd)
+            {
+                PlayerAddCheck();
             }
         }
     }

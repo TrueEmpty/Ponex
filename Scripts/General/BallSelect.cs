@@ -52,9 +52,76 @@ public class BallSelect : MonoBehaviour
             ballName.color = Color.black;
         }
 
+        #region Buttons
+        List<Player> rP = db.players.FindAll(x => !x.computer && x.WithinLastUpdate);
 
+        List<string> l = new List<string>();
+        List<string> r = new List<string>();
+        List<string> u = new List<string>();
+        List<string> d = new List<string>();
+        List<string> g = new List<string>();
+        List<string> x = new List<string>();
 
-        if(lastShownBall != db.selectedBall)
+        if (rP.Count > 0)
+        {
+            for (int z = 0; z < rP.Count; z++)
+            {
+                l.Add(rP[z].buttons.left);
+                r.Add(rP[z].buttons.right);
+                u.Add(rP[z].buttons.up);
+                d.Add(rP[z].buttons.down);
+                g.Add(rP[z].buttons.confirm);
+                x.Add(rP[z].buttons.cancel);
+            }
+        }
+
+        if (bm.KeyDown(r) || bm.KeyDown(u))
+        {
+            db.selectedBall++;
+
+            if(db.selectedBall >= db.balls.Count)
+            {
+                db.selectedBall = -1;
+            }
+
+            for (int i = 0; i < db.players.Count; i++)
+            {
+                db.players[i].lastGridUpdate = Time.time;
+            }
+        }
+        else if (bm.KeyDown(l) || bm.KeyDown(d))
+        {
+            db.selectedBall--;
+
+            if (db.selectedBall < -1)
+            {
+                db.selectedBall = db.balls.Count - 1;
+            }
+
+            for (int i = 0; i < db.players.Count; i++)
+            {
+                db.players[i].lastGridUpdate = Time.time;
+            }
+        }
+        else if (bm.KeyDown(g))
+        {
+            //Start game
+            db.CharactersPicked("balls");
+        }
+        else if (bm.KeyDown(x))
+        {
+            for(int i = 0; i < db.players.Count; i++)
+            {
+                db.players[i].lastGridUpdate = Time.time;
+                db.players[i].characterSelected = false;
+                db.players[i].gridLock = false;
+            }
+
+            mm.BackMenu();
+        }
+        #endregion
+
+        if (lastShownBall != db.selectedBall)
         {
             if(db.selectedBall >= 0 && db.selectedBall < db.balls.Count)
             {
