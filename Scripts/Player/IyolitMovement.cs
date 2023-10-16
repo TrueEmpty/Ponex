@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerGrab))]
 public class IyolitMovement : MonoBehaviour
 {
+    Database db;
     public PlayerGrab pG;
     ButtonManager bm;
     public List<Transform> positions = new List<Transform>();
@@ -27,12 +28,13 @@ public class IyolitMovement : MonoBehaviour
     {
         pG = GetComponent<PlayerGrab>();
         bm = ButtonManager.instance;
+        db = Database.instance;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(!pG.player.player.selection)
+        if(db.gameStart && pG.player.currentHealth > 0)
         {
             if (ready)
             {
@@ -70,7 +72,7 @@ public class IyolitMovement : MonoBehaviour
 
                         if (moving)
                         {
-                            percentDis += pG.player.Speed * Time.deltaTime;
+                            percentDis += pG.player.movementSpeed * Time.deltaTime;
                             percentFC = 1 - (Mathf.Abs(.5f - percentDis) * 2);
 
                             if (percentDis < 1)
@@ -89,7 +91,7 @@ public class IyolitMovement : MonoBehaviour
 
                     if (currentPosition == lastPosition && !moving)
                     {
-                        if (bm.KeyDown(pG.player.player.keys.right))
+                        if (bm.KeyDown(pG.player.buttons.Right(pG.player.facing)))
                         {
                             currentPosition++;
 
@@ -99,7 +101,7 @@ public class IyolitMovement : MonoBehaviour
                             }
                         }
 
-                        if (bm.KeyDown(pG.player.player.keys.left))
+                        if (bm.KeyDown(pG.player.buttons.Left(pG.player.facing)))
                         {
                             currentPosition--;
 
@@ -124,30 +126,30 @@ public class IyolitMovement : MonoBehaviour
                     superOn -= Time.deltaTime;
                 }
 
-                bumpActive = bm.KeyPressed(pG.player.player.keys.bump);
+                bumpActive = bm.KeyPressed(pG.player.buttons.Up(pG.player.facing));
 
                 if (superCooldownTimer < superCooldown)
                 {
                     superCooldownTimer += Time.deltaTime;
                 }
 
-                pG.player.player.player.superReadyPercent = superCooldownTimer / superCooldown;
+                pG.player.super.readyPercent = superCooldownTimer / superCooldown;
 
-                if (pG.player.player.player.superReadyPercent < 0)
+                if (pG.player.super.readyPercent < 0)
                 {
-                    pG.player.player.player.superReadyPercent = 0;
+                    pG.player.super.readyPercent = 0;
                 }
-                else if (pG.player.player.player.superReadyPercent > 1)
+                else if (pG.player.super.readyPercent > 1)
                 {
-                    pG.player.player.player.superReadyPercent = 1;
+                    pG.player.super.readyPercent = 1;
                 }
 
 
-                if (bm.KeyDown(pG.player.player.keys.super) && !SuperOn() && pG.player.CanSuper && pG.player.player.player.superAmount >= pG.player.player.player.superCost && pG.player.player.player.superReadyPercent >= 1)
+                if (bm.KeyDown(pG.player.buttons.Down(pG.player.facing)) && !SuperOn() && pG.player.CanSuper && pG.player.super.amount >= pG.player.super.cost && pG.player.super.readyPercent >= 1)
                 {
                     superOn = superTime;
                     superCooldownTimer = 0;
-                    pG.player.CostSuper(pG.player.player.player.superCost);
+                    //pG.player.CostSuper(pG.player.player.player.superCost);
                 }
             }
         }

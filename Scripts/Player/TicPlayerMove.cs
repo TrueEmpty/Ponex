@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TicPlayerMove : MonoBehaviour
 {
-    float canMove = 1;
+    /*float canMove = 1;
     PlayerInfo p;
     ButtonManager bm;
 
@@ -197,5 +197,5 @@ public class TicPlayerMove : MonoBehaviour
                 }
                 break;
         }
-    }
+    }*/
 }

@@ -4,15 +4,32 @@ using UnityEngine;
 
 public class PlayerGrab : MonoBehaviour
 {
-    public PlayerInfo player;
+    Database db;
+    public int playerIndex = -1;
 
-    private void Start()
+    // Start is called before the first frame update
+    void Start()
     {
-        PlayerInfo pl = GetComponent<PlayerInfo>();
+        db = Database.instance;
+    }
 
-        if(pl != null)
+    public Player player
+    {
+        get 
         {
-            player = pl;
+            Player result = null;
+
+            if(playerIndex >= 0 && playerIndex < db.players.Count)
+            {
+                result = db.players[playerIndex];
+            }
+
+            return result;
         }
+    }
+
+    public bool IsLinked()
+    {
+        return  playerIndex >= 0 && playerIndex < db.players.Count;
     }
 }

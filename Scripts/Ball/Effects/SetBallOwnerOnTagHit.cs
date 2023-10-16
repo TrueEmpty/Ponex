@@ -16,13 +16,13 @@ public class SetBallOwnerOnTagHit : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (targetTags.Contains(collision.transform.tag))
+        if (targetTags.Exists(x => x.ToLower().Trim() == collision.transform.tag.ToLower().Trim()))
         {
             PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
 
             if(tpG != null)
             {
-                pG.player = tpG.player;
+                tpG.playerIndex = pG.playerIndex;
             }
         }
     }

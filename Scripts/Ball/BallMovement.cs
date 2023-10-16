@@ -17,16 +17,6 @@ public class BallMovement : MonoBehaviour
         bI = GetComponent<BallInfo>();
     }
 
-    public void BeginMovement()
-    {
-        Vector3 tor = new Vector3(0, 0, Random.Range(-bI.ball.startSpeed * 10, bI.ball.startSpeed * 10) * bI.ball.speedIncrease);
-        rb.AddTorque(tor);
-        Vector3 dir = new Vector3(Random.Range(-bI.ball.startSpeed, bI.ball.startSpeed) * (bI.ball.speedIncrease + 1), Random.Range(-bI.ball.startSpeed, bI.ball.startSpeed) * (bI.ball.speedIncrease + 1), 0);
-        rb.AddRelativeForce(dir);
-
-        moveReady = true;
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -35,8 +25,12 @@ public class BallMovement : MonoBehaviour
             if(moveReady)
             {
                 DeadZoneCheck();
-                MinCheck();
-                MaxCheck();
+
+                if(bI.speedCap)
+                {
+                    MinCheck();
+                    MaxCheck();
+                }
             }
             else
             {
@@ -45,13 +39,21 @@ public class BallMovement : MonoBehaviour
         }        
     }
 
+    public void BeginMovement()
+    {
+        Vector3 dir = new Vector3(Random.Range(-bI.ball.startSpeed * 2, bI.ball.startSpeed * 2), Random.Range(-bI.ball.startSpeed * 2, bI.ball.startSpeed * 2), 0);
+        rb.velocity = dir;
+
+        moveReady = true;
+    }
+
     void DeadZoneCheck()
     {
-        float halfStartSpeed = (bI.ball.startSpeed / 2);
+        float halfStartSpeed = (bI.ball.startSpeed / 3);
 
         if (Mathf.Abs(rb.velocity.x) < halfStartSpeed && Mathf.Abs(rb.velocity.y) < halfStartSpeed)
         {
-            rb.velocity *= 2;
+            rb.velocity *= 2 * Time.deltaTime;
         }
     }
 
@@ -89,16 +91,15 @@ public class BallMovement : MonoBehaviour
         rb.velocity = newVelocity;
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnCollisionExit(Collision collision)
     {
-        //Vector3 initalSpeed = rb.velocity;
         switch (collision.transform.tag)
         {
             case "Player":
                 rb.velocity *= (bI.ball.speedIncrease * 1.2f);
                 break;
             case "Lifeline":
-                rb.velocity *= (bI.ball.speedIncrease / 2);
+                rb.velocity *= (bI.ball.speedIncrease * 2);
                 break;
             case "Ball":
                 break;
@@ -106,19 +107,27 @@ public class BallMovement : MonoBehaviour
                 PlayerGrab pG = collision.gameObject.GetComponent<PlayerGrab>();
                 if(pG != null)
                 {
-                    rb.velocity *= (bI.ball.speedIncrease + pG.player.BumpSpeed);
+                    rb.velocity *= (pG.player.pushBack / 100) * 3;
                 }
                 break;
             case "Wall":
-                rb.velocity *= (bI.ball.speedIncrease/1.25f);
+                rb.velocity *= (bI.ball.speedIncrease*1.25f);
                 break;
         }
 
-        if(transform.childCount > 0)
+        if (bI.documentColisions)
         {
-            for(int i = 0; i < transform.childCount; i++)
+            bI.futureColisions.Add(collision);
+            bI.futureColisionPoints.Add(collision.collider.transform.position);
+        }
+        else
+        {
+            if (transform.childCount > 0)
             {
-                transform.GetChild(i).SendMessage("Ball_Hit", collision.gameObject,SendMessageOptions.DontRequireReceiver);
+                for (int i = 0; i < transform.childCount; i++)
+                {
+                    transform.GetChild(i).SendMessage("Ball_Hit", collision.gameObject, SendMessageOptions.DontRequireReceiver);
+                }
             }
         }
     }

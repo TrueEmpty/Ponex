@@ -55,7 +55,7 @@ public class RepeatSpawn : MonoBehaviour
 
             if (npg != null)
             {
-                npg.player = pG.player;
+                npg.playerIndex = pG.playerIndex;
             }
 
             timeTillReset = 0;

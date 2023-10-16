@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerGrab))]
 public class HealOnLifelineHit : MonoBehaviour
 {
-    public PlayerGrab pG;
+    PlayerGrab pG;
     public BallInfo bI;
 
     // Start is called before the first frame update

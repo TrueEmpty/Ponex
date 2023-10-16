@@ -13,6 +13,7 @@ public class Ball
     public float speedIncrease = .5f;
 
     public int damage = 1;
+
     public Ball()
     {
 
@@ -26,5 +27,7 @@ public class Ball
         startSpeed = ball.startSpeed;
         maxSpeed = ball.maxSpeed;
         speedIncrease = ball.speedIncrease;
+
+        damage = ball.damage;
     }
 }

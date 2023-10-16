@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +10,7 @@ public class Field
     public string arthur = "";
     public UniqueId uid = new UniqueId();
 
-    public int size = 10; //smallest should be 10
+    public int size = 10; //Should be a range from 0-100
 
     public List<Part> parts = new List<Part>();
 
@@ -18,9 +18,16 @@ public class Field
     public Texture icon;
     public bool active = true;
 
+    public Texture backgroundMaterial;
+    public Color backgroundColor = Color.black;
+    public float backgroundMatallic = .91f;
+    public float backgroundSmoothness = .74f;
+
     public Field()
     {
+
     }
+
     public Field(bool setActive)
     {
         active = setActive;
@@ -52,7 +59,7 @@ public class Field
 
     public Field(string fromString)
     {
-        FromString(fromString);
+        //FromString(fromString);
     }
 
     public override string ToString()
@@ -73,9 +80,9 @@ public class Field
 
         if (parts.Count > 0)
         {
-            for(int i = 0; i < parts.Count; i++)
+            for (int i = 0; i < parts.Count; i++)
             {
-                result += parts[i].ToString().Replace('|',']');
+                result += parts[i].ToString().Replace('|', ']');
 
                 if (i < parts.Count - 1)
                 {
@@ -85,7 +92,7 @@ public class Field
         }
         result += "|";
 
-        if(portrait != null)
+        if (portrait != null)
         {
             result += portrait.name;
         }
@@ -102,7 +109,7 @@ public class Field
         return result;
     }
 
-    public void FromString(string str)
+    /*public void FromString(string str)
     {
         int sai = 0;
         string[] sA = str.Split('|');
@@ -119,7 +126,7 @@ public class Field
         size = int.Parse(sA[sai]);
         sai++;
 
-        if(sA[sai] != null && sA[sai] != "")
+        if (sA[sai] != null && sA[sai] != "")
         {
             string[] pA = sA[sai].Split(',');
 
@@ -134,11 +141,11 @@ public class Field
         }
         sai++;
 
-        if(sA[sai] != null && sA[sai] != "")
+        if (sA[sai] != null && sA[sai] != "")
         {
             portrait = (Texture)Resources.Load("Portraits/Fields/" + sA[sai]);
 
-            if(portrait == null)
+            if (portrait == null)
             {
                 portrait = Database.instance.default_Texture;
             }
@@ -166,7 +173,7 @@ public class Field
 
         active = bool.Parse(sA[sai]);
         sai++;
-    }
+    }*/
 
     public List<Part> GetSpawns(bool includeBall = true, bool includeCharacters = true)
     {
@@ -174,15 +181,15 @@ public class Field
 
         if (parts.Count > 0)
         {
-            if(includeBall && includeCharacters)
+            if (includeBall && includeCharacters)
             {
                 result = parts.FindAll(x => x.type.ToLower() == "spawn");
             }
-            else if(includeBall)
+            else if (includeBall)
             {
                 result = parts.FindAll(x => x.type.ToLower() == "spawn" && x.name.ToLower() == "ball");
             }
-            else if(includeCharacters)
+            else if (includeCharacters)
             {
                 result = parts.FindAll(x => x.type.ToLower() == "spawn" && x.name.ToLower() != "ball");
             }
@@ -198,28 +205,10 @@ public class Field
         if (parts.Count > 0)
         {
             List<Part> fp = GetSpawns(false);
-
-            if(fp.Count > 0)
-            {
-                if(fp.Exists(x=> x.name == "P1"))
-                {
-                    result++;
-                }
-                if(fp.Exists(x=> x.name == "P2"))
-                {
-                    result++;
-                }
-                if(fp.Exists(x=> x.name == "P3"))
-                {
-                    result++;
-                }
-                if(fp.Exists(x=> x.name == "P4"))
-                {
-                    result++;
-                }
-            }
+            result = fp.Count;
         }
 
         return result;
     }
 }
+

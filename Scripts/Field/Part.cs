@@ -19,17 +19,55 @@ public class Part
     public Vector3 size;
 
     public Texture icon;
+    public Texture material;
+    public Color material_Color = Color.white;
+    public float material_Matallic = .72f;
+    public float material_Smoothness = .5f;
 
     public UniqueId uid = new UniqueId();
 
     //Edit
     public bool scaling = false;
     public bool canMove = true;
-    public bool soloType = true;
     public bool setPos = false;
+    public bool canBeBorder = false;
+
+    public GameObject spawned;
 
     public Part()
     {
+    }
+
+    public Part(Part p)
+    {
+        //Pre Setup
+        name = p.name;
+        type = p.type;
+
+        prefab = p.prefab;
+
+        components = p.components; //This will be script#perameters
+
+        //Setup (can change)
+        position = p.position;
+        rotation = p.rotation;
+        size = p.size;
+
+        icon = p.icon;
+        material = p.material;
+        material_Color = p.material_Color;
+        material_Matallic = p.material_Matallic;
+        material_Smoothness = p.material_Smoothness;
+
+        uid = new UniqueId();
+
+        //Edit
+        scaling = p.scaling;
+        canMove = p.canMove;
+        setPos = p.setPos;
+        canBeBorder = p.canBeBorder;
+
+        spawned = p.spawned;
     }
 
     public void CreateUID()
@@ -164,12 +202,12 @@ public class Part
 
             if (icon == null)
             {
-                icon = Database.instance.default_Texture;
+                //icon = Database.instance.default_Texture;
             }
         }
         else
         {
-            icon = Database.instance.default_Texture;
+            //icon = Database.instance.default_Texture;
         }
         sai++;
     }

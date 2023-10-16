@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class GarmenAimFire : MonoBehaviour
 {
-    PlayerGrab pG;
+    PlayerGrab pg;
     ButtonManager bm;
+    Database db;
 
     public Transform hub;
     public float speed = 1;
@@ -14,32 +15,28 @@ public class GarmenAimFire : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        pG = GetComponent<PlayerGrab>();
+        pg = GetComponent<PlayerGrab>();
         bm = ButtonManager.instance;
+        db = Database.instance;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(!pG.player.player.selection)
+        if(db.gameStart && pg.player.currentHealth > 0 && pg.player.super.readyPercent == 0)
         {
-            if(pG.player.CanBump)
+            if(pg.player.CanMove)
             {
                 int rotDir = 0;
 
-                if (bm.KeyPressed(pG.player.player.keys.right) && rotAmount > -90)
+                if (bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) && rotAmount > -85)
                 {
                     rotDir -= 1;
                 }
 
-                if (bm.KeyPressed(pG.player.player.keys.left) && rotAmount < 90)
+                if (bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) && rotAmount < 85)
                 {
                     rotDir += 1;
-                }
-
-                if (pG.player.player.keys.dirShown == "D" || pG.player.player.keys.dirShown == "R")
-                {
-                    rotDir *= -1;
                 }
 
                 hub.Rotate(Vector3.forward * rotDir * Time.deltaTime * speed, Space.Self);
