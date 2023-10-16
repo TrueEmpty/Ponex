@@ -101,7 +101,7 @@ public class TeamSelect : MonoBehaviour
                             x.Add(p.buttons.cancel);
                         }
 
-
+                        Player partner = null;
                         if (bm.KeyDown(r) || bm.KeyDown(u))
                         {
                             p.team++;
@@ -109,6 +109,13 @@ public class TeamSelect : MonoBehaviour
                             if(p.team > 4)
                             {
                                 p.team = 1;
+                            }
+
+                            partner = db.players.Find(x=> x.facing == p.facing && x != p);
+
+                            if(partner != null)
+                            {
+                                partner.team = p.team;
                             }
                         }
                         else if(bm.KeyDown(l) || bm.KeyDown(d))
@@ -118,6 +125,13 @@ public class TeamSelect : MonoBehaviour
                             if (p.team < 1)
                             {
                                 p.team = 4;
+                            }
+
+                            partner = db.players.Find(x => x.facing == p.facing && x != p);
+
+                            if (partner != null)
+                            {
+                                partner.team = p.team;
                             }
                         }
                         else if(bm.KeyDown(g))

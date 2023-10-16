@@ -7,6 +7,8 @@ public class Ball
 {
     public string name = "";
     public GameObject prefab;
+    public GameObject selection;
+    public Color color = Color.red;
 
     public float startSpeed = 1;
     public float maxSpeed = 2;
@@ -23,6 +25,7 @@ public class Ball
     {
         name = ball.name;
         prefab = ball.prefab;
+        selection = ball.selection;
 
         startSpeed = ball.startSpeed;
         maxSpeed = ball.maxSpeed;

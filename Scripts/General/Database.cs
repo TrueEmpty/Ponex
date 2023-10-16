@@ -16,10 +16,10 @@ public class Database : MonoBehaviour
     #region Fields
     public List<Field> fields;
     public List<Part> parts;
-    public List<GameObject> balls;
+    public List<Ball> balls;
 
     public int selectedField = 0;
-    public int selectedBall = 0;
+    public int selectedBall = -1;
 
     public GameObject outofBounds;
     public GameObject background;
@@ -331,6 +331,20 @@ public class Database : MonoBehaviour
                 {
                     //Start Game
                 }
+                break;
+            case "teams":
+                if (ballSelect)
+                {
+                    mm.OpenMenu("Ball Select");
+                }
+                else
+                {
+                    //Start Game
+                }
+                break;
+            case "balls":
+                    //Start Game
+
                 break;
         }
 
