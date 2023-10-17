@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Database : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class Database : MonoBehaviour
     public GameObject outofBounds;
     public GameObject background;
     public GameObject fieldObj;
+    public Text gameplayinfo;
     #endregion
 
     #region Players
@@ -453,7 +455,7 @@ public class Database : MonoBehaviour
                     p.spawnedPlayer = Instantiate(p.character.prefabs);
                     p.spawnedPlayer.transform.position = pPos;
                     p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
-                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * p.character.positionOffset.y;
+                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * (p.character.positionOffset.y * (p.position + 1));
                     p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
                     p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
                     PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
@@ -486,13 +488,54 @@ public class Database : MonoBehaviour
             #endregion
 
             #region Add Ball
+            int sB = selectedBall;
 
+            if (selectedBall < 0 || selectedBall >= balls.Count)
+            {
+                sB = Random.Range(0, fields.Count);
+            }
+
+            Ball ball = balls[sB];
+
+            GameObject bSpawned = Instantiate(ball.prefab);
+            BallInfo bI = bSpawned.GetComponent<BallInfo>();
+
+            if (bI != null)
+            {
+                bI.ballReady = false;
+            }
+            yield return null;
             #endregion
 
             #region Start Count Down
+            gameplayinfo.gameObject.SetActive(true);
+            int countdown = 5;
 
+            for(int c = countdown; c >= -1; c--)
+            {
+                if(c > 3)
+                {
+                    gameplayinfo.text = "Ready?";
+                }
+                else if(c >= 0)
+                {
+                    gameplayinfo.text = c.ToString();
+                }
+                else
+                {
+                    gameplayinfo.text = "Go!";
+                }
+
+                yield return new WaitForSeconds(1);
+            }
+
+            gameplayinfo.gameObject.SetActive(false);
             #endregion
 
+            if (bI != null)
+            {
+                bI.ballReady = true;
+            }
             gameStart = true;
             yield return null;
         }
