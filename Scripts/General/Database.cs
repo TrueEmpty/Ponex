@@ -21,6 +21,7 @@ public class Database : MonoBehaviour
 
     public int selectedField = 0;
     public int selectedBall = -1;
+    int fieldSize = 0;
 
     public GameObject outofBounds;
     public GameObject background;
@@ -80,6 +81,7 @@ public class Database : MonoBehaviour
         if(gameStart)
         {
             CheckPlayerConstrants();
+            BallCheck();
         }
         else
         {
@@ -280,6 +282,37 @@ public class Database : MonoBehaviour
         }
     }
 
+    void BallCheck()
+    {
+        GameObject[] allBalls = GameObject.FindGameObjectsWithTag("Ball");
+
+        if(allBalls.Length <= 0)
+        {
+            int sB = selectedBall;
+
+            if (selectedBall < 0 || selectedBall >= balls.Count)
+            {
+                sB = Random.Range(0, fields.Count);
+            }
+
+            if (selectedBall == -1)
+            {
+                selectedBall = sB;
+            }
+
+            Ball ball = balls[sB];
+
+            GameObject bSpawned = Instantiate(ball.prefab);
+            bSpawned.transform.position = new Vector3(0, 0, fieldSize);
+            BallInfo bI = bSpawned.GetComponent<BallInfo>();
+
+            if (bI != null)
+            {
+                bI.ballReady = true;
+            }
+        }
+    }
+
     public Player RandomCharacter(bool actives = true)
     {
         List<Player> avaliableChar = characters;
@@ -395,8 +428,8 @@ public class Database : MonoBehaviour
     IEnumerator StartGame()
     {
         mm.OpenMenu("Playing");
+        yield return null;
 
-        int fieldSize = 0;
         Vector3 pPos = Vector3.zero;
         Vector3 fRot = Vector3.zero;
 
@@ -411,11 +444,12 @@ public class Database : MonoBehaviour
             }
 
             Field field = fields[sF];
+            fieldSize = field.size + 10;
 
             GameObject fSpawned = Instantiate(fieldObj);
+            fSpawned.transform.position = new Vector3(0, 0, fieldSize);
             Field_Info fI = fSpawned.GetComponent<Field_Info>();
             fI.field = field;
-            fieldSize = field.size + 10;
             yield return null;
             #endregion
 
@@ -454,10 +488,10 @@ public class Database : MonoBehaviour
                 {
                     p.spawnedPlayer = Instantiate(p.character.prefabs);
                     p.spawnedPlayer.transform.position = pPos;
+                    p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
                     p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
                     p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * (p.character.positionOffset.y * (p.position + 1));
                     p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
-                    p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
                     PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
 
                     if(pG != null)
@@ -471,10 +505,10 @@ public class Database : MonoBehaviour
                 {
                     p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
                     p.spawnedLifeline.transform.position = pPos;
+                    p.spawnedLifeline.transform.rotation = Quaternion.Euler(fRot + p.lifeline.rotationOffset);
                     p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.right * p.lifeline.positionOffset.x;
                     p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.up * p.lifeline.positionOffset.y;
                     p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.forward * p.lifeline.positionOffset.z;
-                    p.spawnedLifeline.transform.rotation = Quaternion.Euler(fRot + p.lifeline.rotationOffset);
                     PlayerGrab pG = p.spawnedLifeline.GetComponent<PlayerGrab>();
 
                     if (pG != null)
@@ -495,9 +529,15 @@ public class Database : MonoBehaviour
                 sB = Random.Range(0, fields.Count);
             }
 
+            if(selectedBall == -1)
+            {
+                selectedBall = sB;
+            }
+
             Ball ball = balls[sB];
 
             GameObject bSpawned = Instantiate(ball.prefab);
+            bSpawned.transform.position = new Vector3(0, 0, fieldSize);
             BallInfo bI = bSpawned.GetComponent<BallInfo>();
 
             if (bI != null)
@@ -510,8 +550,9 @@ public class Database : MonoBehaviour
             #region Start Count Down
             gameplayinfo.gameObject.SetActive(true);
             int countdown = 5;
+            yield return null;
 
-            for(int c = countdown; c >= -1; c--)
+            for (int c = countdown; c >= -1; c--)
             {
                 if(c > 3)
                 {
@@ -525,8 +566,7 @@ public class Database : MonoBehaviour
                 {
                     gameplayinfo.text = "Go!";
                 }
-
-                yield return new WaitForSeconds(1);
+                yield return new WaitForSecondsRealtime(1);
             }
 
             gameplayinfo.gameObject.SetActive(false);

@@ -62,6 +62,7 @@ public class TeamSelect : MonoBehaviour
 
                     if (p.WithinLastUpdate && !p.characterSelected)
                     {
+                        List<Player> rP = new List<Player>();
                         List<string> l = new List<string>();
                         List<string> r = new List<string>();
                         List<string> u = new List<string>();
@@ -75,7 +76,7 @@ public class TeamSelect : MonoBehaviour
 
                             if (fC == i)
                             {
-                                List<Player> rP = db.players.FindAll(x => x.characterSelected && !x.computer && x.WithinLastUpdate);
+                                rP = db.players.FindAll(x => x.characterSelected && !x.computer && x.WithinLastUpdate);
 
                                 if (rP.Count > 0)
                                 {
@@ -104,6 +105,14 @@ public class TeamSelect : MonoBehaviour
                         Player partner = null;
                         if (bm.KeyDown(r) || bm.KeyDown(u))
                         {
+                            if (rP.Count > 0)
+                            {
+                                for (int rpl = 0; rpl < rP.Count; rpl++)
+                                {
+                                    rP[rpl].lastGridUpdate = Time.time;
+                                }
+                            }
+
                             p.team++;
 
                             if(p.team > 4)
@@ -120,6 +129,14 @@ public class TeamSelect : MonoBehaviour
                         }
                         else if(bm.KeyDown(l) || bm.KeyDown(d))
                         {
+                            if (rP.Count > 0)
+                            {
+                                for (int rpl = 0; rpl < rP.Count; rpl++)
+                                {
+                                    rP[rpl].lastGridUpdate = Time.time;
+                                }
+                            }
+
                             p.team--;
 
                             if (p.team < 1)
@@ -136,6 +153,14 @@ public class TeamSelect : MonoBehaviour
                         }
                         else if(bm.KeyDown(g))
                         {
+                            if (rP.Count > 0)
+                            {
+                                for (int rpl = 0; rpl < rP.Count; rpl++)
+                                {
+                                    rP[rpl].lastGridUpdate = Time.time;
+                                }
+                            }
+
                             p.lastGridUpdate = Time.time;
                             p.characterSelected = true;
 
@@ -165,6 +190,14 @@ public class TeamSelect : MonoBehaviour
                         }
                         else if (bm.KeyDown(x))
                         {
+                            if (rP.Count > 0)
+                            {
+                                for (int rpl = 0; rpl < rP.Count; rpl++)
+                                {
+                                    rP[rpl].lastGridUpdate = Time.time;
+                                }
+                            }
+
                             p.lastGridUpdate = Time.time;
 
                             if (p.characterSelected)

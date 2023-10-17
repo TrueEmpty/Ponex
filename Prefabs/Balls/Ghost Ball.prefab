@@ -62,6 +62,8 @@ MonoBehaviour:
   ball:
     name: Ball
     prefab: {fileID: 0}
+    selection: {fileID: 0}
+    color: {r: 1, g: 0, b: 0, a: 1}
     startSpeed: 1
     maxSpeed: 4
     speedIncrease: 1.25
@@ -71,7 +73,7 @@ MonoBehaviour:
   documentColisions: 0
   tolorance: 0.05
   ttR: 0
-  ballReady: 1
+  ballReady: 0
   checkStuck: 1
   speedCap: 1
   projectionOn: 1

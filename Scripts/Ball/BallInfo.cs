@@ -6,6 +6,7 @@ public class BallInfo : MonoBehaviour
 {
     public Ball ball;
 
+    Database db;
     public GameObject anchor;
     [SerializeField]
     public List<Collision> futureColisions = new List<Collision>();
@@ -36,57 +37,61 @@ public class BallInfo : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        db = Database.instance;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(anchor == null)
+        if(db.gameStart)
         {
-            Destroy(gameObject);
-        }
-
-        if(ballReady)
-        {
-            if(checkStuck)
+            if (anchor == null)
             {
-                StuckInAxis();
+                Destroy(gameObject);
             }
 
-            if (!runProjection)
+            if (ballReady)
             {
-                if(projectionOn == true)
+                if (checkStuck)
                 {
-                    runProjection = true;
-                    StartCoroutine(RunProjection());
+                    StuckInAxis();
                 }
-            }
 
-            if(showFutureCollisions)
-            {
-                if(futureColisionPoints.Count > 0)
+                if (!runProjection)
                 {
-                    for(int i = 0; i < futureColisionPoints.Count; i++)
+                    if (projectionOn == true)
                     {
-                        Vector3 cP = futureColisionPoints[i];
+                        runProjection = true;
+                        StartCoroutine(RunProjection());
+                    }
+                }
 
-                        GameObject cG = GameObject.CreatePrimitive(PrimitiveType.Cube);
-
-                        GameObject oldHp = GameObject.Find("Hit Point: " + i);
-
-                        if(oldHp != null)
+                if (showFutureCollisions)
+                {
+                    if (futureColisionPoints.Count > 0)
+                    {
+                        for (int i = 0; i < futureColisionPoints.Count; i++)
                         {
-                            Destroy(oldHp);
+                            Vector3 cP = futureColisionPoints[i];
+
+                            GameObject cG = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+                            GameObject oldHp = GameObject.Find("Hit Point: " + i);
+
+                            if (oldHp != null)
+                            {
+                                Destroy(oldHp);
+                            }
+
+                            cG.name = "Hit Point: " + i;
+                            cG.layer = 7;
+
+                            cG.GetComponent<Renderer>().material = gameObject.GetComponent<Renderer>().material;
+                            cG.GetComponent<Renderer>().material.color = Color.magenta;
+                            cG.transform.localScale = Vector3.one * 5;
+                            cG.transform.position = cP;
+                            Destroy(cG, 1);
                         }
-
-                        cG.name = "Hit Point: " + i;
-                        cG.layer = 7;
-
-                        cG.GetComponent<Renderer>().material = gameObject.GetComponent<Renderer>().material;
-                        cG.GetComponent<Renderer>().material.color = Color.magenta;
-                        cG.transform.localScale = Vector3.one * 5;
-                        cG.transform.position = cP;
-                        Destroy(cG, 1);
                     }
                 }
             }

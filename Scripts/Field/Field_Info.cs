@@ -52,22 +52,22 @@ public class Field_Info : MonoBehaviour
             GameObject oob = Instantiate(db.outofBounds);
             oob.transform.parent = transform;
 
-            Vector3 oobLoc = new Vector3(0, (fs / 2) + 1, 0);
-            Vector3 oobScale = new Vector3(fs + 3, 1, 1);
+            Vector3 oobLoc = new Vector3(0, ((fs+10) / 2) + 1, 0);
+            Vector3 oobScale = new Vector3((fs + 10) + 3, 1, 1);
 
             switch (i)
             {
                 case 1://Right
-                    oobLoc = new Vector3((fs / 2) + 1, 0, 0);
-                    oobScale = new Vector3(1, fs + 3, 1);
+                    oobLoc = new Vector3(((fs + 10) / 2) + 1, 0, 0);
+                    oobScale = new Vector3(1, (fs + 10) + 3, 1);
                     break;
                 case 2://Down
-                    oobLoc = new Vector3(0, -((fs / 2) + 1), 0);
-                    oobScale = new Vector3(fs + 3, 1, 1);
+                    oobLoc = new Vector3(0, -(((fs + 10) / 2) + 1), 0);
+                    oobScale = new Vector3((fs + 10) + 3, 1, 1);
                     break;
                 case 3://Left
-                    oobLoc = new Vector3(-((fs / 2) + 1), 0, 0);
-                    oobScale = new Vector3(1, fs + 3, 1);
+                    oobLoc = new Vector3(-(((fs + 10) / 2) + 1), 0, 0);
+                    oobScale = new Vector3(1, (fs + 10) + 3, 1);
                     break;
             }
 

@@ -7,6 +7,7 @@ public class BallMovement : MonoBehaviour
 {
     Rigidbody rb;
     BallInfo bI;
+    Database db;
 
     bool moveReady = false;
 
@@ -15,12 +16,13 @@ public class BallMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         bI = GetComponent<BallInfo>();
+        db = Database.instance;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(bI.ballReady)
+        if(bI.ballReady && db.gameStart)
         {
             if(moveReady)
             {

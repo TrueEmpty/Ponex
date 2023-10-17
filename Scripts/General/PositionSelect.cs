@@ -134,6 +134,7 @@ public class PositionSelect : MonoBehaviour
                 #region Set Position
                 if(p.WithinLastUpdate && !p.characterSelected)
                 {
+                    List<Player> rP = new List<Player>();
                     List<string> l = new List<string>();
                     List<string> r = new List<string>();
                     List<string> u = new List<string>();
@@ -147,7 +148,7 @@ public class PositionSelect : MonoBehaviour
 
                         if (fC == i)
                         {
-                            List<Player> rP = db.players.FindAll(x => x.characterSelected && !x.computer && x.WithinLastUpdate);
+                            rP = db.players.FindAll(x => x.characterSelected && !x.computer && x.WithinLastUpdate);
 
                             if (rP.Count > 0)
                             {
@@ -182,6 +183,14 @@ public class PositionSelect : MonoBehaviour
                     {
                         p.lastGridUpdate = Time.time;
 
+                        if (rP.Count > 0)
+                        {
+                            for (int rpl = 0; rpl < rP.Count; rpl++)
+                            {
+                                rP[rpl].lastGridUpdate = Time.time;
+                            }
+                        }
+
                         switch (p.facing)
                         {
                             case Facing.Up:
@@ -203,6 +212,14 @@ public class PositionSelect : MonoBehaviour
                     else if (bm.KeyDown(l))
                     {
                         p.lastGridUpdate = Time.time;
+
+                        if (rP.Count > 0)
+                        {
+                            for (int rpl = 0; rpl < rP.Count; rpl++)
+                            {
+                                rP[rpl].lastGridUpdate = Time.time;
+                            }
+                        }
 
                         switch (p.facing)
                         {
@@ -226,6 +243,14 @@ public class PositionSelect : MonoBehaviour
                     {
                         p.lastGridUpdate = Time.time;
 
+                        if (rP.Count > 0)
+                        {
+                            for (int rpl = 0; rpl < rP.Count; rpl++)
+                            {
+                                rP[rpl].lastGridUpdate = Time.time;
+                            }
+                        }
+
                         switch (p.facing)
                         {
                             case Facing.Up:
@@ -247,6 +272,14 @@ public class PositionSelect : MonoBehaviour
                     else if (bm.KeyDown(d))
                     {
                         p.lastGridUpdate = Time.time;
+
+                        if (rP.Count > 0)
+                        {
+                            for (int rpl = 0; rpl < rP.Count; rpl++)
+                            {
+                                rP[rpl].lastGridUpdate = Time.time;
+                            }
+                        }
 
                         switch (p.facing)
                         {
@@ -301,6 +334,14 @@ public class PositionSelect : MonoBehaviour
                         p.lastGridUpdate = Time.time;
                         p.characterSelected = true;
 
+                        if(rP.Count > 0)
+                        {
+                            for(int rpl = 0; rpl < rP.Count; rpl++)
+                            {
+                                rP[rpl].lastGridUpdate = Time.time;
+                            }
+                        }
+
                         if(!db.players.Exists(x=> !x.characterSelected))
                         {
                             db.CharactersPicked("positions");
@@ -310,7 +351,15 @@ public class PositionSelect : MonoBehaviour
                     {
                         p.lastGridUpdate = Time.time;
 
-                        if(p.characterSelected)
+                        if (rP.Count > 0)
+                        {
+                            for (int rpl = 0; rpl < rP.Count; rpl++)
+                            {
+                                rP[rpl].lastGridUpdate = Time.time;
+                            }
+                        }
+
+                        if (p.characterSelected)
                         {
                             p.characterSelected = false;
                         }
