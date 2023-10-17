@@ -30,6 +30,7 @@ public class Player
 
     public ObjectInfo lifeline = null;
     public GameObject selector = null;
+    public GameObject playerInfo = null;
 
     public string superName;
     public string superDescription;
@@ -86,6 +87,7 @@ public class Player
 
         lifeline = new ObjectInfo(p.lifeline);
         selector = p.selector;
+        playerInfo = p.playerInfo;
 
         superName = p.superName;
         superDescription = p.superDescription;
@@ -129,6 +131,7 @@ public class Player
 
         lifeline = new ObjectInfo(p.lifeline);
         selector = p.selector;
+        playerInfo = p.playerInfo;
 
         superName = p.superName;
         superDescription = p.superDescription;

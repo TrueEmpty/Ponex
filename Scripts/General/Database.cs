@@ -38,11 +38,13 @@ public class Database : MonoBehaviour
 
     public List<Color> pawnColors;
     public List<Effects> effects;
-
+    public GameObject playerInfo;
+    public Transform playerInfoHolderLS;
+    public Transform playerInfoHolderRS;
+    public List<Color> teamColors;//0 = Neutral, 5 = Dead
     #endregion
 
     #region Setup
-    public GridControl mmGC;
     public int minPlayers = 1;
     public int maxPlayers = 8;
 
@@ -206,17 +208,6 @@ public class Database : MonoBehaviour
                         if (!cS.back.playersInControl.Exists(x => x == pc))
                         {
                             cS.back.AddPlayer(pc);
-                        }
-                    }
-                }
-
-                if(mmGC != null)
-                {
-                    if (mmGC != null)
-                    {
-                        if (!mmGC.playersInControl.Contains(pc))
-                        {
-                            mmGC.playersInControl.Add(pc);
                         }
                     }
                 }
@@ -517,6 +508,32 @@ public class Database : MonoBehaviour
                     }
                 }
 
+                //Spawn Info box
+                GameObject sIB = playerInfo;
+
+                if(p.playerInfo != null)
+                {
+                    sIB = p.playerInfo;
+                }
+
+                GameObject iB = Instantiate(sIB);
+
+                if((i % 2) == 0)
+                {
+                    iB.transform.SetParent(playerInfoHolderRS);
+                }
+                else
+                {
+                    iB.transform.SetParent(playerInfoHolderLS);
+                }
+
+
+                PlayerGrab ibpG = iB.GetComponent<PlayerGrab>();
+
+                if (ibpG != null)
+                {
+                    ibpG.playerIndex = i;
+                }
                 yield return null;
             }
             #endregion

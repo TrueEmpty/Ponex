@@ -191,13 +191,15 @@ public class Test : MonoBehaviour
                         disRight = v3.x - curPos.x;
                         break;
                     case Facing.Down:
-                        disRight = curPos.x - v3.x;
+                        disRight = v3.x - curPos.x;
+                        disRight *= -1;
                         break;
                     case Facing.Left:
                         disRight = v3.y - curPos.y;
                         break;
                     case Facing.Right:
-                        disRight = curPos.y - v3.y;
+                        disRight = v3.y - curPos.y;
+                        disRight *= -1;
                         break;
                 }
 
