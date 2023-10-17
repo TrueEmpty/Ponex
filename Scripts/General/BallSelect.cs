@@ -40,6 +40,8 @@ public class BallSelect : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        bool dontProcced = false;
+
         if(db.selectedBall >= 0 && db.selectedBall < db.balls.Count)
         {
             Ball b = db.balls[db.selectedBall];
@@ -106,6 +108,11 @@ public class BallSelect : MonoBehaviour
         else if (bm.KeyDown(g))
         {
             //Start game
+            if (shownBall != null)
+            {
+                Destroy(shownBall);
+            }
+            dontProcced = true;
             db.CharactersPicked("balls");
         }
         else if (bm.KeyDown(x))
@@ -117,11 +124,16 @@ public class BallSelect : MonoBehaviour
                 db.players[i].gridLock = false;
             }
 
+            if (shownBall != null)
+            {
+                Destroy(shownBall);
+            }
+            dontProcced = true;
             mm.BackMenu();
         }
         #endregion
 
-        if (lastShownBall != db.selectedBall)
+        if (lastShownBall != db.selectedBall && !dontProcced)
         {
             if(db.selectedBall >= 0 && db.selectedBall < db.balls.Count)
             {
@@ -146,6 +158,6 @@ public class BallSelect : MonoBehaviour
         Ball b = db.balls[ballToShow];
         shownBall = Instantiate(b.selection);
 
-        shownBall.transform.position = Vector3.zero;
+        shownBall.transform.position = new Vector3(0,0,5);
     }
 }

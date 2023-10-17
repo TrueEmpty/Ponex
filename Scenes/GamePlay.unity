@@ -2840,6 +2840,42 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 851091807}
   m_CullTransparentMesh: 1
+--- !u!1 &970220614
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 970220615}
+  m_Layer: 5
+  m_Name: Playing
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &970220615
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970220614}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1836007657}
+  m_RootOrder: 11
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1041395772
 GameObject:
   m_ObjectHideFlags: 0
@@ -7499,6 +7535,10 @@ MonoBehaviour:
     overlay: 0
     holder: {fileID: 181221795}
     toggle: 0
+  - title: Playing
+    overlay: 0
+    holder: {fileID: 970220614}
+    toggle: 0
   controls: []
   inLineTolorance: 0.5
 --- !u!114 &1637413287
@@ -8316,6 +8356,7 @@ MonoBehaviour:
   selectedBall: 0
   outofBounds: {fileID: 8914071427876607666, guid: eba4a828b794081419df77cb391eeb56, type: 3}
   background: {fileID: 3096829665208239662, guid: 5dba1a516201950468ec2c8eec96a118, type: 3}
+  fieldObj: {fileID: 4013139705515357546, guid: 2c325b3d7c992064586f9867234cf568, type: 3}
   characters:
   - name: Test
     nickName: 
@@ -8353,11 +8394,11 @@ MonoBehaviour:
       readyPercent: 0
     character:
       prefabs: {fileID: 996484336700583967, guid: a5fdbe16bb0562a44953cf0f229a4673, type: 3}
-      positionOffset: {x: 0, y: 0.5, z: 0}
+      positionOffset: {x: 0, y: 1.5, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
-      prefabs: {fileID: 0}
-      positionOffset: {x: 0, y: 0, z: 0}
+      prefabs: {fileID: 996484336700583967, guid: a5fdbe16bb0562a44953cf0f229a4673, type: 3}
+      positionOffset: {x: 0, y: 0.4, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     selector: {fileID: 0}
     superName: Creates a electric line from wall to wall. Bouncing any object that
@@ -8412,11 +8453,11 @@ MonoBehaviour:
       speed: 0
       readyPercent: 0
     character:
-      prefabs: {fileID: 996484336700583967, guid: a5fdbe16bb0562a44953cf0f229a4673, type: 3}
+      prefabs: {fileID: 3118831733282305689, guid: 10bd51cce9a375f49bf74961f45a7ac8, type: 3}
       positionOffset: {x: 0, y: 0.5, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
-      prefabs: {fileID: 0}
+      prefabs: {fileID: 2378825962094382642, guid: b00e082693c34214a8f771b7d5e4a320, type: 3}
       positionOffset: {x: 0, y: 0, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     selector: {fileID: 0}
@@ -8471,11 +8512,11 @@ MonoBehaviour:
       speed: 0
       readyPercent: 0
     character:
-      prefabs: {fileID: 0}
+      prefabs: {fileID: 40940598331089825, guid: 7898581c4c910664caec6d0afaf5b832, type: 3}
       positionOffset: {x: 0, y: 0, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
-      prefabs: {fileID: 0}
+      prefabs: {fileID: 1183648047172456191, guid: 8b3cc6afafb82404b98b1e39949e4776, type: 3}
       positionOffset: {x: 0, y: 0, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     selector: {fileID: 0}
@@ -8532,8 +8573,8 @@ MonoBehaviour:
       speed: 0
       readyPercent: 0
     character:
-      prefabs: {fileID: 0}
-      positionOffset: {x: 0, y: 0, z: 0}
+      prefabs: {fileID: 6527575289175331901, guid: ae4e6a4b68e08a4438f8dc6364b69220, type: 3}
+      positionOffset: {x: 0, y: 1, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
       prefabs: {fileID: 0}
@@ -8591,8 +8632,8 @@ MonoBehaviour:
       speed: 0
       readyPercent: 0
     character:
-      prefabs: {fileID: 0}
-      positionOffset: {x: 0, y: 0, z: 0}
+      prefabs: {fileID: 5058516453889937152, guid: e3157dde18c9b8c41bbd0e3eb63513e0, type: 3}
+      positionOffset: {x: 0, y: 0.5, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
       prefabs: {fileID: 0}
@@ -8650,11 +8691,11 @@ MonoBehaviour:
       speed: 0
       readyPercent: 0
     character:
-      prefabs: {fileID: 0}
+      prefabs: {fileID: 5676735982772938564, guid: 605af79f8c4201441a8c800ed2fb1961, type: 3}
       positionOffset: {x: 0, y: 0, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
-      prefabs: {fileID: 0}
+      prefabs: {fileID: 4865410585743913639, guid: 20b4363d170f9a944a68e5bf884864bd, type: 3}
       positionOffset: {x: 0, y: 0, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     selector: {fileID: 0}
@@ -8709,8 +8750,8 @@ MonoBehaviour:
       speed: 0
       readyPercent: 0
     character:
-      prefabs: {fileID: 996484336700583967, guid: a5fdbe16bb0562a44953cf0f229a4673, type: 3}
-      positionOffset: {x: 0, y: 0.5, z: 0}
+      prefabs: {fileID: 0}
+      positionOffset: {x: 0, y: 0, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
       prefabs: {fileID: 0}
@@ -8768,11 +8809,11 @@ MonoBehaviour:
       speed: 0
       readyPercent: 0
     character:
-      prefabs: {fileID: 0}
-      positionOffset: {x: 0, y: 0, z: 0}
+      prefabs: {fileID: 3662253681025134369, guid: ae4bf40dff8b95746b06ec825010e3ab, type: 3}
+      positionOffset: {x: 0, y: 0.7, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
-      prefabs: {fileID: 0}
+      prefabs: {fileID: 8692406959748517595, guid: d57fad3bfc5844f4c82e75a56970753e, type: 3}
       positionOffset: {x: 0, y: 0, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     selector: {fileID: 0}
@@ -8887,6 +8928,8 @@ MonoBehaviour:
   positionSelect: 0
   teamSelect: 0
   ballSelect: 0
+  gametype: 0
+  startingGame: 0
   gameStart: 0
 --- !u!4 &1637413288
 Transform:
@@ -9159,7 +9202,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1750929374}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9397,6 +9440,7 @@ RectTransform:
   - {fileID: 8694133780864488070}
   - {fileID: 1682145351}
   - {fileID: 181221796}
+  - {fileID: 970220615}
   - {fileID: 6677652148415420765}
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -11215,6 +11259,7 @@ MonoBehaviour:
   positionSelect: 1
   teamSelect: 1
   ballSelect: 1
+  gametype: 3
 --- !u!1 &1426925220847010625
 GameObject:
   m_ObjectHideFlags: 0
@@ -11672,6 +11717,7 @@ MonoBehaviour:
   positionSelect: 0
   teamSelect: 0
   ballSelect: 0
+  gametype: 0
 --- !u!1 &1426925221024288460
 GameObject:
   m_ObjectHideFlags: 0
@@ -11945,7 +11991,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1426925221160167564
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12915,6 +12961,7 @@ MonoBehaviour:
   positionSelect: 1
   teamSelect: 1
   ballSelect: 1
+  gametype: 2
 --- !u!114 &1426925221994993580
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50337,7 +50384,7 @@ RectTransform:
   - {fileID: 6677652148034506029}
   - {fileID: 6677652148055004141}
   m_Father: {fileID: 1836007657}
-  m_RootOrder: 11
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}

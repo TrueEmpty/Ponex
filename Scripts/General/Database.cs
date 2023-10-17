@@ -23,6 +23,7 @@ public class Database : MonoBehaviour
 
     public GameObject outofBounds;
     public GameObject background;
+    public GameObject fieldObj;
     #endregion
 
     #region Players
@@ -47,6 +48,8 @@ public class Database : MonoBehaviour
     public bool teamSelect = false;
     public bool ballSelect = false;
 
+    public Gametype gametype = Gametype.Vs;
+    public bool startingGame = false;
     public bool gameStart = false;
     #endregion
 
@@ -296,6 +299,8 @@ public class Database : MonoBehaviour
 
     public void CharactersPicked(string fromSelect)
     {
+        bool startGame = false;
+
         switch(fromSelect.ToLower().Trim())
         {
             case "characters":
@@ -318,6 +323,7 @@ public class Database : MonoBehaviour
                 else
                 {
                     //Start Game
+                    startGame = true;
                 }
                 break;
             case "fields":
@@ -336,6 +342,7 @@ public class Database : MonoBehaviour
                 else
                 {
                     //Start Game
+                    startGame = true;
                 }
                 break;
             case "positions":
@@ -350,6 +357,7 @@ public class Database : MonoBehaviour
                 else
                 {
                     //Start Game
+                    startGame = true;
                 }
                 break;
             case "teams":
@@ -360,11 +368,12 @@ public class Database : MonoBehaviour
                 else
                 {
                     //Start Game
+                    startGame = true;
                 }
                 break;
             case "balls":
-                    //Start Game
-
+                //Start Game
+                startGame = true;
                 break;
         }
 
@@ -373,6 +382,123 @@ public class Database : MonoBehaviour
             players[i].characterSelected = false;
             players[i].gridLock = false;
         }
+
+        if(startGame && !startingGame)
+        {
+            StartCoroutine(StartGame());
+            startingGame = true;
+        }
+    }
+
+    IEnumerator StartGame()
+    {
+        mm.OpenMenu("Playing");
+
+        int fieldSize = 0;
+        Vector3 pPos = Vector3.zero;
+        Vector3 fRot = Vector3.zero;
+
+        if(gametype == Gametype.Coop || gametype == Gametype.Vs)
+        {
+            #region Create Field
+            int sF = selectedField;
+
+            if (selectedField < 0 || selectedField >= fields.Count)
+            {
+                sF = Random.Range(0, fields.Count);
+            }
+
+            Field field = fields[sF];
+
+            GameObject fSpawned = Instantiate(fieldObj);
+            Field_Info fI = fSpawned.GetComponent<Field_Info>();
+            fI.field = field;
+            fieldSize = field.size + 10;
+            yield return null;
+            #endregion
+
+            #region Add Players
+            for(int i = 0; i < maxPlayers; i++)
+            {
+                if(i >= players.Count)
+                {
+                    break;
+                }
+
+                Player p = players[i];
+
+                switch(p.facing)
+                {
+                    case Facing.Up:
+                        pPos = new Vector3(0,-(fieldSize/2),fieldSize);
+                        fRot = new Vector3(0,0,0);
+                        break;
+                    case Facing.Down:
+                        pPos = new Vector3(0, (fieldSize / 2), fieldSize);
+                        fRot = new Vector3(0, 0, 180);
+                        break;
+                    case Facing.Left:
+                        pPos = new Vector3((fieldSize / 2), 0, fieldSize);
+                        fRot = new Vector3(0, 0, 90);
+                        break;
+                    case Facing.Right:
+                        pPos = new Vector3(-(fieldSize / 2),0, fieldSize);
+                        fRot = new Vector3(0, 0, 270);
+                        break;
+                }
+
+                //Spawn Player
+                if (p.character.prefabs != null)
+                {
+                    p.spawnedPlayer = Instantiate(p.character.prefabs);
+                    p.spawnedPlayer.transform.position = pPos;
+                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
+                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * p.character.positionOffset.y;
+                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
+                    p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
+                    PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
+
+                    if(pG != null)
+                    {
+                        pG.playerIndex = i;
+                    }
+                }
+
+                //Spawn Lifeline
+                if (p.lifeline.prefabs != null)
+                {
+                    p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
+                    p.spawnedLifeline.transform.position = pPos;
+                    p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.right * p.lifeline.positionOffset.x;
+                    p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.up * p.lifeline.positionOffset.y;
+                    p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.forward * p.lifeline.positionOffset.z;
+                    p.spawnedLifeline.transform.rotation = Quaternion.Euler(fRot + p.lifeline.rotationOffset);
+                    PlayerGrab pG = p.spawnedLifeline.GetComponent<PlayerGrab>();
+
+                    if (pG != null)
+                    {
+                        pG.playerIndex = i;
+                    }
+                }
+
+                yield return null;
+            }
+            #endregion
+
+            #region Add Ball
+
+            #endregion
+
+            #region Start Count Down
+
+            #endregion
+
+            gameStart = true;
+            yield return null;
+        }
+
+        startingGame = false;
+        yield return null;
     }
 }
 
@@ -391,4 +517,13 @@ public class Effects
 {
     public Effect effect;
     public GameObject obj;
+}
+
+[System.Serializable]
+public enum Gametype
+{
+    Arcade,
+    Story,
+    Coop,
+    Vs
 }

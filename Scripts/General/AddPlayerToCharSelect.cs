@@ -14,6 +14,8 @@ public class AddPlayerToCharSelect : MonoBehaviour
     public bool teamSelect = false;
     public bool ballSelect = false;
 
+    public Gametype gametype = Gametype.Vs;
+
     // Use this for initialization
     void Start()
     {
@@ -29,6 +31,7 @@ public class AddPlayerToCharSelect : MonoBehaviour
         db.positionSelect = positionSelect;
         db.teamSelect = teamSelect;
         db.ballSelect = ballSelect;
+        db.gametype = gametype;
 
         for(int i = 0; i < db.players.Count; i++)
         {
