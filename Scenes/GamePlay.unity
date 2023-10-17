@@ -8647,16 +8647,16 @@ MonoBehaviour:
       cancel: 
     facing: 0
     bump:
+      amount: 4
+      max: 4
+      cost: 4
+      speed: 0.07
+      readyPercent: 0
+    super:
       amount: 15
       max: 200
       cost: 50
       speed: 5
-      readyPercent: 0
-    super:
-      amount: 4
-      max: 4
-      cost: 1
-      speed: 6
       readyPercent: 0
     dash:
       amount: 0
@@ -8674,8 +8674,8 @@ MonoBehaviour:
       rotationOffset: {x: 0, y: 0, z: 0}
     selector: {fileID: 0}
     playerInfo: {fileID: 0}
-    superName: Quickly shoots more empowered bullets in rapid succession
-    superDescription: 
+    superName: 
+    superDescription: Quickly shoots more empowered bullets in rapid succession
     portraitColor: {r: 0.7254902, g: 0.57254905, b: 0.5764706, a: 1}
     portrait: {fileID: 2800000, guid: d394a5a5b82bcea418fa27a2b386e873, type: 3}
     icon: {fileID: 2800000, guid: 9e15692808e7d0243952d746619dd22d, type: 3}
