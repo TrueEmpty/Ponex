@@ -490,7 +490,7 @@ public class Database : MonoBehaviour
                     p.spawnedPlayer.transform.position = pPos;
                     p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
                     p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
-                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * (p.character.positionOffset.y * (p.position + 1));
+                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * (p.character.positionOffset.y * ((p.position == 0) ? 1 : 1.5f));
                     p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
                     PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
 

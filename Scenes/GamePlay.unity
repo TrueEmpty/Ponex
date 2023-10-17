@@ -8539,7 +8539,7 @@ MonoBehaviour:
       speed: 0
       readyPercent: 0
     character:
-      prefabs: {fileID: 996484336700583967, guid: a5fdbe16bb0562a44953cf0f229a4673, type: 3}
+      prefabs: {fileID: 2646789964282100442, guid: 69c736b8c7675b241998f9b3f7e386c0, type: 3}
       positionOffset: {x: 0, y: 1.5, z: 0}
       rotationOffset: {x: 0, y: 0, z: 0}
     lifeline:
@@ -8927,7 +8927,7 @@ MonoBehaviour:
     currentHealth: 10
     maxHealth: 10
     movementSpeed: 15
-    pushBack: 200
+    pushBack: 75
     buttons:
       left: 
       right: 
