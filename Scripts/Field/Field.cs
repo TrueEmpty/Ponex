@@ -22,6 +22,7 @@ public class Field
     public Color backgroundColor = Color.black;
     public float backgroundMatallic = .91f;
     public float backgroundSmoothness = .74f;
+    public Vector2 tilling = new Vector2(1, 1);
 
     public Field()
     {
