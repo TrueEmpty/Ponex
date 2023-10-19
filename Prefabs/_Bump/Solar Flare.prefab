@@ -11,8 +11,10 @@ GameObject:
   - component: {fileID: 554905892545797684}
   - component: {fileID: 554905892545797685}
   - component: {fileID: 554905892545797686}
+  - component: {fileID: -7244471328692227584}
   - component: {fileID: 554905892545797687}
   - component: {fileID: 554905892545797680}
+  - component: {fileID: 3758345562003775314}
   m_Layer: 3
   m_Name: Solar Flare
   m_TagString: Paddle
@@ -61,6 +63,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7faed8e303fd689408e816197cc4ce12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-7244471328692227584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554905892545797681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!114 &554905892545797687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -90,6 +107,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 0
+--- !u!114 &3758345562003775314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554905892545797681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5957355746714938590
 GameObject:
   m_ObjectHideFlags: 0
@@ -169,6 +198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!114 &3286535554542931263

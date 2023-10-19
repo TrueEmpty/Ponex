@@ -10,12 +10,14 @@ GameObject:
   m_Component:
   - component: {fileID: 6542528243523133737}
   - component: {fileID: 2157326642103143653}
+  - component: {fileID: -8181349220582673065}
   - component: {fileID: 460952862879858214}
   - component: {fileID: 6542528243523133742}
   - component: {fileID: 7184771209688535471}
   - component: {fileID: 3907607363636581299}
   - component: {fileID: 6542528243523133743}
   - component: {fileID: 7896727177120171187}
+  - component: {fileID: 451146230729303808}
   m_Layer: 3
   m_Name: Nari
   m_TagString: Player
@@ -52,6 +54,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 4
+--- !u!114 &-8181349220582673065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2918811372553516686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &460952862879858214
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,6 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!114 &3907607363636581299
@@ -119,7 +135,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b84ad79613f0a404a958cd4d07d31dd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amount: 5
+  amount: 10
 --- !u!54 &7896727177120171187
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -136,6 +152,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 0
+--- !u!114 &451146230729303808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2918811372553516686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4410788096948294471
 GameObject:
   m_ObjectHideFlags: 0
@@ -198,6 +226,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!114 &6538498667439810070

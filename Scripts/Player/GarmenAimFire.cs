@@ -7,6 +7,7 @@ public class GarmenAimFire : MonoBehaviour
     PlayerGrab pg;
     ButtonManager bm;
     Database db;
+    Garmen g;
 
     public Transform hub;
     public float speed = 1;
@@ -23,25 +24,35 @@ public class GarmenAimFire : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(db.gameStart && pg.player.currentHealth > 0 && pg.player.super.readyPercent == 0)
+        if(db.gameStart)
         {
-            if(pg.player.CanMove)
+            Player p = db.players[pg.playerIndex];
+
+            if(pg.player.currentHealth > 0 && pg.player.super.readyPercent == 0)
             {
-                int rotDir = 0;
-
-                if (bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) && rotAmount > -85)
+                if (g == null)
                 {
-                    rotDir -= 1;
+                    g = p.spawnedPlayer.GetComponent<Garmen>();
                 }
 
-                if (bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) && rotAmount < 85)
+                if (pg.player.CanMove)
                 {
-                    rotDir += 1;
-                }
+                    int rotDir = 0;
 
-                hub.Rotate(Vector3.forward * rotDir * Time.deltaTime * speed, Space.Self);
-                rotAmount += Time.deltaTime * speed * rotDir;
-            }
+                    if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || g.thought == Thought.MoveRight) && rotAmount > -85)
+                    {
+                        rotDir -= 1;
+                    }
+
+                    if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || g.thought == Thought.MoveLeft) && rotAmount < 85)
+                    {
+                        rotDir += 1;
+                    }
+
+                    hub.Rotate(Vector3.forward * rotDir * Time.deltaTime * speed, Space.Self);
+                    rotAmount += Time.deltaTime * speed * rotDir;
+                }
+            }            
         }
     }
 }

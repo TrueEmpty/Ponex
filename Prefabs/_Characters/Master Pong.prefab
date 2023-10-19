@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3662253680132785215}
   - component: {fileID: 3662253680132785200}
   - component: {fileID: 3662253680132785201}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Cylinder (1)
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -61,6 +61,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!33 &3662253680132785215
@@ -141,7 +142,7 @@ GameObject:
   - component: {fileID: 3662253680585812996}
   - component: {fileID: 3662253680585812997}
   - component: {fileID: 3662253680585812998}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Cylinder (3)
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -188,6 +189,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!33 &3662253680585812996
@@ -268,7 +270,7 @@ GameObject:
   - component: {fileID: 3662253680804882906}
   - component: {fileID: 3662253680804882907}
   - component: {fileID: 3662253680804882908}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -315,6 +317,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!33 &3662253680804882906
@@ -395,7 +398,7 @@ GameObject:
   - component: {fileID: 3662253680844888936}
   - component: {fileID: 3662253680844888937}
   - component: {fileID: 3662253680844888938}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Cylinder (2)
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -442,6 +445,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!33 &3662253680844888936
@@ -519,6 +523,7 @@ GameObject:
   - component: {fileID: 3662253681025134381}
   - component: {fileID: 1389887968875607801}
   - component: {fileID: 3662253681025134378}
+  - component: {fileID: 1591783435016963988}
   - component: {fileID: 1389887968875607807}
   - component: {fileID: 1389887968875607806}
   - component: {fileID: 1389887968875607803}
@@ -527,7 +532,8 @@ GameObject:
   - component: {fileID: 3662253681025134368}
   - component: {fileID: 3662253681025134382}
   - component: {fileID: 3662253681025134383}
-  m_Layer: 8
+  - component: {fileID: 7390342139876556504}
+  m_Layer: 3
   m_Name: Master Pong
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -570,6 +576,12 @@ MonoBehaviour:
   hitTags:
   - Walls
   dis: 0.91
+  thinkTime: 0.5
+  thought: 0
+  chanceToDoNothing: 50
+  chanceToMove: 100
+  chanceToBump: 0
+  chanceToSuper: 0
 --- !u!114 &3662253681025134378
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -583,6 +595,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 3
+--- !u!114 &1591783435016963988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3662253681025134369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &1389887968875607807
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -595,6 +620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!114 &1389887968875607806
@@ -715,6 +741,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7390342139876556504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3662253681025134369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3662253681277724597
 GameObject:
   m_ObjectHideFlags: 0
@@ -729,7 +767,7 @@ GameObject:
   - component: {fileID: 3662253681277724593}
   - component: {fileID: 3662253681277724594}
   - component: {fileID: 3662253681277724595}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Cube (1)
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -776,6 +814,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!33 &3662253681277724593
@@ -855,7 +894,7 @@ GameObject:
   - component: {fileID: 3662253681346979973}
   - component: {fileID: 3662253681346979974}
   - component: {fileID: 3662253681346979975}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Cube
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -902,6 +941,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!33 &3662253681346979973

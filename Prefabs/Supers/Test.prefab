@@ -75,6 +75,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!136 &6641025043887542052
@@ -4946,6 +4947,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!136 &8220182520171209456
@@ -9752,6 +9754,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8220182520325355309}
   - component: {fileID: 8220182520325355308}
+  - component: {fileID: 2707538190210989761}
   m_Layer: 3
   m_Name: Test
   m_TagString: Paddle
@@ -9789,3 +9792,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   duration: 10.1
+--- !u!114 &2707538190210989761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8220182520325355310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -24,12 +24,16 @@ public class GridControl : MonoBehaviour
     public bool basedOnPlayerState = false;
     public bool canLoopH = true;
     public bool canLoopV = true;
+    string selectionSound = "Selection";
+    string selectedSound = "Selected";
+    string deselectSound = "DeSelect";
 
     // Start is called before the first frame update
     void Start()
     {
         db = Database.instance;
         bm = ButtonManager.instance;
+
         if(ol == null)
         {
             ol = GetComponent<Outline>();
@@ -219,6 +223,7 @@ public class GridControl : MonoBehaviour
 
                     if (bm.KeyDown(g))
                     {
+                        db.PlaySound(selectedSound);
                         p.lastGridUpdate = Time.time;
                         SendMessage("OnClick", c, SendMessageOptions.DontRequireReceiver);
                         FireOnClick();
@@ -226,6 +231,7 @@ public class GridControl : MonoBehaviour
 
                     if (bm.KeyDown(x))
                     {
+                        db.PlaySound(deselectSound);
                         p.lastGridUpdate = Time.time;
                         SendMessage("OnCancel", c, SendMessageOptions.DontRequireReceiver);
                     }
@@ -286,6 +292,7 @@ public class GridControl : MonoBehaviour
 
                         if (pass && nG != null && (canLoopH || (!canLoopH && !loopingH)) && (canLoopV || (!canLoopV && !loopingV)))
                         {
+                            db.PlaySound(selectionSound);
                             nG.AddPlayer(c);
                             playersInControl.RemoveAt(i);
                         }

@@ -10,13 +10,15 @@ GameObject:
   m_Component:
   - component: {fileID: 1855077359325109427}
   - component: {fileID: 8043425912407904932}
+  - component: {fileID: 1952739068366483820}
+  - component: {fileID: 162052900551987588}
   - component: {fileID: 208776871207756558}
   - component: {fileID: 1952739068366483821}
-  - component: {fileID: 1952739068366483820}
   - component: {fileID: 7934371038639061387}
   - component: {fileID: 8695697569887574256}
   - component: {fileID: 3034593212638127647}
-  m_Layer: 0
+  - component: {fileID: -590283134700595621}
+  m_Layer: 3
   m_Name: Bahrue
   m_TagString: Lifeline
   m_Icon: {fileID: 0}
@@ -51,6 +53,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: -1
+--- !u!114 &1952739068366483820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1952739068366483823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59c2184b60ffff8449d893b3ef565007, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tagHit: Ball
+  damageIncrease: 0
+--- !u!114 &162052900551987588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1952739068366483823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &208776871207756558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,6 +92,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0.2
   targetTags:
   - Ball
 --- !u!114 &1952739068366483821
@@ -79,20 +109,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
---- !u!114 &1952739068366483820
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1952739068366483823}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59c2184b60ffff8449d893b3ef565007, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tagHit: Ball
-  damageIncrease: 0
 --- !u!33 &7934371038639061387
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -156,3 +172,15 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-590283134700595621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1952739068366483823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

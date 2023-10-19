@@ -8,7 +8,6 @@ public class NariMove : MonoBehaviour
     Rigidbody rb;
     ButtonManager bm;
     Database db;
-    float canMove = 1;
     PlayerGrab pg;
     Vector3 moveDir = Vector3.up;
     float hheadCur = 1.3f;

@@ -60,6 +60,21 @@ public class Player
     public List<PlayerConstraints> canBump = new List<PlayerConstraints>();
     [SerializeField]
     public List<PlayerConstraints> canSuper = new List<PlayerConstraints>();
+
+    #region Gameplay Stats
+    public bool won = false;
+    public int damageDealt = 0;
+    public int damageTaken = 0;
+    public int ballHits = 0;
+    public int longestBallOwnership = 0;
+    public int highestSingleDamgeDealt = 0;
+    public int highestSingleDamageTaken = 0;
+    public int ultsUsed = 0;
+    public int numberOfDashes = 0;
+    public int afterDeathHits = 0;
+    public int afterDeathDamage = 0;
+    #endregion
+
     public Player()
     {
 

@@ -8,6 +8,7 @@ public class GarmenDrive : MonoBehaviour
     ButtonManager bm;
     Database db;
     Rigidbody rb;
+    Garmen g;
 
     float searchLength = 2.4f;
     public GameObject hub;
@@ -28,31 +29,49 @@ public class GarmenDrive : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(db.gameStart && pg.player.currentHealth > 0 && pg.player.super.readyPercent == 1)
+        if(db.gameStart)
         {
-            Action();
+            Player p = db.players[pg.playerIndex];
 
-            //Raise Garmen
-            if (hub.transform.localPosition.y < .5f)
+            if (g == null)
             {
-                hub.transform.localPosition += Vector3.up * Time.deltaTime * (liftRate * 2);
+                GameObject sp = p.spawnedPlayer;
+
+                if(sp != null)
+                {
+                    g = sp.GetComponent<Garmen>();
+                }
             }
-            else
+
+            if(g != null)
             {
-                hub.transform.localPosition = new Vector3(0,.5f,0);
-            }
-        }
-        else if(db.gameStart && pg.player.currentHealth > 0 && pg.player.super.readyPercent == 0)
-        {
-            rb.velocity = Vector3.zero;
-            //Lower Garmen
-            if (hub.transform.localPosition.y > 0)
-            {
-                hub.transform.localPosition -= Vector3.up * Time.deltaTime * (liftRate * 2);
-            }
-            else
-            {
-                hub.transform.localPosition = new Vector3(0, 0, 0);
+                if (p.currentHealth > 0 && p.super.readyPercent == 1)
+                {
+                    Action();
+
+                    //Raise Garmen
+                    if (hub.transform.localPosition.y < .5f)
+                    {
+                        hub.transform.localPosition += Vector3.up * Time.deltaTime * (liftRate * 2);
+                    }
+                    else
+                    {
+                        hub.transform.localPosition = new Vector3(0, .5f, 0);
+                    }
+                }
+                else if (p.currentHealth > 0 && p.super.readyPercent == 0)
+                {
+                    rb.velocity = Vector3.zero;
+                    //Lower Garmen
+                    if (hub.transform.localPosition.y > 0)
+                    {
+                        hub.transform.localPosition -= Vector3.up * Time.deltaTime * (liftRate * 2);
+                    }
+                    else
+                    {
+                        hub.transform.localPosition = new Vector3(0, 0, 0);
+                    }
+                }
             }
         }
     }
@@ -63,12 +82,12 @@ public class GarmenDrive : MonoBehaviour
         {
             int moveDir = 0;
 
-            if (bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) && !WallInDirection(1))
+            if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || g.thought == Thought.MoveRight) && !WallInDirection(1))
             {
                 moveDir += 1;
             }
 
-            if (bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) && !WallInDirection(-1))
+            if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || g.thought == Thought.MoveLeft) && !WallInDirection(-1))
             {
                 moveDir -= 1;
             }

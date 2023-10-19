@@ -42,6 +42,9 @@ public class Database : MonoBehaviour
     public Transform playerInfoHolderLS;
     public Transform playerInfoHolderRS;
     public List<Color> teamColors;//0 = Neutral, 5 = Dead
+
+    public Transform showWinner;
+    public GameObject wonBox;
     #endregion
 
     #region Setup
@@ -55,7 +58,15 @@ public class Database : MonoBehaviour
 
     public Gametype gametype = Gametype.Vs;
     public bool startingGame = false;
+    public bool someoneWon = false;
+    public bool winnerScreen = false;
+    public GridControl mmOp;
     public bool gameStart = false;
+    #endregion
+
+    #region Sounds
+    public List<Sounds> extraSounds = new List<Sounds>();
+    public AudioSource effectAudio;
     #endregion
 
     private void Awake()
@@ -82,8 +93,12 @@ public class Database : MonoBehaviour
     {
         if(gameStart)
         {
-            CheckPlayerConstrants();
-            BallCheck();
+            if(!winnerScreen)
+            {
+                CheckPlayerConstrants();
+                BallCheck();
+                CheckForWinner();
+            }
         }
         else
         {
@@ -302,6 +317,114 @@ public class Database : MonoBehaviour
                 bI.ballReady = true;
             }
         }
+    }
+
+    void CheckForWinner()
+    {
+        List<int> aliveTeams = new List<int>();
+        List<Player> winners = new List<Player>();
+
+        if(players.Count > 0)
+        {
+            winners = players.FindAll(x=> x.currentHealth > 0);
+            
+            for(int i = 0; i < players.Count; i++)
+            {
+                Player p = players[i];
+
+                if(winners.Contains(p))
+                {
+                    if(!aliveTeams.Contains(p.team))
+                    {
+                        aliveTeams.Add(p.team);
+                    }
+                }
+            }
+        }
+
+        if(aliveTeams.Count <= 1)
+        {
+            //Set Winners and Losers
+            if (players.Count > 0)
+            {
+                for (int i = 0; i < players.Count; i++)
+                {
+                    Player p = players[i];
+                    p.won = winners.Contains(p);
+                }
+            }
+
+            //Run Time Slow
+            if (!someoneWon)
+            {
+                winnerScreen = true;
+                someoneWon = true;
+                StartCoroutine(SomeoneWon());
+            }
+        }
+    }
+
+    IEnumerator SomeoneWon()
+    {
+        Time.timeScale = .3f;
+        yield return null;
+        yield return new WaitForSecondsRealtime(1.5f);
+
+        Time.timeScale = 1;
+        yield return null;
+
+        //Clear all GameObjects and Field
+        GameObject[] allGo = FindObjectsOfType<GameObject>();
+
+        if (allGo.Length > 0)
+        {
+            for (int i = allGo.Length - 1; i >= 0; i--)
+            {
+                if (allGo[i] != null)
+                {
+                    bool prevAS = allGo[i].activeInHierarchy;
+
+                    allGo[i].SetActive(true);
+                    allGo[i].SendMessage("ClearAllForNewGame", SendMessageOptions.DontRequireReceiver);
+                    yield return null;
+
+                    if (allGo[i] != null)
+                    {
+                        allGo[i].SetActive(prevAS);
+                    }
+                }
+            }
+        }
+
+        //Open Winners menu
+        mm.OpenMenu("Winners");
+        yield return null;
+        for (int i = 0; i < players.Count; i++)
+        {
+            mmOp.AddPlayer(i);
+        }
+
+        //Add Win Box to Winner Menu
+        if (players.Count > 0)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                GameObject wB = Instantiate(wonBox);
+                wB.transform.SetParent(showWinner);
+
+                GameResultBreakdown grb = wB.GetComponent<GameResultBreakdown>();
+
+                if(grb != null)
+                {
+                    grb.playerIndex = i;
+                }
+
+                players[i].state = "";
+            }
+        }
+
+        someoneWon = false;
+        yield return null;
     }
 
     public Player RandomCharacter(bool actives = true)
@@ -543,7 +666,7 @@ public class Database : MonoBehaviour
 
             if (selectedBall < 0 || selectedBall >= balls.Count)
             {
-                sB = Random.Range(0, fields.Count);
+                sB = Random.Range(0, balls.Count);
             }
 
             if(selectedBall == -1)
@@ -600,6 +723,19 @@ public class Database : MonoBehaviour
         startingGame = false;
         yield return null;
     }
+
+    public void PlaySound(string sname)
+    {   
+        Sounds s = extraSounds.Find(x => x.name.ToLower().Trim() == sname.ToLower().Trim());
+
+        if(s != null)
+        {
+            if(s.sound != null)
+            {
+                effectAudio.PlayOneShot(s.sound);
+            }
+        }
+    }
 }
 
 public enum Effect
@@ -626,4 +762,21 @@ public enum Gametype
     Story,
     Coop,
     Vs
+}
+
+[System.Serializable]
+public class Sounds
+{
+    public string name;
+    public AudioClip sound;
+}
+
+[System.Serializable]
+public enum Thought
+{
+    Nothing,
+    MoveLeft,
+    MoveRight,
+    MoveUp,
+    MoveDown
 }

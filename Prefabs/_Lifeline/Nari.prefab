@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4067180227871883588}
   - component: {fileID: 1929930250918640739}
+  - component: {fileID: -5456110936684919459}
   - component: {fileID: 9166676303782399697}
   - component: {fileID: 3878109950398639807}
   - component: {fileID: 8289884685774818494}
@@ -17,6 +18,7 @@ GameObject:
   - component: {fileID: 7709381530863312719}
   - component: {fileID: 4162411402502391083}
   - component: {fileID: 8620586386078571499}
+  - component: {fileID: -7986270820854885934}
   m_Layer: 3
   m_Name: Nari
   m_TagString: Lifeline
@@ -52,6 +54,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: -1
+--- !u!114 &-5456110936684919459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6527575289175331901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &9166676303782399697
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64,6 +79,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0.2
   targetTags:
   - Ball
 --- !u!114 &3878109950398639807
@@ -176,3 +192,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 0
+--- !u!114 &-7986270820854885934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6527575289175331901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

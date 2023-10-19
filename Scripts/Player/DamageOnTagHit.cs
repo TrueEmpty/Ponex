@@ -5,6 +5,7 @@ using UnityEngine;
 public class DamageOnTagHit : MonoBehaviour
 {
     PlayerGrab pg;
+    Database db;
 
     public string tagHit = "Ball";
     public int damageIncrease = 0;
@@ -13,6 +14,7 @@ public class DamageOnTagHit : MonoBehaviour
     void Start()
     {
         pg = GetComponent<PlayerGrab>();
+        db = Database.instance;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -24,7 +26,9 @@ public class DamageOnTagHit : MonoBehaviour
             BallInfo tbI = collision.gameObject.GetComponent<BallInfo>();
             bool pass = true;
 
-            if(tpG != null)
+            //Debug.Log("Got Hit By Ball! with your index at: " + pg.playerIndex + " & target at: " + tpG.playerIndex);
+
+            if (tpG != null)
             {
                 if(tpG.IsLinked())
                 {
@@ -32,10 +36,20 @@ public class DamageOnTagHit : MonoBehaviour
                     {
                         pass = false;
                     }
+                    else
+                    {
+                        Player tp = db.players[tpG.playerIndex];
+                        Player yp = db.players[pg.playerIndex];
+
+                        if(tp.team == yp.team)
+                        {
+                            pass = false;
+                        }
+                    }
                 }
             }
 
-            if (pg.player != null && pass)
+            if (pass)
             {
                 int baseDamage = 0;
 

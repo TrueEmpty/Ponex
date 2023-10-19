@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 8692406959748517571}
   - component: {fileID: 8692406959748517599}
+  - component: {fileID: -1955610041377615826}
+  - component: {fileID: -2999915469846919698}
   - component: {fileID: 8692406959748517574}
   - component: {fileID: 8692406959748517572}
   - component: {fileID: 8692406959748517570}
@@ -18,6 +20,7 @@ GameObject:
   - component: {fileID: 8692406959748517573}
   - component: {fileID: 8692406959748517576}
   - component: {fileID: 8692406959748517575}
+  - component: {fileID: -4047514409499358098}
   m_Layer: 3
   m_Name: Master Pong
   m_TagString: Lifeline
@@ -53,6 +56,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 3
+--- !u!114 &-1955610041377615826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8692406959748517595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59c2184b60ffff8449d893b3ef565007, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tagHit: Ball
+  damageIncrease: 0
+--- !u!114 &-2999915469846919698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8692406959748517595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &8692406959748517574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4944,3 +4974,15 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &-4047514409499358098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8692406959748517595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

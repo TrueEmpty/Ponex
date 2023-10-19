@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 3695795774294630302}
   m_Layer: 4
   m_Name: default
-  m_TagString: Paddle
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -61,6 +61,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!33 &7289949622502733292
@@ -137,10 +138,13 @@ GameObject:
   m_Component:
   - component: {fileID: 5011382547518307838}
   - component: {fileID: 5676735982772938567}
+  - component: {fileID: 5460978325754845129}
+  - component: {fileID: 4104519707878135887}
   - component: {fileID: 5676735982772938566}
   - component: {fileID: 5676735982772938560}
   - component: {fileID: 5676735982772938565}
-  m_Layer: 3
+  - component: {fileID: -1049521346970919809}
+  m_Layer: 4
   m_Name: Celarus
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -176,6 +180,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 1
+--- !u!114 &5460978325754845129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5676735982772938564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
+--- !u!114 &4104519707878135887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5676735982772938564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &5676735982772938566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -216,6 +248,13 @@ MonoBehaviour:
   sFResetCount: 2
   sFoffset: 3
   sFoffsetAngle: 85
+  moonGravityMultiplier: 3000
+  thinkTime: 0.5
+  thought: 0
+  chanceToDoNothing: 50
+  chanceToMove: 100
+  chanceToBump: 0
+  chanceToSuper: 0
 --- !u!54 &5676735982772938565
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -232,3 +271,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 1
+--- !u!114 &-1049521346970919809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5676735982772938564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

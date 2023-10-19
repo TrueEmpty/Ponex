@@ -240,8 +240,12 @@ GameObject:
   m_Component:
   - component: {fileID: 5612120671386914606}
   - component: {fileID: 5612120671386914600}
+  - component: {fileID: 8061800208875960868}
+  - component: {fileID: -7007256601204865611}
+  - component: {fileID: 5295168233131957937}
   - component: {fileID: 5612120671386914607}
   - component: {fileID: 2222802961088267116}
+  - component: {fileID: -5908863984810823835}
   m_Layer: 3
   m_Name: Bahrue
   m_TagString: Player
@@ -279,6 +283,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: -1
+--- !u!114 &8061800208875960868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5058516453889937152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59c2184b60ffff8449d893b3ef565007, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tagHit: Ball
+  damageIncrease: 0
+--- !u!114 &-7007256601204865611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5058516453889937152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0.1
+  targetTags:
+  - Ball
+--- !u!114 &5295168233131957937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5058516453889937152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &5612120671386914607
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,6 +349,12 @@ MonoBehaviour:
   ring: {fileID: 5261775711392155000}
   emblem: {fileID: 2922128728296518051}
   bumpCooldown: 4
+  thinkTime: 0.5
+  thought: 0
+  chanceToDoNothing: 50
+  chanceToMove: 100
+  chanceToBump: 0
+  chanceToSuper: 0
 --- !u!54 &2222802961088267116
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -319,3 +371,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 124
   m_CollisionDetection: 1
+--- !u!114 &-5908863984810823835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5058516453889937152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

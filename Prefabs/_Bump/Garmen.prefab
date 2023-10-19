@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 6342214630637558752}
   - component: {fileID: 6342214630637558762}
   - component: {fileID: 6342214630637558688}
+  - component: {fileID: 5306878033081997054}
   m_Layer: 3
   m_Name: Garmen
   m_TagString: Paddle
@@ -68,6 +69,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!114 &6342214630637558772
@@ -325,3 +327,15 @@ Halo:
     serializedVersion: 2
     rgba: 4278255425
   m_Size: 0.34
+--- !u!114 &5306878033081997054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6342214630637558687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

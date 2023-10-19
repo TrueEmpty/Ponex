@@ -10,10 +10,12 @@ GameObject:
   m_Component:
   - component: {fileID: 9163147881493305902}
   - component: {fileID: 5109622074830847091}
+  - component: {fileID: -950852276180932976}
   - component: {fileID: 2646789964282100443}
   - component: {fileID: 6864340337009905821}
   - component: {fileID: 2646789964282100440}
   - component: {fileID: 8962889112397878150}
+  - component: {fileID: 4368190962395739953}
   m_Layer: 3
   m_Name: Test
   m_TagString: Player
@@ -50,6 +52,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 5
+--- !u!114 &-950852276180932976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2646789964282100442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &2646789964282100443
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,6 +103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  delay: 0
   targetTags:
   - Ball
 --- !u!114 &2646789964282100440
@@ -119,6 +135,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 1
+--- !u!114 &4368190962395739953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2646789964282100442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6184567186480271046
 GameObject:
   m_ObjectHideFlags: 0

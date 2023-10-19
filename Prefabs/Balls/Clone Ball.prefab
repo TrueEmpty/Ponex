@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 5428096315936179885}
   - component: {fileID: 5428096315936179880}
   - component: {fileID: 5428096315936179884}
+  - component: {fileID: -3481834682040655107}
   m_Layer: 8
   m_Name: Clone Ball
   m_TagString: Ball
@@ -92,13 +93,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48ef08ba5a130514b80e6eb2f6068767, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  popMainTimer: {x: 10, y: 25, z: 0}
+  popMainTimer: {x: 5, y: 15, z: 0}
   sizeRange: {x: 0.1, y: 0.28, z: 0.4}
   growthRange: {x: 0.001, y: 0.01}
   maxClones: 5
   cloneBallChild: {fileID: 2718255567224364557, guid: 08896a41a4bcaea419eed03520f416a1, type: 3}
   cloneChildren: []
-  cloneChance: 0.17
+  cloneChance: 0.26
 --- !u!114 &5428096315936179881
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,3 +208,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 2
+--- !u!114 &-3481834682040655107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5428096315936180051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

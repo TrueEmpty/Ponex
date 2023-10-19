@@ -95,21 +95,46 @@ public class BallMovement : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
+        PlayerGrab pG = collision.gameObject.GetComponent<PlayerGrab>();
+
         switch (collision.transform.tag)
         {
             case "Player":
                 rb.velocity *= (bI.ball.speedIncrease * 1.2f);
+
+                if (pG != null)
+                {
+                    if (pG.IsLinked())
+                    {
+                        Player p = db.players[pG.playerIndex];
+                        p.ballHits++;
+                    }
+                }
                 break;
             case "Lifeline":
                 rb.velocity *= (bI.ball.speedIncrease * 2);
+
+                if (pG != null)
+                {
+                    if (pG.IsLinked())
+                    {
+                        Player p = db.players[pG.playerIndex];
+                        p.ballHits++;                        
+                    }
+                }
                 break;
             case "Ball":
                 break;
             case "Paddle":
-                PlayerGrab pG = collision.gameObject.GetComponent<PlayerGrab>();
                 if(pG != null)
                 {
                     rb.velocity *= (pG.player.pushBack / 100) * 3;
+
+                    if(pG.IsLinked())
+                    {
+                        Player p = db.players[pG.playerIndex];
+                        p.ballHits++;
+                    }
                 }
                 break;
             case "Wall":

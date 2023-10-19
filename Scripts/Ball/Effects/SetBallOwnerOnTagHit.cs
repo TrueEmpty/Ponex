@@ -5,8 +5,10 @@ using UnityEngine;
 public class SetBallOwnerOnTagHit : MonoBehaviour
 {
     PlayerGrab pG;
-
+    public float delay = 0;
     public List<string> targetTags = new List<string>();
+    PlayerGrab target;
+    int ppg = -1;
 
     // Start is called before the first frame update
     void Start()
@@ -22,8 +24,30 @@ public class SetBallOwnerOnTagHit : MonoBehaviour
 
             if(tpG != null)
             {
-                tpG.playerIndex = pG.playerIndex;
+                if(delay > 0)
+                {
+                    ppg = tpG.playerIndex;
+                    Invoke("SetTag",delay);
+                }
+                else
+                {
+                    tpG.playerIndex = pG.playerIndex;
+                }
             }
+        }
+    }
+
+    void SetTag()
+    {
+        if (target != null)
+        {
+            if(ppg == target.playerIndex)
+            {
+                target.playerIndex = pG.playerIndex;
+            }
+
+            target = null;
+            ppg = -1;
         }
     }
 }

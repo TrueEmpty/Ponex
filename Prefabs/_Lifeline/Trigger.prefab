@@ -391,8 +391,10 @@ GameObject:
   m_Component:
   - component: {fileID: 2378825962094382643}
   - component: {fileID: 2378825962094382655}
+  - component: {fileID: -3839894704859908158}
   - component: {fileID: 2378825962094382653}
   - component: {fileID: 2378825962094382652}
+  - component: {fileID: -7967691460743737456}
   m_Layer: 9
   m_Name: Trigger
   m_TagString: Lifeline
@@ -433,6 +435,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 6
+--- !u!114 &-3839894704859908158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2378825962094382642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &2378825962094382653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -459,6 +474,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tagHit: Ball
   damageIncrease: 0
+--- !u!114 &-7967691460743737456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2378825962094382642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2378825962195763127
 GameObject:
   m_ObjectHideFlags: 0

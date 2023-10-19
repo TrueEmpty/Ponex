@@ -10,11 +10,13 @@ GameObject:
   m_Component:
   - component: {fileID: 996484336700583939}
   - component: {fileID: 8988373638388366155}
+  - component: {fileID: -8214754946484798656}
   - component: {fileID: 1729839934028642518}
   - component: {fileID: 996484336700583964}
   - component: {fileID: 996484336700583965}
   - component: {fileID: 996484336700583966}
   - component: {fileID: 8301293107818807190}
+  - component: {fileID: -1354530626811110964}
   m_Layer: 9
   m_Name: Test
   m_TagString: Lifeline
@@ -50,6 +52,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 5
+--- !u!114 &-8214754946484798656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 996484336700583967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideInstead: 0
 --- !u!114 &1729839934028642518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,3 +159,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 1
+--- !u!114 &-1354530626811110964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 996484336700583967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

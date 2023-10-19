@@ -9,6 +9,7 @@ public class NariTail : MonoBehaviour
     PlayerGrab pG;
     Rigidbody rb;
     OffsetFollow oF;
+    Database db;
 
     public string tagHit = "Ball";
     float destroy = -1;
@@ -19,6 +20,7 @@ public class NariTail : MonoBehaviour
         pG = GetComponent<PlayerGrab>();
         rb = GetComponent<Rigidbody>();
         oF = GetComponent<OffsetFollow>();
+        db = Database.instance;
     }
 
     // Update is called once per frame
@@ -44,7 +46,7 @@ public class NariTail : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (pG.player != null && destroy < 0)
+        if (pG.IsLinked() && destroy < 0)
         {
             if (collision.transform.tag.ToLower().Trim() == tagHit.ToLower().Trim())
             {
@@ -55,11 +57,21 @@ public class NariTail : MonoBehaviour
 
                 if (tpG != null)
                 {
-                    if (tpG.playerIndex >= 0)
+                    if (tpG.IsLinked())
                     {
                         if (tpG.playerIndex == pG.playerIndex)
                         {
                             pass = false;
+                        }
+                        else
+                        {
+                            Player tp = db.players[tpG.playerIndex];
+                            Player yp = db.players[pG.playerIndex];
+
+                            if (tp.team == yp.team)
+                            {
+                                pass = false;
+                            }
                         }
                     }
                 }
