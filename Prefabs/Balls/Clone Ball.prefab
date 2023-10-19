@@ -93,13 +93,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48ef08ba5a130514b80e6eb2f6068767, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  popMainTimer: {x: 5, y: 15, z: 0}
+  popMainTimer: {x: 5, y: 10, z: 0}
   sizeRange: {x: 0.1, y: 0.28, z: 0.4}
-  growthRange: {x: 0.001, y: 0.01}
+  growthRange: {x: 0.005, y: 0.03}
   maxClones: 5
   cloneBallChild: {fileID: 2718255567224364557, guid: 08896a41a4bcaea419eed03520f416a1, type: 3}
   cloneChildren: []
-  cloneChance: 0.26
+  cloneChance: 0.19
 --- !u!114 &5428096315936179881
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -427,6 +427,72 @@ public class Database : MonoBehaviour
         yield return null;
     }
 
+    public void WinButtonPressed(string buttonPressed)
+    {
+        //Clear WonBoxes
+        if(showWinner.childCount > 0)
+        {
+            for(int i = showWinner.childCount - 1; i >= 0; i--)
+            {
+                Destroy(showWinner.GetChild(i).gameObject);
+            }
+        }
+        winnerScreen = false;
+
+        //Update Players
+        for (int i = 0; i < players.Count; i++)
+        {
+            Player p = players[i];
+
+            //Clear Stats
+            p.characterSelected = false;
+            p.lastGridUpdate = 0;
+            p.gridLock = false;
+            p.state = "";
+            p.won = false;
+            p.damageDealt = 0;
+            p.damageTaken = 0;
+            p.ballHits = 0;
+            p.longestBallOwnership = 0;
+            p.highestSingleDamgeDealt = 0;
+            p.highestSingleDamageTaken = 0;
+            p.ultsUsed = 0;
+            p.numberOfDashes = 0;
+            p.afterDeathHits = 0;
+            p.afterDeathDamage = 0;
+
+            //Reset Character info with main Char
+            Player character = characters.Find(x => x.name == p.name);
+
+            if(character != null)
+            {
+                p.SetUpCharacter(character);
+            }
+        }
+
+        //Perform action
+        switch(buttonPressed)
+        {
+            case "Rematch":
+                CharactersPicked("balls");
+                break;
+            case "Champion Select":
+                gameStart = false;
+                mm.BackUnitl("Character Select");
+                break;
+            case "Main Menu":
+                gameStart = false;
+                mm.openMenu.Clear();
+                mm.OpenMenu("Main Menu");
+                break;
+            default://Main Menu
+                gameStart = false;
+                mm.openMenu.Clear();
+                mm.OpenMenu("Main Menu");
+                break;
+        }
+    }
+
     public Player RandomCharacter(bool actives = true)
     {
         List<Player> avaliableChar = characters;
