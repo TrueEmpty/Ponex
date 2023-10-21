@@ -154,24 +154,24 @@ public class PositionSelect : MonoBehaviour
                             {
                                 for (int z = 0; z < rP.Count; z++)
                                 {
-                                    l.Add(rP[z].buttons.left);
-                                    r.Add(rP[z].buttons.right);
-                                    u.Add(rP[z].buttons.up);
-                                    d.Add(rP[z].buttons.down);
-                                    g.Add(rP[z].buttons.confirm);
-                                    x.Add(rP[z].buttons.cancel);
+                                    l.AddRange(rP[z].buttons.left);
+                                    r.AddRange(rP[z].buttons.right);
+                                    u.AddRange(rP[z].buttons.up);
+                                    d.AddRange(rP[z].buttons.down);
+                                    g.AddRange(rP[z].buttons.confirm);
+                                    x.AddRange(rP[z].buttons.cancel);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        l.Add(p.buttons.left);
-                        r.Add(p.buttons.right);
-                        u.Add(p.buttons.up);
-                        d.Add(p.buttons.down);
-                        g.Add(p.buttons.confirm);
-                        x.Add(p.buttons.cancel);
+                        l.AddRange(p.buttons.left);
+                        r.AddRange(p.buttons.right);
+                        u.AddRange(p.buttons.up);
+                        d.AddRange(p.buttons.down);
+                        g.AddRange(p.buttons.confirm);
+                        x.AddRange(p.buttons.cancel);
                     }
 
                     //Get Button Inputs

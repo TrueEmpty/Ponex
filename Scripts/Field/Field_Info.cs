@@ -92,6 +92,7 @@ public class Field_Info : MonoBehaviour
             {
                 bRen.material.shaderKeywords = new string[1] { "_NORMALMAP" };
                 bRen.material.SetTexture("_NORMALMAP", field.backgroundMaterial);
+                bRen.material.SetTextureScale("_NORMALMAP", field.tilling);
             }
         }
     }

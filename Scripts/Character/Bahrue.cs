@@ -29,6 +29,7 @@ public class Bahrue : MonoBehaviour
 
     public float bumpCooldown = 2;
     float timeTillReset = 0;
+    public int healthGain = 3;
 
     #region AI
     bool thinking = false;
@@ -442,13 +443,13 @@ public class Bahrue : MonoBehaviour
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Move);
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Bump);
 
-            float superGainSpeed = .75f * (50 / (float)pg.player.currentHealth);
+            float superGainSpeed = .9f * (50 / (float)pg.player.currentHealth);
             pg.player.super.amount += ((Time.deltaTime * superGainSpeed) / 100);
 
             if (pg.player.super.amount >= pg.player.super.cost)
             {
-                pg.player.maxHealth++;
-                pg.player.Heal(1);
+                pg.player.maxHealth += healthGain;
+                pg.player.Heal(healthGain);
                 pg.player.super.amount = 0;
                 //Play Shine Animation/Sound/Particle
             }

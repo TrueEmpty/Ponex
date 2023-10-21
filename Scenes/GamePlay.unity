@@ -9951,18 +9951,374 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sensitivity: 0.25
   buttons:
-  - left: Keycode.A
-    right: Keycode.D
-    up: Keycode.W
-    down: Keycode.S
-    confirm: Keycode.E
-    cancel: Keycode.Q
-  - left: Keycode.LeftArrow
-    right: Keycode.RightArrow
-    up: Keycode.UpArrow
-    down: Keycode.DownArrow
-    confirm: Keycode.Return
-    cancel: Keycode.Backspace
+  - left:
+    - Keycode.A
+    right:
+    - Keycode.D
+    up:
+    - Keycode.W
+    down:
+    - Keycode.S
+    confirm:
+    - Keycode.E
+    cancel:
+    - Keycode.Q
+  - left:
+    - Keycode.F
+    right:
+    - Keycode.H
+    up:
+    - Keycode.T
+    down:
+    - Keycode.G
+    confirm:
+    - Keycode.Y
+    cancel:
+    - Keycode.R
+  - left:
+    - Keycode.J
+    right:
+    - Keycode.L
+    up:
+    - Keycode.I
+    down:
+    - Keycode.K
+    confirm:
+    - Keycode.O
+    cancel:
+    - Keycode.U
+  - left:
+    - Keycode.LeftArrow
+    right:
+    - Keycode.RightArrow
+    up:
+    - Keycode.UpArrow
+    down:
+    - Keycode.DownArrow
+    confirm:
+    - Keycode.Return
+    cancel:
+    - Keycode.Backspace
+  - left:
+    - '- Left Joystick Horizontal 1'
+    right:
+    - + Left Joystick Horizontal 1
+    up:
+    - + Left Joystick Vertical 1
+    - Keycode.Joystick1Button5
+    - Keycode.Joystick1Button6
+    - Keycode.Joystick1Button3
+    down:
+    - '- Left Joystick Vertical 1'
+    - Keycode.Joystick1Button4
+    - Keycode.Joystick1Button7
+    - Keycode.Joystick1Button0
+    confirm:
+    - Keycode.Joystick1Button1
+    cancel:
+    - Keycode.Joystick1Button2
+    - Keycode.Joystick1Button12
+    - Keycode.Joystick1Button9
+  - left:
+    - '- Left Joystick Horizontal 2'
+    right:
+    - + Left Joystick Horizontal 2
+    up:
+    - + Left Joystick Vertical 2
+    - Keycode.Joystick2Button5
+    - Keycode.Joystick2Button6
+    - Keycode.Joystick2Button3
+    down:
+    - '- Left Joystick Vertical 2'
+    - Keycode.Joystick2Button4
+    - Keycode.Joystick2Button7
+    - Keycode.Joystick2Button0
+    confirm:
+    - Keycode.Joystick2Button1
+    cancel:
+    - Keycode.Joystick2Button2
+    - Keycode.Joystick2Button12
+    - Keycode.Joystick2Button9
+  - left:
+    - '- Left Joystick Horizontal 3'
+    right:
+    - + Left Joystick Horizontal 3
+    up:
+    - + Left Joystick Vertical 3
+    - Keycode.Joystick3Button5
+    - Keycode.Joystick3Button6
+    - Keycode.Joystick3Button3
+    down:
+    - '- Left Joystick Vertical 3'
+    - Keycode.Joystick3Button4
+    - Keycode.Joystick3Button7
+    - Keycode.Joystick3Button0
+    confirm:
+    - Keycode.Joystick3Button1
+    cancel:
+    - Keycode.Joystick3Button2
+    - Keycode.Joystick3Button12
+    - Keycode.Joystick3Button9
+  - left:
+    - '- Left Joystick Horizontal 4'
+    right:
+    - + Left Joystick Horizontal 4
+    up:
+    - + Left Joystick Vertical 4
+    - Keycode.Joystick4Button5
+    - Keycode.Joystick4Button6
+    - Keycode.Joystick4Button3
+    down:
+    - '- Left Joystick Vertical 4'
+    - Keycode.Joystick4Button4
+    - Keycode.Joystick4Button7
+    - Keycode.Joystick4Button0
+    confirm:
+    - Keycode.Joystick4Button1
+    cancel:
+    - Keycode.Joystick4Button2
+    - Keycode.Joystick4Button12
+    - Keycode.Joystick4Button9
+  - left:
+    - '- Left Joystick Horizontal 5'
+    right:
+    - + Left Joystick Horizontal 5
+    up:
+    - + Left Joystick Vertical 5
+    - Keycode.Joystick5Button5
+    - Keycode.Joystick5Button6
+    - Keycode.Joystick5Button3
+    down:
+    - '- Left Joystick Vertical 5'
+    - Keycode.Joystick5Button4
+    - Keycode.Joystick5Button7
+    - Keycode.Joystick5Button0
+    confirm:
+    - Keycode.Joystick5Button1
+    cancel:
+    - Keycode.Joystick5Button2
+    - Keycode.Joystick5Button12
+    - Keycode.Joystick5Button9
+  - left:
+    - '- Left Joystick Horizontal 6'
+    right:
+    - + Left Joystick Horizontal 6
+    up:
+    - + Left Joystick Vertical 6
+    - Keycode.Joystick6Button5
+    - Keycode.Joystick6Button6
+    - Keycode.Joystick6Button3
+    down:
+    - '- Left Joystick Vertical 6'
+    - Keycode.Joystick6Button4
+    - Keycode.Joystick6Button7
+    - Keycode.Joystick6Button0
+    confirm:
+    - Keycode.Joystick6Button1
+    cancel:
+    - Keycode.Joystick6Button2
+    - Keycode.Joystick6Button12
+    - Keycode.Joystick6Button9
+  - left:
+    - '- Left Joystick Horizontal 7'
+    right:
+    - + Left Joystick Horizontal 7
+    up:
+    - + Left Joystick Vertical 7
+    - Keycode.Joystick7Button5
+    - Keycode.Joystick7Button6
+    - Keycode.Joystick7Button3
+    down:
+    - '- Left Joystick Vertical 7'
+    - Keycode.Joystick7Button4
+    - Keycode.Joystick7Button7
+    - Keycode.Joystick7Button0
+    confirm:
+    - Keycode.Joystick7Button1
+    cancel:
+    - Keycode.Joystick7Button2
+    - Keycode.Joystick7Button12
+    - Keycode.Joystick7Button9
+  - left:
+    - '- Left Joystick Horizontal 8'
+    right:
+    - + Left Joystick Horizontal 8
+    up:
+    - + Left Joystick Vertical 8
+    - Keycode.Joystick8Button5
+    - Keycode.Joystick8Button6
+    - Keycode.Joystick8Button3
+    down:
+    - '- Left Joystick Vertical 8'
+    - Keycode.Joystick8Button4
+    - Keycode.Joystick8Button7
+    - Keycode.Joystick8Button0
+    confirm:
+    - Keycode.Joystick8Button1
+    cancel:
+    - Keycode.Joystick8Button2
+    - Keycode.Joystick8Button12
+    - Keycode.Joystick8Button9
+  - left:
+    - '- Left Joystick Horizontal 9'
+    right:
+    - + Left Joystick Horizontal 9
+    up:
+    - + Left Joystick Vertical 9
+    - Keycode.Joystick9Button5
+    - Keycode.Joystick9Button6
+    - Keycode.Joystick9Button3
+    down:
+    - '- Left Joystick Vertical 9'
+    - Keycode.Joystick9Button4
+    - Keycode.Joystick9Button7
+    - Keycode.Joystick9Button0
+    confirm:
+    - Keycode.Joystick9Button1
+    cancel:
+    - Keycode.Joystick9Button2
+    - Keycode.Joystick9Button12
+    - Keycode.Joystick9Button9
+  - left:
+    - '- Left Joystick Horizontal 10'
+    right:
+    - + Left Joystick Horizontal 10
+    up:
+    - + Left Joystick Vertical 10
+    - Keycode.Joystick10Button5
+    - Keycode.Joystick10Button6
+    - Keycode.Joystick10Button3
+    down:
+    - '- Left Joystick Vertical 10'
+    - Keycode.Joystick10Button4
+    - Keycode.Joystick10Button7
+    - Keycode.Joystick10Button0
+    confirm:
+    - Keycode.Joystick10Button1
+    cancel:
+    - Keycode.Joystick10Button2
+    - Keycode.Joystick10Button12
+    - Keycode.Joystick10Button9
+  - left:
+    - '- Left Joystick Horizontal 11'
+    right:
+    - + Left Joystick Horizontal 11
+    up:
+    - + Left Joystick Vertical 11
+    - Keycode.Joystick11Button5
+    - Keycode.Joystick11Button6
+    - Keycode.Joystick11Button3
+    down:
+    - '- Left Joystick Vertical 11'
+    - Keycode.Joystick11Button4
+    - Keycode.Joystick11Button7
+    - Keycode.Joystick11Button0
+    confirm:
+    - Keycode.Joystick11Button1
+    cancel:
+    - Keycode.Joystick11Button2
+    - Keycode.Joystick11Button12
+    - Keycode.Joystick11Button9
+  - left:
+    - '- Left Joystick Horizontal 12'
+    right:
+    - + Left Joystick Horizontal 12
+    up:
+    - + Left Joystick Vertical 12
+    - Keycode.Joystick12Button5
+    - Keycode.Joystick12Button6
+    - Keycode.Joystick12Button3
+    down:
+    - '- Left Joystick Vertical 12'
+    - Keycode.Joystick12Button4
+    - Keycode.Joystick12Button7
+    - Keycode.Joystick12Button0
+    confirm:
+    - Keycode.Joystick12Button1
+    cancel:
+    - Keycode.Joystick12Button2
+    - Keycode.Joystick12Button12
+    - Keycode.Joystick12Button9
+  - left:
+    - '- Left Joystick Horizontal 13'
+    right:
+    - + Left Joystick Horizontal 13
+    up:
+    - + Left Joystick Vertical 13
+    - Keycode.Joystick13Button5
+    - Keycode.Joystick13Button6
+    - Keycode.Joystick13Button3
+    down:
+    - '- Left Joystick Vertical 13'
+    - Keycode.Joystick13Button4
+    - Keycode.Joystick13Button7
+    - Keycode.Joystick13Button0
+    confirm:
+    - Keycode.Joystick13Button1
+    cancel:
+    - Keycode.Joystick13Button2
+    - Keycode.Joystick13Button12
+    - Keycode.Joystick13Button9
+  - left:
+    - '- Left Joystick Horizontal 14'
+    right:
+    - + Left Joystick Horizontal 14
+    up:
+    - + Left Joystick Vertical 14
+    - Keycode.Joystick14Button5
+    - Keycode.Joystick14Button6
+    - Keycode.Joystick14Button3
+    down:
+    - '- Left Joystick Vertical 14'
+    - Keycode.Joystick14Button4
+    - Keycode.Joystick14Button7
+    - Keycode.Joystick14Button0
+    confirm:
+    - Keycode.Joystick14Button1
+    cancel:
+    - Keycode.Joystick14Button2
+    - Keycode.Joystick14Button12
+    - Keycode.Joystick14Button9
+  - left:
+    - '- Left Joystick Horizontal 15'
+    right:
+    - + Left Joystick Horizontal 15
+    up:
+    - + Left Joystick Vertical 15
+    - Keycode.Joystick15Button5
+    - Keycode.Joystick15Button6
+    - Keycode.Joystick15Button3
+    down:
+    - '- Left Joystick Vertical 15'
+    - Keycode.Joystick15Button4
+    - Keycode.Joystick15Button7
+    - Keycode.Joystick15Button0
+    confirm:
+    - Keycode.Joystick15Button1
+    cancel:
+    - Keycode.Joystick15Button2
+    - Keycode.Joystick15Button12
+    - Keycode.Joystick15Button9
+  - left:
+    - '- Left Joystick Horizontal 16'
+    right:
+    - + Left Joystick Horizontal 16
+    up:
+    - + Left Joystick Vertical 16
+    - Keycode.Joystick16Button5
+    - Keycode.Joystick16Button6
+    - Keycode.Joystick16Button3
+    down:
+    - '- Left Joystick Vertical 16'
+    - Keycode.Joystick16Button4
+    - Keycode.Joystick16Button7
+    - Keycode.Joystick16Button0
+    confirm:
+    - Keycode.Joystick16Button1
+    cancel:
+    - Keycode.Joystick16Button2
+    - Keycode.Joystick16Button12
+    - Keycode.Joystick16Button9
   fields:
   - name: Test Zone
     arthur: '#True Empty'
@@ -13225,12 +13581,12 @@ MonoBehaviour:
     movementSpeed: 5
     pushBack: 1000
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
       amount: 1
@@ -13297,12 +13653,12 @@ MonoBehaviour:
     movementSpeed: 8
     pushBack: 500
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
       amount: 4
@@ -13311,9 +13667,9 @@ MonoBehaviour:
       speed: 0.07
       readyPercent: 0
     super:
-      amount: 15
+      amount: 50
       max: 200
-      cost: 50
+      cost: 100
       speed: 5
       readyPercent: 0
     dash:
@@ -13368,16 +13724,16 @@ MonoBehaviour:
     movementSpeed: 2
     pushBack: 50
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
-      amount: 3
-      max: 3
+      amount: 5
+      max: 5
       cost: 1
       speed: 50
       readyPercent: 0
@@ -13441,12 +13797,12 @@ MonoBehaviour:
     movementSpeed: 3
     pushBack: 0.75
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
       amount: 0
@@ -13512,12 +13868,12 @@ MonoBehaviour:
     movementSpeed: 5
     pushBack: 50
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
       amount: 50
@@ -13580,15 +13936,15 @@ MonoBehaviour:
     position: 0
     currentHealth: 15
     maxHealth: 15
-    movementSpeed: 1500
+    movementSpeed: 1000
     pushBack: 1000
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
       amount: 0
@@ -13654,12 +14010,12 @@ MonoBehaviour:
     movementSpeed: 0
     pushBack: 2000
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
       amount: 15
@@ -13725,12 +14081,12 @@ MonoBehaviour:
     movementSpeed: 15
     pushBack: 75
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
       amount: 10
@@ -13799,12 +14155,12 @@ MonoBehaviour:
     movementSpeed: 50
     pushBack: 0
     buttons:
-      left: 
-      right: 
-      up: 
-      down: 
-      confirm: 
-      cancel: 
+      left: []
+      right: []
+      up: []
+      down: []
+      confirm: []
+      cancel: []
     facing: 0
     bump:
       amount: 0
@@ -52324,7 +52680,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3548746951141324482}
   m_HandleRect: {fileID: 3548746951141324483}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -53657,7 +54013,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &3548746951600626092
 GameObject:
   m_ObjectHideFlags: 0
@@ -55919,7 +56275,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6677652147480437402}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1637413287}
+        m_TargetAssemblyTypeName: Database, Assembly-CSharp
+        m_MethodName: WinButtonPressed
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Champion Select
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!224 &6677652147480437405
 RectTransform:
   m_ObjectHideFlags: 0
@@ -56138,7 +56506,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6677652147738950006}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1637413287}
+        m_TargetAssemblyTypeName: Database, Assembly-CSharp
+        m_MethodName: WinButtonPressed
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Main Menu
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6677652147738950008
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56351,7 +56731,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6677652147876868091}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1637413287}
+        m_TargetAssemblyTypeName: Database, Assembly-CSharp
+        m_MethodName: WinButtonPressed
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Rematch
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!224 &6677652147876868094
 RectTransform:
   m_ObjectHideFlags: 0
@@ -57074,7 +57466,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1426925221189894703}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8db37bc8d1177b84097b526d280102f0, type: 3}
   m_Name: 

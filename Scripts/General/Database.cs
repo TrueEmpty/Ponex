@@ -86,6 +86,39 @@ public class Database : MonoBehaviour
     {
         mm = MenuManager.instance;
         cS = CharacterSelect.instance;
+
+        /*Buttons b = buttons[4];
+        for (int i = 2; i <= 16; i++)
+        {
+            Buttons a = new Buttons();
+
+            for (int l = 0; l < b.left.Count; l++)
+            {
+                a.left.Add(b.left[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
+            }
+            for(int l = 0; l < b.right.Count; l++)
+            {
+                a.right.Add(b.right[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
+            }
+            for(int l = 0; l < b.up.Count; l++)
+            {
+                a.up.Add(b.up[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
+            }
+            for(int l = 0; l < b.down.Count; l++)
+            {
+                a.down.Add(b.down[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
+            }
+            for(int l = 0; l < b.confirm.Count; l++)
+            {
+                a.confirm.Add(b.confirm[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
+            }
+            for(int l = 0; l < b.cancel.Count; l++)
+            {
+                a.cancel.Add(b.cancel[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
+            }
+
+            buttons.Add(a);
+        }*/
     }
 
     // Update is called once per frame

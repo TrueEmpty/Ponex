@@ -5,12 +5,12 @@ using UnityEngine;
 [System.Serializable]
 public class Buttons
 {
-    public string left = "";
-    public string right = "";
-    public string up = "";
-    public string down = "";
-    public string confirm = "";
-    public string cancel = "";
+    public List<string> left = new List<string>();
+    public List<string> right = new List<string>();
+    public List<string> up = new List<string>();
+    public List<string> down = new List<string>();
+    public List<string> confirm = new List<string>();
+    public List<string> cancel = new List<string>();
 
     public Buttons()
     {
@@ -27,9 +27,9 @@ public class Buttons
         cancel = b.cancel;
     }
 
-    public string Up(Facing facing)
+    public List<string> Up(Facing facing)
     {
-        string result = up;
+        List<string> result = up;
 
         switch(facing)
         {
@@ -50,9 +50,9 @@ public class Buttons
         return result;
     }
 
-    public string Down(Facing facing)
+    public List<string> Down(Facing facing)
     {
-        string result = down;
+        List<string> result = down;
 
         switch(facing)
         {
@@ -73,9 +73,9 @@ public class Buttons
         return result;
     }
 
-    public string Left(Facing facing)
+    public List<string> Left(Facing facing)
     {
-        string result = left;
+        List<string> result = left;
 
         switch(facing)
         {
@@ -96,9 +96,9 @@ public class Buttons
         return result;
     }
 
-    public string Right(Facing facing)
+    public List<string> Right(Facing facing)
     {
-        string result = right;
+        List<string> result = right;
 
         switch(facing)
         {
@@ -157,32 +157,32 @@ public class Buttons
         }
         else
         {
-            if (a.left.ToLower().Trim() != b.left.ToLower().Trim())
+            if (a.left != b.left)
             {
                 result = false;
             }
 
-            if (a.right.ToLower().Trim() != b.right.ToLower().Trim())
+            if (a.right != b.right)
             {
                 result = false;
             }
 
-            if (a.up.ToLower().Trim() != b.up.ToLower().Trim())
+            if (a.up != b.up)
             {
                 result = false;
             }
 
-            if (a.down.ToLower().Trim() != b.down.ToLower().Trim())
+            if (a.down != b.down)
             {
                 result = false;
             }
 
-            if (a.confirm.ToLower().Trim() != b.confirm.ToLower().Trim())
+            if (a.confirm != b.confirm)
             {
                 result = false;
             }
 
-            if (a.cancel.ToLower().Trim() != b.cancel.ToLower().Trim())
+            if (a.cancel != b.cancel)
             {
                 result = false;
             }

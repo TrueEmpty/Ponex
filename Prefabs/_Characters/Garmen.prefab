@@ -298,7 +298,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hub: {fileID: 40940598532085617}
-  speed: 50
+  speed: 75
   rotAmount: 0
 --- !u!114 &40940598331089855
 MonoBehaviour:
