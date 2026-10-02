@@ -20,12 +20,12 @@ public class UpdateField : MonoBehaviour
 
     public void PlayerAdded(PlayerAdded pA)
     {
-        int cI = fS.characterGrabs.FindIndex(x => x.container == pA.owner);
+        /*int cI = fS.characterGrabs.FindIndex(x => x.container == pA.owner);
 
         if (cI >= 0 && cI < db.fields.Count)
         {
             db.selectedField = cI;
-        }
+        }*/
     }
 
     public void OnLoop(Looped looped)

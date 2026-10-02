@@ -44,7 +44,7 @@ public class BallMovement : MonoBehaviour
     public void BeginMovement()
     {
         Vector3 dir = new Vector3(Random.Range(-bI.ball.startSpeed * 2, bI.ball.startSpeed * 2), Random.Range(-bI.ball.startSpeed * 2, bI.ball.startSpeed * 2), 0);
-        rb.velocity = dir;
+        rb.linearVelocity = dir;
 
         moveReady = true;
     }
@@ -53,44 +53,44 @@ public class BallMovement : MonoBehaviour
     {
         float halfStartSpeed = (bI.ball.startSpeed / 3);
 
-        if (Mathf.Abs(rb.velocity.x) < halfStartSpeed && Mathf.Abs(rb.velocity.y) < halfStartSpeed)
+        if (Mathf.Abs(rb.linearVelocity.x) < halfStartSpeed && Mathf.Abs(rb.linearVelocity.y) < halfStartSpeed)
         {
-            rb.velocity *= 2 * Time.deltaTime;
+            rb.linearVelocity *= 2 * Time.deltaTime;
         }
     }
 
     void MinCheck()
     {
-        Vector3 newVelocity = rb.velocity;
+        Vector3 newVelocity = rb.linearVelocity;
 
-        if (rb.velocity.x < -bI.ball.maxSpeed)
+        if (rb.linearVelocity.x < -bI.ball.maxSpeed)
         {
             newVelocity.x = -bI.ball.maxSpeed;
         }
 
-        if (rb.velocity.y < -bI.ball.maxSpeed)
+        if (rb.linearVelocity.y < -bI.ball.maxSpeed)
         {
             newVelocity.y = -bI.ball.maxSpeed;
         }
 
-        rb.velocity = newVelocity;
+        rb.linearVelocity = newVelocity;
     }
 
     void MaxCheck()
     {
-        Vector3 newVelocity = rb.velocity;
+        Vector3 newVelocity = rb.linearVelocity;
 
-        if(rb.velocity.x > bI.ball.maxSpeed)
+        if(rb.linearVelocity.x > bI.ball.maxSpeed)
         {
             newVelocity.x = bI.ball.maxSpeed;
         }
 
-        if(rb.velocity.y > bI.ball.maxSpeed)
+        if(rb.linearVelocity.y > bI.ball.maxSpeed)
         {
             newVelocity.y = bI.ball.maxSpeed;
         }
 
-        rb.velocity = newVelocity;
+        rb.linearVelocity = newVelocity;
     }
 
     private void OnCollisionExit(Collision collision)
@@ -100,7 +100,7 @@ public class BallMovement : MonoBehaviour
         switch (collision.transform.tag)
         {
             case "Player":
-                rb.velocity *= (bI.ball.speedIncrease * 1.2f);
+                rb.linearVelocity *= (bI.ball.speedIncrease * 1.2f);
 
                 if (pG != null)
                 {
@@ -112,7 +112,7 @@ public class BallMovement : MonoBehaviour
                 }
                 break;
             case "Lifeline":
-                rb.velocity *= (bI.ball.speedIncrease * 2);
+                rb.linearVelocity *= (bI.ball.speedIncrease * 2);
 
                 if (pG != null)
                 {
@@ -128,7 +128,7 @@ public class BallMovement : MonoBehaviour
             case "Paddle":
                 if(pG != null)
                 {
-                    rb.velocity *= (pG.player.pushBack / 100) * 3;
+                    rb.linearVelocity *= (pG.player.pushBack / 100) * 3;
 
                     if(pG.IsLinked())
                     {
@@ -138,7 +138,7 @@ public class BallMovement : MonoBehaviour
                 }
                 break;
             case "Wall":
-                rb.velocity *= (bI.ball.speedIncrease*1.25f);
+                rb.linearVelocity *= (bI.ball.speedIncrease*1.25f);
                 break;
         }
 

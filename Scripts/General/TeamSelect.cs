@@ -6,11 +6,10 @@ using UnityEngine.UI;
 public class TeamSelect : MonoBehaviour
 {
     public static TeamSelect instance;
-    ButtonManager bm;
     Database db;
     MenuManager mm;
 
-    List<Portait> teamGrabs = new List<Portait>();
+    /*List<Portait> teamGrabs = new List<Portait>();*/
     bool setup = false;
 
     private void Awake()
@@ -29,14 +28,13 @@ public class TeamSelect : MonoBehaviour
     void Start()
     {
         db = Database.instance;
-        bm = ButtonManager.instance;
         mm = MenuManager.instance;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (setup)
+       /* if (setup)
         {
             for (int i = 0; i < teamGrabs.Count; i++)
             {
@@ -47,7 +45,7 @@ public class TeamSelect : MonoBehaviour
                 if (i < db.players.Count)
                 {
                     Player p = db.players[i];
-                    Color c = db.playerColors[i];
+                    Color c = db.playerColors[i].color;
 
                     if (p.computer)
                     {
@@ -248,12 +246,12 @@ public class TeamSelect : MonoBehaviour
         else
         {
             Setup();
-        }
+        }*/
     }
 
     public void Setup()
     {
-        if (!setup)
+        /*if (!setup)
         {
             //Team Portraits
             Transform por = transform.GetChild(1);
@@ -273,6 +271,6 @@ public class TeamSelect : MonoBehaviour
                 teamGrabs.Add(p);
             }
             setup = true;
-        }
+        }*/
     }
 }

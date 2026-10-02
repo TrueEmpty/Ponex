@@ -87,7 +87,7 @@ public class NariTail : MonoBehaviour
                         nTU.tails.Remove(gameObject);
                         oF.parent = null;
 
-                        rb.velocity = new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0);
+                        rb.linearVelocity = new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0);
                     }
                 }
             }

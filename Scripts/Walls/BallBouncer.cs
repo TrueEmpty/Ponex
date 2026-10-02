@@ -14,7 +14,7 @@ public class BallBouncer : MonoBehaviour
 
             if (rb != null)
             {
-                rb.velocity = rb.velocity * bounceAmount;
+                rb.linearVelocity = rb.linearVelocity * bounceAmount;
             }
         }
     }

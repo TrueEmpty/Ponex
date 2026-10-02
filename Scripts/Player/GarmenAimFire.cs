@@ -5,7 +5,6 @@ using UnityEngine;
 public class GarmenAimFire : MonoBehaviour
 {
     PlayerGrab pg;
-    ButtonManager bm;
     Database db;
     Garmen g;
 
@@ -17,7 +16,6 @@ public class GarmenAimFire : MonoBehaviour
     void Start()
     {
         pg = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
     }
 
@@ -39,7 +37,7 @@ public class GarmenAimFire : MonoBehaviour
                 {
                     int rotDir = 0;
 
-                    if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || g.thought == Thought.MoveRight) && rotAmount > -85)
+                    /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || g.thought == Thought.MoveRight) && rotAmount > -85)
                     {
                         rotDir -= 1;
                     }
@@ -47,7 +45,7 @@ public class GarmenAimFire : MonoBehaviour
                     if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || g.thought == Thought.MoveLeft) && rotAmount < 85)
                     {
                         rotDir += 1;
-                    }
+                    }*/
 
                     hub.Rotate(Vector3.forward * rotDir * Time.deltaTime * speed, Space.Self);
                     rotAmount += Time.deltaTime * speed * rotDir;

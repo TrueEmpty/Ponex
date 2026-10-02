@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class GameResultBreakdown : MonoBehaviour
 {
     Database db;
-    ButtonManager bm;
     public int playerIndex = -1;
 
     public Color selected = Color.yellow;
@@ -37,7 +36,6 @@ public class GameResultBreakdown : MonoBehaviour
         alpha = (200f / 255f);
         rt = GetComponent<RectTransform>();
         db = Database.instance;
-        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
@@ -84,7 +82,7 @@ public class GameResultBreakdown : MonoBehaviour
     void UpdateInfo()
     {
         Player p = db.players[playerIndex];
-        Color c = db.playerColors[playerIndex];
+        Color c = db.playerColors[playerIndex].color;
         Color t = db.teamColors[p.team];
         t.a = alpha;
 
@@ -149,7 +147,7 @@ public class GameResultBreakdown : MonoBehaviour
 
         Vector3 curPos = info.transform.localPosition;
 
-        if(bm.KeyPressed(p.buttons.up))
+        /*if(bm.KeyPressed(p.buttons.up))
         {
             curPos.y += scrollspeed * Time.deltaTime;
         }
@@ -157,7 +155,7 @@ public class GameResultBreakdown : MonoBehaviour
         if(bm.KeyPressed(p.buttons.down))
         {
             curPos.y -= scrollspeed * Time.deltaTime;
-        }
+        }*/
 
         if(curPos.y < 0)
         {
@@ -168,10 +166,10 @@ public class GameResultBreakdown : MonoBehaviour
             curPos.y = height;
         }
 
-        if(bm.KeyDown(p.buttons.cancel) || bm.KeyDown(p.buttons.confirm))
+        /*if(bm.KeyDown(p.buttons.cancel) || bm.KeyDown(p.buttons.confirm))
         {
             p.state = "Winners";
-        }
+        }*/
 
         info.transform.localPosition = curPos;
     }

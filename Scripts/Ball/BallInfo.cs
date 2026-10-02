@@ -178,10 +178,10 @@ public class BallInfo : MonoBehaviour
             }
             yield return null;
 
-            ghostObj.GetComponent<Rigidbody>().velocity = rb.velocity;
+            ghostObj.GetComponent<Rigidbody>().linearVelocity = rb.linearVelocity;
             yield return new WaitForSeconds(.001f);
 
-            ghostObj.GetComponent<Rigidbody>().velocity *= speedUp;
+            ghostObj.GetComponent<Rigidbody>().linearVelocity *= speedUp;
             yield return null;
 
             yield return new WaitForSeconds(_maxPhysicsFrameIterations / 60);

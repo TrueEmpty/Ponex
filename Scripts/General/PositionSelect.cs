@@ -6,10 +6,9 @@ using UnityEngine.UI;
 public class PositionSelect : MonoBehaviour
 {
     public static PositionSelect instance;
-    ButtonManager bm;
     Database db;
     MenuManager mm;
-    public List<Portait> postionGrabs = new List<Portait>();
+    /*public List<Portait> postionGrabs = new List<Portait>();*/
     Vector3 setPos = new Vector3(225,175,25);
     public Color outlineColor = Color.blue;
     public Color readyColor = Color.green;
@@ -32,7 +31,6 @@ public class PositionSelect : MonoBehaviour
     void Start()
     {
         db = Database.instance;
-        bm = ButtonManager.instance;
         mm = MenuManager.instance;
     }
 
@@ -51,7 +49,7 @@ public class PositionSelect : MonoBehaviour
 
     void Setup()
     {
-        if (!setup)
+       /* if (!setup)
         {
             //Portraits
             Transform porC = transform.GetChild(2);
@@ -69,19 +67,19 @@ public class PositionSelect : MonoBehaviour
             }
 
             setup = true;
-        }
+        }*/
     }
 
     void LoadPosition()
     {
-        for(int i = 0; i < postionGrabs.Count; i++)
+        /*for(int i = 0; i < postionGrabs.Count; i++)
         {
             Portait pG = postionGrabs[i];
 
             if(i < db.players.Count)
             {
                 Player p = db.players[i];
-                Color c = db.playerColors[i];
+                Color c = db.playerColors[i].color;
 
                 pG.container.SetActive(true);
 
@@ -399,6 +397,6 @@ public class PositionSelect : MonoBehaviour
             {
                 pG.container.SetActive(false);
             }
-        }
+        }*/
     }
 }

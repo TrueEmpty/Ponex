@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class BallSelect : MonoBehaviour
 {
     public static BallSelect instance;
-    ButtonManager bm;
     Database db;
     MenuManager mm;
 
@@ -33,7 +32,6 @@ public class BallSelect : MonoBehaviour
     void Start()
     {
         db = Database.instance;
-        bm = ButtonManager.instance;
         mm = MenuManager.instance;
     }
 
@@ -68,16 +66,16 @@ public class BallSelect : MonoBehaviour
         {
             for (int z = 0; z < rP.Count; z++)
             {
-                l.AddRange(rP[z].buttons.left);
+                /*l.AddRange(rP[z].buttons.left);
                 r.AddRange(rP[z].buttons.right);
                 u.AddRange(rP[z].buttons.up);
                 d.AddRange(rP[z].buttons.down);
                 g.AddRange(rP[z].buttons.confirm);
-                x.AddRange(rP[z].buttons.cancel);
+                x.AddRange(rP[z].buttons.cancel);*/
             }
         }
 
-        if (bm.KeyDown(r) || bm.KeyDown(u))
+        /*if (bm.KeyDown(r) || bm.KeyDown(u))
         {
             db.selectedBall++;
 
@@ -130,7 +128,7 @@ public class BallSelect : MonoBehaviour
             }
             dontProcced = true;
             mm.BackMenu();
-        }
+        }*/
         #endregion
 
         if (lastShownBall != db.selectedBall && !dontProcced)

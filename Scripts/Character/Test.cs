@@ -5,7 +5,6 @@ using UnityEngine;
 public class Test : MonoBehaviour
 {
     Rigidbody rb;
-    ButtonManager bm;
     Database db;
     PlayerGrab pg;
 
@@ -52,7 +51,6 @@ public class Test : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
 
         rb.useGravity = false;
@@ -79,7 +77,7 @@ public class Test : MonoBehaviour
             }
             else
             {
-                rb.velocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
             }
 
             if (pg.player.CanBump)
@@ -315,7 +313,7 @@ public class Test : MonoBehaviour
     {
         int moveDir = 0;
 
-        if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
+        /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
         {
             moveDir += 1;
         }
@@ -323,21 +321,21 @@ public class Test : MonoBehaviour
         if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || thought == Thought.MoveLeft) && !WallInDirection(-1))
         {
             moveDir -= 1;
-        }
+        }*/
 
         Vector3 rotDir = transform.right;
         rotDir.x = Mathf.Abs(rotDir.x);
         rotDir.y = Mathf.Abs(rotDir.y);
         rotDir.z = Mathf.Abs(rotDir.z);
 
-        rb.velocity = rotDir * moveDir * speedIncrease * pg.player.movementSpeed;
+        rb.linearVelocity = rotDir * moveDir * speedIncrease * pg.player.movementSpeed;
     }
 
     void OnDash()
     {
         Skill d = pg.player.dash;
 
-        if ((bm.KeyDown(pg.player.buttons.Right(pg.player.facing))) && d.amount >= d.cost)
+        /*if ((bm.KeyDown(pg.player.buttons.Right(pg.player.facing))) && d.amount >= d.cost)
         {
             if(Mathf.Abs(canDash) == 2)
             {
@@ -356,9 +354,9 @@ public class Test : MonoBehaviour
                 canDash = 1;
                 dashEnd = doubleClickTime;
             }
-        }
+        }*/
 
-        if ((bm.KeyDown(pg.player.buttons.Left(pg.player.facing))) && d.amount >= d.cost)
+       /* if ((bm.KeyDown(pg.player.buttons.Left(pg.player.facing))) && d.amount >= d.cost)
         {
             if (Mathf.Abs(canDash) == 2)
             {
@@ -376,14 +374,14 @@ public class Test : MonoBehaviour
                 canDash = -1;
                 dashEnd = doubleClickTime;
             }
-        }
+        }*/
     }
 
     void OnBump()
     {
         Skill b = pg.player.bump;
 
-        if ((bm.KeyDown(pg.player.buttons.Up(pg.player.facing)) || thought == Thought.MoveUp) && b.Enough())
+        /*if ((bm.KeyDown(pg.player.buttons.Up(pg.player.facing)) || thought == Thought.MoveUp) && b.Enough())
         {
             GameObject go = Instantiate(bump, transform.position, transform.rotation);
             go.transform.parent = transform;
@@ -397,14 +395,14 @@ public class Test : MonoBehaviour
 
             b.Spend();
             thought = Thought.Nothing;
-        }
+        }*/
     }
 
     void OnSuper()
     {
         Skill b = pg.player.super;
 
-        if ((bm.KeyDown(pg.player.buttons.Down(pg.player.facing)) || thought == Thought.MoveDown) && b.Enough())
+        /*if ((bm.KeyDown(pg.player.buttons.Down(pg.player.facing)) || thought == Thought.MoveDown) && b.Enough())
         {
             GameObject go = Instantiate(super, transform.position, transform.rotation);
 
@@ -420,7 +418,7 @@ public class Test : MonoBehaviour
             GameObject goE = Instantiate(superEffect, transform.position, transform.rotation);
             goE.transform.parent = transform;
             thought = Thought.Nothing;
-        }
+        }*/
     }
 
     bool WallInDirection(int dir)

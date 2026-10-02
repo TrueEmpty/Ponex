@@ -6,7 +6,6 @@ using UnityEngine;
 public class NariMove : MonoBehaviour
 {
     Rigidbody rb;
-    ButtonManager bm;
     Database db;
     PlayerGrab pg;
     Vector3 moveDir = Vector3.up;
@@ -20,7 +19,6 @@ public class NariMove : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
 
         rb.useGravity = false;
@@ -63,7 +61,7 @@ public class NariMove : MonoBehaviour
 
     void OnMove()
     {
-        if (bm.KeyDown(pg.player.buttons.right))
+        /*if (bm.KeyDown(pg.player.buttons.right))
         {
             if (!WallInDirection(Vector3.right))
             {
@@ -94,7 +92,7 @@ public class NariMove : MonoBehaviour
                 transform.rotation = Quaternion.Euler(0, 0, 0);
                 moveDir = Vector3.down;
             }    
-        }
+        }*/
 
         if(trueSpeed > pg.player.movementSpeed)
         {
@@ -105,12 +103,12 @@ public class NariMove : MonoBehaviour
             trueSpeed += Time.deltaTime;
         }
 
-        rb.velocity = trueSpeed * moveDir;
+        rb.linearVelocity = trueSpeed * moveDir;
 
         //Check if Wall is in dir if so bounce back
         if(WallInDirection(moveDir))
         {
-            rb.velocity *= -1;
+            rb.linearVelocity *= -1;
             moveDir *= -1;
             Vector3 nRot = transform.rotation.eulerAngles;
             nRot += new Vector3(0, 0, 180);

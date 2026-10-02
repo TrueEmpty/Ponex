@@ -18,12 +18,12 @@ public class ConstantForward : MonoBehaviour
 
     void Update()
     {
-        rb.velocity = transform.up * speed;
+        rb.linearVelocity = transform.up * speed;
         lifetime += Time.deltaTime;
 
         if (time != -1 && time <= lifetime)
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
         }
     }
 }

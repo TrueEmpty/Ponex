@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
 
 public class Database : MonoBehaviour
@@ -11,7 +12,6 @@ public class Database : MonoBehaviour
 
     #region Setting
     public float sensitivity = .25f;
-    public List<Buttons> buttons;
     #endregion
 
     #region Fields
@@ -30,11 +30,15 @@ public class Database : MonoBehaviour
     #endregion
 
     #region Players
-    public List<Player> characters;
+    public List<ControllerLink> controllers = new List<ControllerLink>();
+    public List<Characters> characters;
     public List<Player> players;
     public Player allplay;
     public Color apColor = Color.yellow;
-    public List<Color> playerColors;
+    public List<PlayerColors> playerColors;
+
+    public Transform playerSelectors;
+    public GameObject playerSelectorGobj;
 
     public List<Color> pawnColors;
     public List<Effects> effects;
@@ -86,39 +90,6 @@ public class Database : MonoBehaviour
     {
         mm = MenuManager.instance;
         cS = CharacterSelect.instance;
-
-        /*Buttons b = buttons[4];
-        for (int i = 2; i <= 16; i++)
-        {
-            Buttons a = new Buttons();
-
-            for (int l = 0; l < b.left.Count; l++)
-            {
-                a.left.Add(b.left[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
-            }
-            for(int l = 0; l < b.right.Count; l++)
-            {
-                a.right.Add(b.right[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
-            }
-            for(int l = 0; l < b.up.Count; l++)
-            {
-                a.up.Add(b.up[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
-            }
-            for(int l = 0; l < b.down.Count; l++)
-            {
-                a.down.Add(b.down[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
-            }
-            for(int l = 0; l < b.confirm.Count; l++)
-            {
-                a.confirm.Add(b.confirm[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
-            }
-            for(int l = 0; l < b.cancel.Count; l++)
-            {
-                a.cancel.Add(b.cancel[l].Replace("Horizontal 1", "Horizontal " + i).Replace("Vertical 1", "Vertical " + i).Replace("Joystick1", "Joystick" + i));
-            }
-
-            buttons.Add(a);
-        }*/
     }
 
     // Update is called once per frame
@@ -133,134 +104,122 @@ public class Database : MonoBehaviour
                 CheckForWinner();
             }
         }
-        else
-        {
-            bool canAdd = false;
-
-            if(cS == null)
-            {
-                cS = CharacterSelect.instance;
-            }
-            else
-            {
-                if(cS.gameObject.activeInHierarchy)
-                {
-                    canAdd = true;
-                }
-            }
-
-            if(!canAdd)
-            {
-                if(mm.GetOpenMenu().title == "Main Menu")
-                {
-                    canAdd = true;
-                }
-            }
-
-            if(canAdd)
-            {
-                PlayerAddCheck();
-            }
-        }
     }
 
-    void PlayerAddCheck()
+    public int PlayerAdd(ControllerLink cL)
     {
+        int result = -1;
+        bool computerMode = false;
+
         if (players.Count < 8)
         {
-            Buttons pB = buttons.Find(x => x.ButtonBeingPressed() && !x.InUse());
-
-            if (pB != null)
+            if(cL == null)
             {
-                players.Add(new Player(pB));
-
-                int pc = players.Count - 1;
-                Player p = players[pc];
-
-                switch(pc)
+                if (players.Count >= maxPlayers)
                 {
-                    case 0:
-                        p.team = 1;
-                        p.facing = Facing.Up;
-                        p.position = 0;
-                        break;
-                    case 1:
-                        p.team = 2;
-                        p.facing = Facing.Down;
-                        p.position = 0;
-                        break;
-                    case 2:
-                        p.team = 3;
-                        p.facing = Facing.Right;
-                        p.position = 0;
-                        break;
-                    case 3:
-                        p.team = 4;
-                        p.facing = Facing.Left;
-                        p.position = 0;
-                        break;
-                    case 4:
-                        p.team = 1;
-                        p.facing = Facing.Up;
-                        p.position = 1;
-                        break;
-                    case 5:
-                        p.team = 2;
-                        p.facing = Facing.Down;
-                        p.position = 1;
-                        break;
-                    case 6:
-                        p.team = 3;
-                        p.facing = Facing.Right;
-                        p.position = 1;
-                        break;
-                    case 7:
-                        p.team = 4;
-                        p.facing = Facing.Left;
-                        p.position = 1;
-                        break;
+                    return -1;
                 }
 
-                if (cS != null)
+                computerMode = true;
+            }
+
+            players.Add(new Player());
+
+            int pc = players.Count - 1;
+            Player p = players[pc];
+
+            p.computer = computerMode;
+            p.cLink = cL;
+
+            int index = -1;
+            for (int i = 0; i < 8; i++)
+            {
+                if (!players.Exists(x => x.index == i))
                 {
-                    if(cS.enabled)
+                    index = i;
+                    break;
+                }
+            }
+
+            p.index = index;
+
+            switch(index)
+            {
+                case 0:
+                    p.team = 1;
+                    p.facing = Facing.Up;
+                    p.position = 0;
+                    break;
+                case 1:
+                    p.team = 2;
+                    p.facing = Facing.Down;
+                    p.position = 0;
+                    break;
+                case 2:
+                    p.team = 3;
+                    p.facing = Facing.Right;
+                    p.position = 0;
+                    break;
+                case 3:
+                    p.team = 4;
+                    p.facing = Facing.Left;
+                    p.position = 0;
+                    break;
+                case 4:
+                    p.team = 1;
+                    p.facing = Facing.Up;
+                    p.position = 1;
+                    break;
+                case 5:
+                    p.team = 2;
+                    p.facing = Facing.Down;
+                    p.position = 1;
+                    break;
+                case 6:
+                    p.team = 3;
+                    p.facing = Facing.Right;
+                    p.position = 1;
+                    break;
+                case 7:
+                    p.team = 4;
+                    p.facing = Facing.Left;
+                    p.position = 1;
+                    break;
+            }
+
+            if (cS != null)
+            {
+                if(cS.enabled)
+                {
+                    int cC = characters.FindIndex(x => x.name == p.name);
+                    p.state = "Character Select";
+
+                    if (cC < 0 || cC >= cS.characterGrabs.Count)
                     {
-                        int cC = characters.FindIndex(x => x.name == p.name);
-                        p.state = "Character Select";
+                        Characters ch = RandomCharacter();
+                        p.SetUpCharacter(ch);
 
-                        if (cC < 0 || cC >= cS.characterGrabs.Count)
-                        {
-                            Player ch = RandomCharacter();
-                            p.SetUpCharacter(ch);
-
-                            cC = characters.FindIndex(x => x.name == ch.name);
-                        }
-
-                        GridControl gC = cS.characterGrabs[cC].gridControl;
-
-                        if (!gC.playersInControl.Exists(x => x == pc))
-                        {
-                            gC.AddPlayer(pc);
-                        }
-
-                        if(pc >= 0 && pc < cS.portaits.Count)
-                        {
-                            GridControl pgC = cS.portaits[pc].gridControl;
-
-                            if (!pgC.playersInControl.Exists(x => x == pc))
-                            {
-                                pgC.AddPlayer(pc);
-                            }
-                        }
-
-                        if (!cS.back.playersInControl.Exists(x => x == pc))
-                        {
-                            cS.back.AddPlayer(pc);
-                        }
+                        cC = characters.FindIndex(x => x.name == ch.name);
                     }
                 }
             }
+
+            GameObject go = Instantiate(playerSelectorGobj, playerSelectors);
+
+            PlayerSelectorObj pso = go.GetComponent<PlayerSelectorObj>();
+            pso.cLink = cL;
+            pso.SetCircleColor(playerColors[pc]);
+            pso.pI = index;
+
+            result = index;
+
+            if(!controllers.Contains(cL))
+            {
+                controllers.Add(cL);
+            }
         }
+
+        return result;
     }
 
     public void UpdateCharSelect()
@@ -407,7 +366,7 @@ public class Database : MonoBehaviour
         yield return null;
 
         //Clear all GameObjects and Field
-        GameObject[] allGo = FindObjectsOfType<GameObject>();
+        GameObject[] allGo = FindObjectsByType<GameObject>();
 
         if (allGo.Length > 0)
         {
@@ -495,7 +454,7 @@ public class Database : MonoBehaviour
             p.afterDeathDamage = 0;
 
             //Reset Character info with main Char
-            Player character = characters.Find(x => x.name == p.name);
+            Characters character = characters.Find(x => x.name == p.name);
 
             if(character != null)
             {
@@ -526,16 +485,16 @@ public class Database : MonoBehaviour
         }
     }
 
-    public Player RandomCharacter(bool actives = true)
+    public Characters RandomCharacter(bool actives = true)
     {
-        List<Player> avaliableChar = characters;
+        List<Characters> avaliableChar = characters;
 
         if(actives)
         {
             avaliableChar = characters.FindAll(x => x.active);
         }
 
-        return new Player(avaliableChar[Random.Range(0,avaliableChar.Count)]);
+        return new Characters(avaliableChar[Random.Range(0,avaliableChar.Count)]);
     }
 
     public bool InSetup()

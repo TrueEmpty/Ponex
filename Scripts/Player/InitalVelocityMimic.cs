@@ -14,6 +14,6 @@ public class InitalVelocityMimic : MonoBehaviour
         Rigidbody rb = GetComponent<Rigidbody>();
         Rigidbody pRb = pG.player.spawnedPlayer.GetComponent<Rigidbody>();
 
-        rb.velocity += pRb.velocity;
+        rb.linearVelocity += pRb.linearVelocity;
     }
 }

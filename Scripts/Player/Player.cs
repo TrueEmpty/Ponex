@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +6,10 @@ public class Player
 {
     public string name = "";
     public UniqueId uid = new UniqueId();
+
+    public ControllerLink cLink;
+
+    public int index = -1;
 
     public string nickName = "";
     public int team = 0;
@@ -19,7 +21,6 @@ public class Player
     public float movementSpeed = 50;
     public float pushBack = 0;
 
-    public Buttons buttons;
     public Facing facing = Facing.Up;
 
     public Skill bump;
@@ -85,13 +86,14 @@ public class Player
         name = p.name;
         uid = new UniqueId();
 
+        index = p.index;
+
         currentHealth = p.currentHealth;
         maxHealth = p.maxHealth;
 
         movementSpeed = p.movementSpeed;
         pushBack = p.pushBack;
 
-        buttons = new Buttons(p.buttons);
         facing = p.facing;
 
         bump = new Skill(p.bump);
@@ -118,25 +120,16 @@ public class Player
         spawnedPlayer = p.spawnedPlayer;
         spawnedLifeline = p.spawnedLifeline;
     }
-    
-    public Player(Buttons b)
-    {
-        uid = new UniqueId();
 
-        buttons = b;
-    }
-
-    public void SetUpCharacter(Player p)
+    public void SetUpCharacter(Characters p)
     {
         name = p.name;
 
-        currentHealth = p.currentHealth;
+        currentHealth = p.maxHealth;
         maxHealth = p.maxHealth;
 
         movementSpeed = p.movementSpeed;
         pushBack = p.pushBack;
-
-        facing = p.facing;
 
         bump = new Skill(p.bump);
         super = new Skill(p.super);
@@ -155,9 +148,6 @@ public class Player
 
         portrait = p.portrait;
         icon = p.icon;
-
-        spawnedPlayer = p.spawnedPlayer;
-        spawnedLifeline = p.spawnedLifeline;
     }
 
     public void CreateUID()

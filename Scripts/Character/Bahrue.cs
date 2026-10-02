@@ -5,7 +5,6 @@ using UnityEngine;
 public class Bahrue : MonoBehaviour
 {
     Rigidbody rb;
-    ButtonManager bm;
     Database db;
     PlayerGrab pg;
     public List<string> hitTags = new List<string>();
@@ -59,7 +58,6 @@ public class Bahrue : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
 
         rb.useGravity = false;
@@ -310,7 +308,7 @@ public class Bahrue : MonoBehaviour
     {
         int moveDir = 0;
 
-        if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
+        /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
         {
             moveDir += 1;
         }
@@ -318,14 +316,14 @@ public class Bahrue : MonoBehaviour
         if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || thought == Thought.MoveLeft) && !WallInDirection(-1))
         {
             moveDir -= 1;
-        }
+        }*/
 
         Vector3 rotDir = transform.right;
         rotDir.x = Mathf.Abs(rotDir.x);
         rotDir.y = Mathf.Abs(rotDir.y);
         rotDir.z = Mathf.Abs(rotDir.z);
 
-        rb.velocity = rotDir * moveDir * pg.player.movementSpeed;
+        rb.linearVelocity = rotDir * moveDir * pg.player.movementSpeed;
     }
 
 
@@ -438,7 +436,7 @@ public class Bahrue : MonoBehaviour
         pP.y = GetTopPoint() + 1;
         token.localPosition = pP;
 
-        if (bm.KeyPressed(pg.player.buttons.Down(pg.player.facing)) || thought == Thought.MoveDown)
+        /*if (bm.KeyPressed(pg.player.buttons.Down(pg.player.facing)) || thought == Thought.MoveDown)
         {
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Move);
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Bump);
@@ -459,7 +457,7 @@ public class Bahrue : MonoBehaviour
             pg.player.RemoveConstraint(gameObject, PlayerConstraint.Move);
             pg.player.RemoveConstraint(gameObject, PlayerConstraint.Bump);
             pg.player.super.amount = 0;
-        }
+        }*/
 
         ring.gameObject.SetActive(pg.player.super.amount != 0);
         emblem.gameObject.SetActive(pg.player.super.amount != 0);
@@ -491,7 +489,7 @@ public class Bahrue : MonoBehaviour
 
         pg.player.bump.readyPercent = bP;
 
-        if (bm.KeyPressed(pg.player.buttons.Up(pg.player.facing)) || thought == Thought.MoveUp)
+        /*if (bm.KeyPressed(pg.player.buttons.Up(pg.player.facing)) || thought == Thought.MoveUp)
         {
             if (timeTillReset >= bumpCooldown && pg.player.CanBump)
             {
@@ -528,7 +526,7 @@ public class Bahrue : MonoBehaviour
                     }
                 }
             }
-        }
+        }*/
 
         timeTillReset += Time.deltaTime;
     }

@@ -7,7 +7,6 @@ public class IyolitMovement : MonoBehaviour
 {
     Database db;
     public PlayerGrab pG;
-    ButtonManager bm;
     public List<Transform> positions = new List<Transform>();
     public int currentPosition = 0;
     public int lastPosition = 0;
@@ -27,7 +26,6 @@ public class IyolitMovement : MonoBehaviour
     void Start()
     {
         pG = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
     }
 
@@ -91,7 +89,7 @@ public class IyolitMovement : MonoBehaviour
 
                     if (currentPosition == lastPosition && !moving)
                     {
-                        if (bm.KeyDown(pG.player.buttons.Right(pG.player.facing)))
+                        /*if (bm.KeyDown(pG.player.buttons.Right(pG.player.facing)))
                         {
                             currentPosition++;
 
@@ -109,7 +107,7 @@ public class IyolitMovement : MonoBehaviour
                             {
                                 currentPosition = 0;
                             }
-                        }
+                        }*/
 
                         //Keep it on the Candle
                         transform.position = positions[currentPosition].position;
@@ -126,7 +124,7 @@ public class IyolitMovement : MonoBehaviour
                     superOn -= Time.deltaTime;
                 }
 
-                bumpActive = bm.KeyPressed(pG.player.buttons.Up(pG.player.facing));
+                /*bumpActive = bm.KeyPressed(pG.player.buttons.Up(pG.player.facing));
 
                 if (superCooldownTimer < superCooldown)
                 {
@@ -150,7 +148,7 @@ public class IyolitMovement : MonoBehaviour
                     superOn = superTime;
                     superCooldownTimer = 0;
                     //pG.player.CostSuper(pG.player.player.player.superCost);
-                }
+                }*/
             }
         }
     }

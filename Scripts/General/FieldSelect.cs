@@ -9,7 +9,7 @@ public class FieldSelect : MonoBehaviour
     public static FieldSelect instance;
     Database db;
     public List<CharacterGrab> characterGrabs = new List<CharacterGrab>();
-    public Portait portrait;
+    /*public Portait portrait;*/
     bool setup = false;
     List<Field> fieldPage = new List<Field>(); //Fist 6-10 records in the first 4 rows are perma Blanked
     public Vector3Int skipAmount = new Vector3Int(6,5,4);
@@ -89,16 +89,14 @@ public class FieldSelect : MonoBehaviour
             {
                 GameObject container = pgC.GetChild(i).gameObject;
 
-                CharacterGrab c = new CharacterGrab();
+                /*CharacterGrab c = new CharacterGrab();
                 c.container = container;
-                c.gridControl = container.GetComponent<GridControl>();
                 c.background = container.GetComponent<Image>();
                 c.image = container.transform.GetChild(0).GetComponent<RawImage>();
                 c.charName = container.transform.GetChild(1).GetComponent<Text>();
 
-                characterGrabs.Add(c);
+                characterGrabs.Add(c);*/
 
-                c.gridControl.position = new Vector2(column, row);
 
                 column++;
 
@@ -113,10 +111,10 @@ public class FieldSelect : MonoBehaviour
             //Portraits
             Transform porC = transform.GetChild(0);
 
-            portrait.container = porC.gameObject;
+            /*portrait.container = porC.gameObject;
             portrait.image = portrait.container.GetComponent<RawImage>();
             portrait.playerText = portrait.container.transform.GetChild(0).GetComponent<Text>();
-            portrait.infoText = portrait.container.transform.GetChild(1).GetComponent<Text>();
+            portrait.infoText = portrait.container.transform.GetChild(1).GetComponent<Text>();*/
 
             setup = true;
         }
@@ -194,7 +192,7 @@ public class FieldSelect : MonoBehaviour
     void LoadInfo()
     {
         //Load Character grabs
-        for (int i = 0; i < characterGrabs.Count; i++)
+        /*for (int i = 0; i < characterGrabs.Count; i++)
         {
             CharacterGrab cG = characterGrabs[i];
 
@@ -205,21 +203,21 @@ public class FieldSelect : MonoBehaviour
                 //Check if it is an auto skip block
                 if(f.size == -100) //Skip Field
                 {
-                    cG.gridControl.canSelect = false;
+                    cG.canSelect = false;
                     cG.background.color = Color.clear;
                     cG.image.color = Color.clear;
                     cG.charName.color = Color.clear;
                 }
                 else if(f.size == -10) //Blank Field
                 {
-                    cG.gridControl.canSelect = false;
+                    cG.canSelect = false;
                     cG.background.color = Color.white;
                     cG.image.color = Color.clear;
                     cG.charName.color = Color.clear;
                 }
                 else
                 {
-                    cG.gridControl.canSelect = f.active;
+                    cG.canSelect = f.active;
                     cG.background.color = Color.white;
                     cG.image.texture = f.icon;
                     cG.image.color = (f.active) ? Color.white : Color.black;
@@ -229,18 +227,18 @@ public class FieldSelect : MonoBehaviour
             }
             else
             {
-                cG.gridControl.canSelect = false;
+                cG.canSelect = false;
                 cG.background.color = Color.white;
                 cG.image.color = Color.clear;
                 cG.charName.color = Color.clear;
             }
-        }
+        }*/
     }
 
     void LoadPortrait()
     {
         //Load in portaits
-        if (db.selectedField >= 0 && db.selectedField < db.fields.Count)
+        /*if (db.selectedField >= 0 && db.selectedField < db.fields.Count)
         {
             Field f = db.fields[db.selectedField];
             portrait.container.SetActive(true);
@@ -263,6 +261,6 @@ public class FieldSelect : MonoBehaviour
         else
         {
             portrait.container.SetActive(false);
-        }
+        }*/
     }
 }

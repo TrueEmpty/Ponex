@@ -5,7 +5,6 @@ using UnityEngine;
 public class Celarus : MonoBehaviour
 {
     Rigidbody rb;
-    ButtonManager bm;
     Database db;
     PlayerGrab pg;
 
@@ -69,7 +68,6 @@ public class Celarus : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
 
         rb.useGravity = false;
@@ -317,7 +315,7 @@ public class Celarus : MonoBehaviour
             {
                 int moveDir = 0;
 
-                if(bm.KeyPressed(p.buttons.Left(p.facing)) || thought == Thought.MoveRight)
+                /*if(bm.KeyPressed(p.buttons.Left(p.facing)) || thought == Thought.MoveRight)
                 {
                     moveDir = -1;
                 }
@@ -325,22 +323,22 @@ public class Celarus : MonoBehaviour
                 if(bm.KeyPressed(p.buttons.Right(p.facing)) || thought == Thought.MoveLeft)
                 {
                     moveDir = 1;
-                }
+                }*/
 
-                Vector3 curVe = rb.velocity;
+                Vector3 curVe = rb.linearVelocity;
                 switch (p.facing)
                 {
                     case Facing.Up:
-                        rb.velocity = new Vector3(moveDir * p.movementSpeed * Time.deltaTime, curVe.y, curVe.z);
+                        rb.linearVelocity = new Vector3(moveDir * p.movementSpeed * Time.deltaTime, curVe.y, curVe.z);
                         break;
                     case Facing.Down:
-                        rb.velocity = new Vector3(-moveDir * p.movementSpeed * Time.deltaTime, curVe.y, curVe.z);
+                        rb.linearVelocity = new Vector3(-moveDir * p.movementSpeed * Time.deltaTime, curVe.y, curVe.z);
                         break;
                     case Facing.Left:
-                        rb.velocity = new Vector3(curVe.x, moveDir * p.movementSpeed * Time.deltaTime, curVe.z);
+                        rb.linearVelocity = new Vector3(curVe.x, moveDir * p.movementSpeed * Time.deltaTime, curVe.z);
                         break;
                     case Facing.Right:
-                        rb.velocity = new Vector3(curVe.x, -moveDir * p.movementSpeed * Time.deltaTime, curVe.z);
+                        rb.linearVelocity = new Vector3(curVe.x, -moveDir * p.movementSpeed * Time.deltaTime, curVe.z);
                         break;
                 }
             }
@@ -368,7 +366,7 @@ public class Celarus : MonoBehaviour
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                if (bm.KeyPressed(p.buttons.Left(p.facing)) || thought == Thought.MoveLeft)
+                /*if (bm.KeyPressed(p.buttons.Left(p.facing)) || thought == Thought.MoveLeft)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo + (-spinPoint.parent.transform.right * sFoffset), spinPoint.parent.rotation);
 
@@ -395,7 +393,7 @@ public class Celarus : MonoBehaviour
                     if(lsRB != null)
                     {
                         lsRB.AddForce(new Vector3(sFsideDir.x, sFsideDir.y, sFsideDir.z) * solarFlareSpeed.z, ForceMode.Force);
-                    }
+                    }*/
 
                     /*ResetFlares lsRF = ls.transform.GetChild(0).GetComponent<ResetFlares>();
 
@@ -404,8 +402,8 @@ public class Celarus : MonoBehaviour
                         lsRF.script = this;
                     }*/
 
-                    sunLeft = -sFResetCount;
-                }
+                   /* sunLeft = -sFResetCount;
+                }*/
             }
 
             if (sunMiddle >= 0)
@@ -413,7 +411,7 @@ public class Celarus : MonoBehaviour
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                if (bm.KeyPressed(p.buttons.Up(p.facing)) || thought == Thought.MoveUp)
+                /*if (bm.KeyPressed(p.buttons.Up(p.facing)) || thought == Thought.MoveUp)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo, spinPoint.parent.rotation);
 
@@ -429,7 +427,7 @@ public class Celarus : MonoBehaviour
                     if (lsCS != null)
                     {
                         lsCS.spinSpeed = Random.Range(solarFlareSpeed.x, solarFlareSpeed.y);
-                    }
+                    }*/
 
                     /*Rigidbody lsRB = ls.GetComponent<Rigidbody>();
 
@@ -438,8 +436,8 @@ public class Celarus : MonoBehaviour
                         lsRB.AddForce(new Vector3(sFsideDir.x, sFsideDir.y, sFsideDir.z) * solarFlareSpeed.z, ForceMode.Force);
                     }*/
 
-                    sunMiddle = -sFResetCount;
-                }
+                    /*sunMiddle = -sFResetCount;
+                }*/
             }
 
             if (sunRight >= 0)
@@ -447,7 +445,7 @@ public class Celarus : MonoBehaviour
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                if (bm.KeyPressed(p.buttons.Right(p.facing)) || thought == Thought.MoveRight)
+                /*if (bm.KeyPressed(p.buttons.Right(p.facing)) || thought == Thought.MoveRight)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo + (spinPoint.parent.transform.right * sFoffset), spinPoint.parent.rotation);
 
@@ -467,7 +465,7 @@ public class Celarus : MonoBehaviour
                     if (lsCS != null)
                     {
                         lsCS.spinSpeed = Random.Range(solarFlareSpeed.x, solarFlareSpeed.y);
-                    }
+                    }*/
 
                     /*Rigidbody lsRB = ls.GetComponent<Rigidbody>();
 
@@ -476,8 +474,8 @@ public class Celarus : MonoBehaviour
                         lsRB.AddForce(new Vector3(sFsideDir.x, sFsideDir.y, sFsideDir.z) * solarFlareSpeed.z,ForceMode.Force);
                     }*/
 
-                    sunRight = -sFResetCount;
-                }
+                   /* sunRight = -sFResetCount;
+                }*/
             }
 
             sunLeft += Time.deltaTime;
@@ -549,7 +547,7 @@ public class Celarus : MonoBehaviour
         }
 
         spinPoint.transform.localRotation = Quaternion.Euler(0, 0, rot);
-        rb.velocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
         yield return null;
 
         //Finish Celarus Return

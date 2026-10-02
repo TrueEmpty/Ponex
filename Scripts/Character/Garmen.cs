@@ -5,7 +5,6 @@ using UnityEngine;
 public class Garmen : MonoBehaviour
 {
     PlayerGrab pg;
-    ButtonManager bm;
     Database db;
 
     GameObject ll;
@@ -35,7 +34,6 @@ public class Garmen : MonoBehaviour
     void Start()
     {
         pg = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
         fp = GetComponent<FollowPlayer>();
     }
@@ -61,7 +59,7 @@ public class Garmen : MonoBehaviour
 
             if (db.gameStart && p.currentHealth > 0)
             {
-                if (bm.KeyDown(p.buttons.Down(p.facing)))
+                /*if (bm.KeyDown(p.buttons.Down(p.facing)))
                 {
                     p.super.readyPercent = p.super.readyPercent == 0 ? 1 : 0;
                 }
@@ -96,7 +94,7 @@ public class Garmen : MonoBehaviour
                         p.bump.Gain(1);
                         p.bump.readyPercent = 0;
                     }
-                }
+                }*/
             }
         }
         else

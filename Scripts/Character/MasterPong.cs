@@ -5,7 +5,6 @@ using UnityEngine;
 public class MasterPong : MonoBehaviour
 {
     Rigidbody rb;
-    ButtonManager bm;
     Database db;
     PlayerGrab pg;
 
@@ -41,7 +40,6 @@ public class MasterPong : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
 
         rb.useGravity = false;
@@ -67,7 +65,7 @@ public class MasterPong : MonoBehaviour
             }
             else
             {
-                rb.velocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
             }
         }
     }
@@ -280,7 +278,7 @@ public class MasterPong : MonoBehaviour
     {
         int moveDir = 0;
 
-        if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
+        /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
         {
             moveDir += 1;
         }
@@ -288,14 +286,14 @@ public class MasterPong : MonoBehaviour
         if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || thought == Thought.MoveLeft) && !WallInDirection(-1))
         {
             moveDir -= 1;
-        }
+        }*/
 
         Vector3 rotDir = transform.right;
         rotDir.x = Mathf.Abs(rotDir.x);
         rotDir.y = Mathf.Abs(rotDir.y);
         rotDir.z = Mathf.Abs(rotDir.z);
 
-        rb.velocity = rotDir * moveDir * pg.player.movementSpeed;
+        rb.linearVelocity = rotDir * moveDir * pg.player.movementSpeed;
     }
 
     bool WallInDirection(int dir)

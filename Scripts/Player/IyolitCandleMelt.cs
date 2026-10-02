@@ -128,9 +128,9 @@ public class IyolitCandleMelt : MonoBehaviour
 
                 if(bRb != null)
                 {
-                    Vector3 bVe = bRb.velocity;
+                    Vector3 bVe = bRb.linearVelocity;
                     bVe /= 2;
-                    bRb.velocity = bVe;
+                    bRb.linearVelocity = bVe;
 
                     //Make a splat noise and some particles wax at hit point
 

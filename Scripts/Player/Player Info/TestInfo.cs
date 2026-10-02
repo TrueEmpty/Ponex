@@ -77,7 +77,7 @@ public class TestInfo : MonoBehaviour
 
         background.color = db.teamColors[shownColor];
 
-        Color c = db.playerColors[pg.playerIndex];
+        Color c = db.playerColors[pg.playerIndex].color;
 
         if (p.computer)
         {

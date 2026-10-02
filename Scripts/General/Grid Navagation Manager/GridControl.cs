@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class GridControl : MonoBehaviour
 {
     Database db;
-    ButtonManager bm;
     public Outline ol;
     MenuManager mm;
     public string group = "Default";
@@ -32,7 +31,6 @@ public class GridControl : MonoBehaviour
     void Start()
     {
         db = Database.instance;
-        bm = ButtonManager.instance;
 
         if(ol == null)
         {
@@ -91,11 +89,11 @@ public class GridControl : MonoBehaviour
                     {
                         if(eC == Color.clear)
                         {
-                            eC = db.playerColors[p];
+                            eC = db.playerColors[p].color;
                         }
                         else
                         {
-                            eC = Color.Lerp(eC, db.playerColors[p], .5f);
+                            eC = Color.Lerp(eC, db.playerColors[p].color, .5f);
                         }
                     }
                     else if (p == -10)
@@ -108,7 +106,7 @@ public class GridControl : MonoBehaviour
                 ol.effectColor = eC;
             }
 
-            Navagate();
+            //Navagate();
         }
         else
         {
@@ -166,25 +164,25 @@ public class GridControl : MonoBehaviour
                             if (rP.Count > 0)
                             {
                                 for (int z = 0; z < rP.Count; z++)
-                                {
+                                {/*
                                     l.AddRange(rP[z].buttons.left);
                                     r.AddRange(rP[z].buttons.right);
                                     u.AddRange(rP[z].buttons.up);
                                     d.AddRange(rP[z].buttons.down);
                                     g.AddRange(rP[z].buttons.confirm);
-                                    x.AddRange(rP[z].buttons.cancel);
+                                    x.AddRange(rP[z].buttons.cancel);*/
                                 }
                             }
                         }
                     }
                     else
                     {
-                        l.AddRange(p.buttons.left);
+                        /*l.AddRange(p.buttons.left);
                         r.AddRange(p.buttons.right);
                         u.AddRange(p.buttons.up);
                         d.AddRange(p.buttons.down);
                         g.AddRange(p.buttons.confirm);
-                        x.AddRange(p.buttons.cancel);
+                        x.AddRange(p.buttons.cancel);*/
                     }
 
                     GridControl nG = null;
@@ -197,7 +195,7 @@ public class GridControl : MonoBehaviour
                     bool loopingH = false;
                     bool loopingV = false;
 
-                    if (bm.KeyDown(r))
+                    /*if (bm.KeyDown(r))
                     {
                         dir = new Vector2Int(0, 1);
                         maxTic = gridSize.y;
@@ -234,7 +232,7 @@ public class GridControl : MonoBehaviour
                         db.PlaySound(deselectSound);
                         p.lastGridUpdate = Time.time;
                         SendMessage("OnCancel", c, SendMessageOptions.DontRequireReceiver);
-                    }
+                    }*/
 
                     if (dir != Vector2Int.zero)
                     {

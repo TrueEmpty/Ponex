@@ -5,7 +5,6 @@ using UnityEngine;
 public class GarmenDrive : MonoBehaviour
 {
     PlayerGrab pg;
-    ButtonManager bm;
     Database db;
     Rigidbody rb;
     Garmen g;
@@ -21,7 +20,6 @@ public class GarmenDrive : MonoBehaviour
     void Start()
     {
         pg = GetComponent<PlayerGrab>();
-        bm = ButtonManager.instance;
         db = Database.instance;
         rb = GetComponent<Rigidbody>();
     }
@@ -61,7 +59,7 @@ public class GarmenDrive : MonoBehaviour
                 }
                 else if (p.currentHealth > 0 && p.super.readyPercent == 0)
                 {
-                    rb.velocity = Vector3.zero;
+                    rb.linearVelocity = Vector3.zero;
                     //Lower Garmen
                     if (hub.transform.localPosition.y > 0)
                     {
@@ -82,7 +80,7 @@ public class GarmenDrive : MonoBehaviour
         {
             int moveDir = 0;
 
-            if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || g.thought == Thought.MoveRight) && !WallInDirection(1))
+            /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || g.thought == Thought.MoveRight) && !WallInDirection(1))
             {
                 moveDir += 1;
             }
@@ -90,14 +88,14 @@ public class GarmenDrive : MonoBehaviour
             if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || g.thought == Thought.MoveLeft) && !WallInDirection(-1))
             {
                 moveDir -= 1;
-            }
+            }*/
 
             Vector3 rotDir = transform.right;
             rotDir.x = Mathf.Abs(rotDir.x);
             rotDir.y = Mathf.Abs(rotDir.y);
             rotDir.z = Mathf.Abs(rotDir.z);
 
-            rb.velocity = rotDir * moveDir * pg.player.movementSpeed;
+            rb.linearVelocity = rotDir * moveDir * pg.player.movementSpeed;
 
             if(moveDir != 0)
             {
@@ -106,7 +104,7 @@ public class GarmenDrive : MonoBehaviour
         }
         else
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
         }
     }
 

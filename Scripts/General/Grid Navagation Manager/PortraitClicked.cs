@@ -1,77 +1,109 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PortraitClicked : MonoBehaviour
 {
     Database db;
-    GridControl gC;
     CharacterSelect cS;
     public int attachedIndex = 0;
+
+    public RawImage image;
+    public Text playerText;
+    public GameObject ready;
+    public Outline outline;
 
     // Use this for initialization
     void Start()
     {
         db = Database.instance;
         cS = CharacterSelect.instance;
-        gC = GetComponent<GridControl>();
+
+        image = GetComponent<RawImage>();
+        playerText = transform.GetChild(0).GetChild(0).GetComponent<Text>();
+        ready = transform.GetChild(0).GetChild(1).gameObject;
+        outline = GetComponent<Outline>();
+    }
+
+    private void Update()
+    {
+        Player p = db.players.Find(x => x.index == attachedIndex);
+
+        if(p == null)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            LoadPortrait(p);
+        }
+    }
+
+    void LoadPortrait(Player p)
+    {
+        Color c = db.playerColors[p.index].color;
+
+        //Check if a character is attached to the player if not set to a random one
+        int cC = db.characters.FindIndex(x => x.name == p.name);
+        if (cC < 0 || cC >= db.characters.Count)
+        {
+            Characters ch = db.RandomCharacter();
+            p.SetUpCharacter(ch);
+
+            cC = db.characters.FindIndex(x => x.name == ch.name);
+        }
+
+        image.texture = p.portrait;
+        if (p.computer)
+        {
+            playerText.text = "CPU" + (p.index + 1);
+            playerText.color = Color.gray;
+        }
+        else
+        {
+            playerText.text = (p.nickName == "" || p.nickName == null) ? "P" + (p.index + 1) : p.nickName;
+            playerText.color = c;
+        }
+
+        ready.SetActive(p.characterSelected);
     }
 
     public void OnClick(int player)
     {
         if(player >= 0 && player < db.players.Count)
         {
-            Player p = db.players[attachedIndex];
+            Player p = db.players.Find(x=> x.index == attachedIndex);
 
-            if (attachedIndex == player)
+            if (p != null)
             {
-                //Change Skin
-
+                if (attachedIndex == player || p.computer)
+                {
+                    //Change Skin
+                    Debug.Log("Changing Skin");
+                }
             }
-            else
+        }
+    }
+
+    public void OnLongClick(int player)
+    {
+        if (player >= 0 && player < db.players.Count)
+        {
+            Player p = db.players.Find(x => x.index == attachedIndex);
+
+            if(p != null)
             {
-                //Remove other players in that control
-                if(gC.playersInControl.Count > 0)
+                //Change player type
+                if (p.computer)
                 {
-                    List<GridControl> oC = gC.fc;
-                    oC.Remove(gC);
-
-                    if (oC.Count > 0)
-                    {
-                        for (int i = gC.playersInControl.Count - 1; i >= 0; i--)
-                        {
-                            int c = gC.playersInControl[i];
-
-                            if (c != attachedIndex)
-                            {
-                                int rC = Random.Range(0, oC.Count);
-                                GridControl nG = oC[rC];
-                                nG.AddPlayer(c);
-                                gC.playersInControl.RemoveAt(i);
-                            }
-                        }
-                    }
+                    db.players.RemoveAll(x => x.index == attachedIndex);
                 }
-
-                //Remove Player From Character Grab
-                int cC = db.characters.FindIndex(x => x.name == p.name);
-
-                if (cC < 0 || cC >= cS.characterGrabs.Count)
+                else if (!p.computer)
                 {
-                    Player ch = db.RandomCharacter();
-                    p.SetUpCharacter(ch);
-
-                    cC = db.characters.FindIndex(x => x.name == ch.name);
+                    db.controllers.RemoveAll(x => x.index == attachedIndex);
+                    p.computer = true;
                 }
-
-                GridControl cgC = cS.characterGrabs[cC].gridControl;
-
-                if (cgC.playersInControl.Exists(x => x == attachedIndex))
-                {
-                    cgC.playersInControl.Remove(attachedIndex);
-                }
-
-                db.players.RemoveAt(attachedIndex);
             }
         }
     }
