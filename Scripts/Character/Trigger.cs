@@ -304,15 +304,15 @@ public class Trigger : MonoBehaviour
     {
         int moveDir = 0;
 
-        /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
+        if ((pg.inp.right || thought == Thought.MoveRight) && !WallInDirection(1))
         {
             moveDir += 1;
         }
 
-        if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || thought == Thought.MoveLeft) && !WallInDirection(-1))
+        if ((pg.inp.left || thought == Thought.MoveLeft) && !WallInDirection(-1))
         {
             moveDir -= 1;
-        }*/
+        }
 
         Vector3 rotDir = transform.right;
         rotDir.x = Mathf.Abs(rotDir.x);
@@ -326,7 +326,7 @@ public class Trigger : MonoBehaviour
     {
         Skill d = pg.player.dash;
 
-        /*if ((bm.KeyDown(pg.player.buttons.Right(pg.player.facing))) && d.amount >= d.cost)
+        if (pg.inp.tf_right && d.amount >= d.cost)
         {
             if (Mathf.Abs(canDash) == 2)
             {
@@ -347,7 +347,7 @@ public class Trigger : MonoBehaviour
             }
         }
 
-        if ((bm.KeyDown(pg.player.buttons.Left(pg.player.facing))) && d.amount >= d.cost)
+        if (pg.inp.tf_left && d.amount >= d.cost)
         {
             if (Mathf.Abs(canDash) == 2)
             {
@@ -365,14 +365,14 @@ public class Trigger : MonoBehaviour
                 canDash = -1;
                 dashEnd = doubleClickTime;
             }
-        }*/
+        }
     }
 
     void OnBump()
     {
         Skill b = pg.player.bump;
 
-        /*if ((bm.KeyDown(pg.player.buttons.Up(pg.player.facing)) || thought == Thought.MoveUp) && b.Enough() && pg.player.super.amount >= b.cost)
+        if ((pg.inp.bump || thought == Thought.MoveUp) && b.Enough() && pg.player.super.amount >= b.cost)
         {
             GameObject go = Instantiate(bump, transform.position + (transform.up * bumpOffsetY), transform.rotation);
 
@@ -386,14 +386,14 @@ public class Trigger : MonoBehaviour
             b.Spend();
             pg.player.super.Spend(b.cost);
             thought = Thought.Nothing;
-        }*/
+        }
     }
 
     void OnSuper()
     {
         Skill b = pg.player.super;
 
-        /*if (((bm.KeyDown(pg.player.buttons.Down(pg.player.facing)) || thought == Thought.MoveDown) && b.Enough()) || (superShotCount > 0 && superDelayAmount <= 0))
+        if (((pg.inp.super || thought == Thought.MoveDown) && b.Enough()) || (superShotCount > 0 && superDelayAmount <= 0))
         {
             GameObject go = Instantiate(super, transform.position + (transform.up * bumpOffsetY), transform.rotation);
 
@@ -419,7 +419,7 @@ public class Trigger : MonoBehaviour
                 superDelayAmount = 0;
                 superShotCount = -1;
             }
-        }*/
+        }
     }
 
     bool WallInDirection(int dir)

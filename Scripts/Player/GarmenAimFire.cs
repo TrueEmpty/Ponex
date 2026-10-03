@@ -37,15 +37,15 @@ public class GarmenAimFire : MonoBehaviour
                 {
                     int rotDir = 0;
 
-                    /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || g.thought == Thought.MoveRight) && rotAmount > -85)
+                    if ((pg.inp.right || g.thought == Thought.MoveRight) && rotAmount > -85)
                     {
                         rotDir -= 1;
                     }
 
-                    if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || g.thought == Thought.MoveLeft) && rotAmount < 85)
+                    if ((pg.inp.left || g.thought == Thought.MoveLeft) && rotAmount < 85)
                     {
                         rotDir += 1;
-                    }*/
+                    }
 
                     hub.Rotate(Vector3.forward * rotDir * Time.deltaTime * speed, Space.Self);
                     rotAmount += Time.deltaTime * speed * rotDir;

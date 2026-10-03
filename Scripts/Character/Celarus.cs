@@ -315,15 +315,15 @@ public class Celarus : MonoBehaviour
             {
                 int moveDir = 0;
 
-                /*if(bm.KeyPressed(p.buttons.Left(p.facing)) || thought == Thought.MoveRight)
+                if ((pg.inp.right || thought == Thought.MoveRight))
                 {
-                    moveDir = -1;
+                    moveDir += 1;
                 }
 
-                if(bm.KeyPressed(p.buttons.Right(p.facing)) || thought == Thought.MoveLeft)
+                if ((pg.inp.left || thought == Thought.MoveLeft))
                 {
-                    moveDir = 1;
-                }*/
+                    moveDir -= 1;
+                }
 
                 Vector3 curVe = rb.linearVelocity;
                 switch (p.facing)
@@ -366,7 +366,7 @@ public class Celarus : MonoBehaviour
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                /*if (bm.KeyPressed(p.buttons.Left(p.facing)) || thought == Thought.MoveLeft)
+                if ( pg.inp.tf_left || thought == Thought.MoveLeft)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo + (-spinPoint.parent.transform.right * sFoffset), spinPoint.parent.rotation);
 
@@ -393,17 +393,17 @@ public class Celarus : MonoBehaviour
                     if(lsRB != null)
                     {
                         lsRB.AddForce(new Vector3(sFsideDir.x, sFsideDir.y, sFsideDir.z) * solarFlareSpeed.z, ForceMode.Force);
-                    }*/
+                    }
 
-                    /*ResetFlares lsRF = ls.transform.GetChild(0).GetComponent<ResetFlares>();
+                    ResetFlares lsRF = ls.transform.GetChild(0).GetComponent<ResetFlares>();
 
                     if (lsRF != null)
                     {
                         lsRF.script = this;
-                    }*/
+                    }
 
-                   /* sunLeft = -sFResetCount;
-                }*/
+                   sunLeft = -sFResetCount;
+                }
             }
 
             if (sunMiddle >= 0)
@@ -411,7 +411,7 @@ public class Celarus : MonoBehaviour
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                /*if (bm.KeyPressed(p.buttons.Up(p.facing)) || thought == Thought.MoveUp)
+                if (pg.inp.tf_up || thought == Thought.MoveUp)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo, spinPoint.parent.rotation);
 
@@ -427,17 +427,17 @@ public class Celarus : MonoBehaviour
                     if (lsCS != null)
                     {
                         lsCS.spinSpeed = Random.Range(solarFlareSpeed.x, solarFlareSpeed.y);
-                    }*/
+                    }
 
-                    /*Rigidbody lsRB = ls.GetComponent<Rigidbody>();
+                    Rigidbody lsRB = ls.GetComponent<Rigidbody>();
 
                     if (lsRB != null)
                     {
                         lsRB.AddForce(new Vector3(sFsideDir.x, sFsideDir.y, sFsideDir.z) * solarFlareSpeed.z, ForceMode.Force);
-                    }*/
+                    }
 
-                    /*sunMiddle = -sFResetCount;
-                }*/
+                    sunMiddle = -sFResetCount;
+                }
             }
 
             if (sunRight >= 0)
@@ -445,7 +445,7 @@ public class Celarus : MonoBehaviour
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                /*if (bm.KeyPressed(p.buttons.Right(p.facing)) || thought == Thought.MoveRight)
+                if (pg.inp.tf_right || thought == Thought.MoveRight)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo + (spinPoint.parent.transform.right * sFoffset), spinPoint.parent.rotation);
 
@@ -465,17 +465,17 @@ public class Celarus : MonoBehaviour
                     if (lsCS != null)
                     {
                         lsCS.spinSpeed = Random.Range(solarFlareSpeed.x, solarFlareSpeed.y);
-                    }*/
+                    }
 
-                    /*Rigidbody lsRB = ls.GetComponent<Rigidbody>();
+                    Rigidbody lsRB = ls.GetComponent<Rigidbody>();
 
                     if (lsRB != null)
                     {
                         lsRB.AddForce(new Vector3(sFsideDir.x, sFsideDir.y, sFsideDir.z) * solarFlareSpeed.z,ForceMode.Force);
-                    }*/
+                    }
 
-                   /* sunRight = -sFResetCount;
-                }*/
+                    sunRight = -sFResetCount;
+                }
             }
 
             sunLeft += Time.deltaTime;

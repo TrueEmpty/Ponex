@@ -59,7 +59,7 @@ public class Garmen : MonoBehaviour
 
             if (db.gameStart && p.currentHealth > 0)
             {
-                /*if (bm.KeyDown(p.buttons.Down(p.facing)))
+                if (pg.inp.down)
                 {
                     p.super.readyPercent = p.super.readyPercent == 0 ? 1 : 0;
                 }
@@ -67,7 +67,7 @@ public class Garmen : MonoBehaviour
 
                 if (pg.player.CanBump)
                 {
-                    if ((bm.KeyDown(p.buttons.Up(p.facing)) || thought == Thought.MoveUp) && p.bump.amount >= p.bump.cost && gbC >= .25f)
+                    if ((pg.inp.up || thought == Thought.MoveUp) && p.bump.amount >= p.bump.cost && gbC >= .25f)
                     {
                         GameObject pro = Instantiate(projectile, shootPoint.position, shootPoint.rotation);
                         
@@ -94,7 +94,7 @@ public class Garmen : MonoBehaviour
                         p.bump.Gain(1);
                         p.bump.readyPercent = 0;
                     }
-                }*/
+                }
             }
         }
         else

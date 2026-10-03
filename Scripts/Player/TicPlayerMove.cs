@@ -4,9 +4,8 @@ using UnityEngine;
 
 public class TicPlayerMove : MonoBehaviour
 {
-    /*float canMove = 1;
-    PlayerInfo p;
-    ButtonManager bm;
+    float canMove = 1;
+    PlayerGrab pg;
 
     public int lMove = 0;
     public int rMove = 0;
@@ -29,69 +28,68 @@ public class TicPlayerMove : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        p = GetComponent<PlayerInfo>();
+        pg = GetComponent<PlayerGrab>();
         cStart = centerObj.transform.position;
-        bm = ButtonManager.instance;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(!p.player.selection)
+        /*if(!p.player.selection)
         {
             OnMove();
-        }
+        }*/
     }
 
     void OnMove()
     {
-        if (p.player.keys.dirShown == "U" || p.player.keys.dirShown == "L")
+        /*if (p.player.keys.dirShown == "U" || p.player.keys.dirShown == "L")
         {
-            if (bm.KeyPressed(p.player.keys.right) && rMove == 0)
+            if (pg.inp.tf_right && rMove == 0)
             {
                 rMove = 1;
             }
 
-            if (bm.KeyPressed(p.player.keys.left) && lMove == 0)
+            if (pg.inp.tf_left && lMove == 0)
             {
                 lMove = 1;
             }
 
-            if (bm.KeyPressed(p.player.keys.bump) && cMove == 0)
+            if (pg.inp.tf_bump && cMove == 0)
             {
                 cMove = 1;
             }
 
-            if (bm.KeyPressed(p.player.keys.super) && cMove == 0)
+            if (pg.inp.tf_super && cMove == 0)
             {
                 cMove = -1;
             }
         }
         else
         {
-            if (bm.KeyPressed(p.player.keys.right) && lMove == 0)
+            if (pg.inp.tf_right && lMove == 0)
             {
                 lMove = 1;
             }
 
-            if (bm.KeyPressed(p.player.keys.left) && rMove == 0)
+            if (pg.inp.tf_left && rMove == 0)
             {
                 rMove = 1;
             }
 
-            if (bm.KeyPressed(p.player.keys.bump) && cMove == 0)
+            if (pg.inp.tf_bump && cMove == 0)
             {
                 cMove = 1;
             }
 
-            if (bm.KeyPressed(p.player.keys.super) && cMove == 0)
+            if (pg.inp.tf_super && cMove == 0)
             {
                 cMove = -1;
             }
 
-        }
+        }*/
 
-        switch (rMove)
+        /*switch (rMove)
         {
             case 1:
                 if (rotAmountR < 45)
@@ -196,6 +194,6 @@ public class TicPlayerMove : MonoBehaviour
                     ctime = 0;
                 }
                 break;
-        }
-    }*/
+        }*/
+    }
 }

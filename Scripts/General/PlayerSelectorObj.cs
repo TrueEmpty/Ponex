@@ -9,6 +9,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
     public ControllerLink cLink = null;
     public int pI = 0;
+    PlayerColors pC;
 
     RectTransform rt;
     Image circle;
@@ -57,7 +58,8 @@ public class PlayerSelectorObj : MonoBehaviour
             MoveCircle();
             HandleActions();
             ShowOverlay();
-            CPUControllingUI();
+            ControllingUI();
+            CPUSelections();
         }
         else
         {
@@ -67,10 +69,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
     public void SetCircleColor(PlayerColors c)
     {
-        if (circle != null)
-        {
-            circle.sprite = c.sprite;
-        }
+        pC = c;
     }
 
     void MoveCircle()
@@ -156,9 +155,15 @@ public class PlayerSelectorObj : MonoBehaviour
         }
     }
 
-    void CPUControllingUI()
+    void ControllingUI()
     {
         text.enabled = ControllingCPU();
+        text.text = "CPU " + (cpuControl + 1);
+
+        if (circle != null)
+        {
+            circle.sprite = (ControllingCPU()) ? db.playerColors[^1].sprite : pC.sprite;
+        }
     }
 
     public bool ControllingCPU()
@@ -171,6 +176,46 @@ public class PlayerSelectorObj : MonoBehaviour
         if (clickimg != null)
         {
             clickimg.fillAmount = clicking;
+        }
+    }
+
+    void CPUSelections()
+    {
+        Player p = db.players.Find(x => x.index == pI);
+
+        if (p != null)
+        {
+            if(p.characterSelected)
+            {
+                if (cpuControl < 0)
+                {
+                    //Check for new not selected cpu
+
+                    //if there is a computer that still needs to be locked in then set the player to that computer to select for them
+                    Player c = db.players.Find(x => !x.characterSelected && x.computer);
+
+                    if (c != null)
+                    {
+                        p.pso.cpuControl = c.index;
+                    }
+                }
+                else
+                {
+                    Player f = db.players.Find(x => x.index == cpuControl);
+
+                    if (f != null)
+                    {
+                        if (f.characterSelected)
+                        {
+                            cpuControl = -1;
+                        }
+                    }
+                    else
+                    {
+                        cpuControl = -1;
+                    }
+                }
+            }
         }
     }
 

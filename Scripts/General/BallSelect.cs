@@ -158,4 +158,12 @@ public class BallSelect : MonoBehaviour
 
         shownBall.transform.position = new Vector3(0,0,5);
     }
+
+    private void OnDisable()
+    {
+        if(shownBall != null)
+        {
+            Destroy(shownBall);
+        }
+    }
 }

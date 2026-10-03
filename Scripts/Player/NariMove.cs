@@ -61,7 +61,7 @@ public class NariMove : MonoBehaviour
 
     void OnMove()
     {
-        /*if (bm.KeyDown(pg.player.buttons.right))
+        if (pg.inp.right)
         {
             if (!WallInDirection(Vector3.right))
             {
@@ -69,7 +69,7 @@ public class NariMove : MonoBehaviour
                 moveDir = Vector3.right;
             }
         }
-        else if (bm.KeyDown(pg.player.buttons.left))
+        else if (pg.inp.left)
         {
             if (!WallInDirection(Vector3.left))
             {
@@ -77,7 +77,7 @@ public class NariMove : MonoBehaviour
                 moveDir = Vector3.left;
             }
         }
-        else if (bm.KeyDown(pg.player.buttons.up))
+        else if (pg.inp.up)
         {
             if (!WallInDirection(Vector3.up))
             {
@@ -85,14 +85,14 @@ public class NariMove : MonoBehaviour
                 moveDir = Vector3.up;
             }
         }
-        else if (bm.KeyDown(pg.player.buttons.down))
+        else if (pg.inp.down)
         {
             if(!WallInDirection(Vector3.down))
             {
                 transform.rotation = Quaternion.Euler(0, 0, 0);
                 moveDir = Vector3.down;
             }    
-        }*/
+        }
 
         if(trueSpeed > pg.player.movementSpeed)
         {

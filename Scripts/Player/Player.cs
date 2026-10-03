@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.SettingsManagement;
 using UnityEngine;
 
 [System.Serializable]
@@ -11,6 +12,8 @@ public class Player
 
     public int index = -1;
 
+    public bool ignoreFacing = false;
+
     public string nickName = "";
     public int team = 0;
     public int position = 0;
@@ -18,7 +21,7 @@ public class Player
     public int currentHealth = 10;
     public int maxHealth = 10;
 
-    public float movementSpeed = 50;
+    public float movementSpeed = 5;
     public float pushBack = 0;
 
     public Facing facing = Facing.Up;
@@ -43,6 +46,8 @@ public class Player
 
     public bool active = false;
     public bool computer = false;
+
+    public PlayerSelectorObj pso = null;
 
     public GameObject spawnedPlayer;
     public GameObject spawnedLifeline;
@@ -88,6 +93,8 @@ public class Player
 
         index = p.index;
 
+        ignoreFacing = p.ignoreFacing;
+
         currentHealth = p.currentHealth;
         maxHealth = p.maxHealth;
 
@@ -127,6 +134,8 @@ public class Player
 
         currentHealth = p.maxHealth;
         maxHealth = p.maxHealth;
+
+        ignoreFacing = p.ignoreFacing;
 
         movementSpeed = p.movementSpeed;
         pushBack = p.pushBack;

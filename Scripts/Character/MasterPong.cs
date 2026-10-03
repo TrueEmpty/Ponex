@@ -278,15 +278,15 @@ public class MasterPong : MonoBehaviour
     {
         int moveDir = 0;
 
-        /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
+        if ((pg.inp.right || thought == Thought.MoveRight) && !WallInDirection(1))
         {
             moveDir += 1;
         }
 
-        if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || thought == Thought.MoveLeft) && !WallInDirection(-1))
+        if ((pg.inp.left || thought == Thought.MoveLeft) && !WallInDirection(-1))
         {
             moveDir -= 1;
-        }*/
+        }
 
         Vector3 rotDir = transform.right;
         rotDir.x = Mathf.Abs(rotDir.x);

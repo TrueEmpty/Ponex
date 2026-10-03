@@ -135,7 +135,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
   m_Material: {fileID: 0}
-  m_Color: {r: 0.8301887, g: 0.4903401, b: 0.12922749, a: 1}
+  m_Color: {r: 0.7529412, g: 0.7529412, b: 0.7529412, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -252,6 +252,7 @@ MonoBehaviour:
   cLink: {fileID: 0}
   pI: 0
   speed: 500
+  cpuControl: -1
 --- !u!114 &-1165807210863873476
 MonoBehaviour:
   m_ObjectHideFlags: 0

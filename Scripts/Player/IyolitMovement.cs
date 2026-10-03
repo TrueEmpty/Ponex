@@ -89,7 +89,7 @@ public class IyolitMovement : MonoBehaviour
 
                     if (currentPosition == lastPosition && !moving)
                     {
-                        /*if (bm.KeyDown(pG.player.buttons.Right(pG.player.facing)))
+                        if (pG.inp.tf_right)
                         {
                             currentPosition++;
 
@@ -99,7 +99,7 @@ public class IyolitMovement : MonoBehaviour
                             }
                         }
 
-                        if (bm.KeyDown(pG.player.buttons.Left(pG.player.facing)))
+                        if (pG.inp.tf_left)
                         {
                             currentPosition--;
 
@@ -107,7 +107,7 @@ public class IyolitMovement : MonoBehaviour
                             {
                                 currentPosition = 0;
                             }
-                        }*/
+                        }
 
                         //Keep it on the Candle
                         transform.position = positions[currentPosition].position;
@@ -124,7 +124,7 @@ public class IyolitMovement : MonoBehaviour
                     superOn -= Time.deltaTime;
                 }
 
-                /*bumpActive = bm.KeyPressed(pG.player.buttons.Up(pG.player.facing));
+                bumpActive = pG.inp.bump;
 
                 if (superCooldownTimer < superCooldown)
                 {
@@ -143,12 +143,12 @@ public class IyolitMovement : MonoBehaviour
                 }
 
 
-                if (bm.KeyDown(pG.player.buttons.Down(pG.player.facing)) && !SuperOn() && pG.player.CanSuper && pG.player.super.amount >= pG.player.super.cost && pG.player.super.readyPercent >= 1)
+                if (pG.inp.tf_super && !SuperOn() && pG.player.CanSuper && pG.player.super.amount >= pG.player.super.cost && pG.player.super.readyPercent >= 1)
                 {
                     superOn = superTime;
                     superCooldownTimer = 0;
                     //pG.player.CostSuper(pG.player.player.player.superCost);
-                }*/
+                }
             }
         }
     }

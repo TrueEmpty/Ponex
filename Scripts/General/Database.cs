@@ -95,15 +95,29 @@ public class Database : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(gameStart)
+        ShowAndHidePlayerSelectors();
+
+        if (gameStart)
         {
-            if(!winnerScreen)
+            if (!winnerScreen)
             {
                 CheckPlayerConstrants();
                 BallCheck();
                 CheckForWinner();
             }
         }
+    }
+
+    void ShowAndHidePlayerSelectors()
+    {
+        bool show = true;
+
+        if(gameStart || startingGame)
+        {
+            show = false;
+        }
+
+        playerSelectors.gameObject.SetActive(show);
     }
 
     public int PlayerAdd(ControllerLink cL)
@@ -210,6 +224,7 @@ public class Database : MonoBehaviour
             pso.cLink = cL;
             pso.SetCircleColor(playerColors[pc]);
             pso.pI = index;
+            p.pso = pso;
 
             result = index;
 
@@ -507,6 +522,15 @@ public class Database : MonoBehaviour
     public void CharactersPicked(string fromSelect)
     {
         bool startGame = false;
+
+        //Reset all player controls
+        foreach(Player p in players)
+        {
+            if(p.pso != null)
+            {
+                p.pso.cpuControl = -1;
+            }
+        }
 
         switch(fromSelect.ToLower().Trim())
         {

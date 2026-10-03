@@ -72,8 +72,8 @@ public class Test : MonoBehaviour
 
             if (pg.player.CanMove)
             {
-                OnDash();
                 OnMove();
+                OnDash();
             }
             else
             {
@@ -313,15 +313,15 @@ public class Test : MonoBehaviour
     {
         int moveDir = 0;
 
-        /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
+        if ((pg.inp.right || thought == Thought.MoveRight) && !WallInDirection(1))
         {
             moveDir += 1;
         }
 
-        if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || thought == Thought.MoveLeft) && !WallInDirection(-1))
+        if ((pg.inp.left || thought == Thought.MoveLeft) && !WallInDirection(-1))
         {
             moveDir -= 1;
-        }*/
+        }
 
         Vector3 rotDir = transform.right;
         rotDir.x = Mathf.Abs(rotDir.x);
@@ -335,7 +335,7 @@ public class Test : MonoBehaviour
     {
         Skill d = pg.player.dash;
 
-        /*if ((bm.KeyDown(pg.player.buttons.Right(pg.player.facing))) && d.amount >= d.cost)
+        if ((pg.inp.tf_right) && d.amount >= d.cost)
         {
             if(Mathf.Abs(canDash) == 2)
             {
@@ -354,9 +354,9 @@ public class Test : MonoBehaviour
                 canDash = 1;
                 dashEnd = doubleClickTime;
             }
-        }*/
+        }
 
-       /* if ((bm.KeyDown(pg.player.buttons.Left(pg.player.facing))) && d.amount >= d.cost)
+        if ((pg.inp.tf_left) && d.amount >= d.cost)
         {
             if (Mathf.Abs(canDash) == 2)
             {
@@ -374,14 +374,14 @@ public class Test : MonoBehaviour
                 canDash = -1;
                 dashEnd = doubleClickTime;
             }
-        }*/
+        }
     }
 
     void OnBump()
     {
         Skill b = pg.player.bump;
 
-        /*if ((bm.KeyDown(pg.player.buttons.Up(pg.player.facing)) || thought == Thought.MoveUp) && b.Enough())
+        if ((pg.inp.bump || thought == Thought.MoveUp) && b.Enough())
         {
             GameObject go = Instantiate(bump, transform.position, transform.rotation);
             go.transform.parent = transform;
@@ -395,14 +395,14 @@ public class Test : MonoBehaviour
 
             b.Spend();
             thought = Thought.Nothing;
-        }*/
+        }
     }
 
     void OnSuper()
     {
         Skill b = pg.player.super;
 
-        /*if ((bm.KeyDown(pg.player.buttons.Down(pg.player.facing)) || thought == Thought.MoveDown) && b.Enough())
+        if ((pg.inp.super || thought == Thought.MoveDown) && b.Enough())
         {
             GameObject go = Instantiate(super, transform.position, transform.rotation);
 
@@ -418,7 +418,7 @@ public class Test : MonoBehaviour
             GameObject goE = Instantiate(superEffect, transform.position, transform.rotation);
             goE.transform.parent = transform;
             thought = Thought.Nothing;
-        }*/
+        }
     }
 
     bool WallInDirection(int dir)

@@ -7,8 +7,10 @@ public class Characters
     public string name = "";
     public int maxHealth = 10;
 
-    public float movementSpeed = 50;
+    public float movementSpeed = 5;
     public float pushBack = 0;
+
+    public bool ignoreFacing = false;
 
     public Skill bump;
     public Skill super;
@@ -42,6 +44,12 @@ public class Characters
         bump = new Skill(p.bump);
         super = new Skill(p.super);
         dash = new Skill(p.dash);
+
+        ignoreFacing = p.ignoreFacing;
+
+        movementSpeed = p.movementSpeed;
+        pushBack = p.pushBack;
+        maxHealth = p.maxHealth;
 
         character = new ObjectInfo(p.character);
 

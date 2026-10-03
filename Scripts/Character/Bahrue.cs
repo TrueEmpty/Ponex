@@ -308,15 +308,15 @@ public class Bahrue : MonoBehaviour
     {
         int moveDir = 0;
 
-        /*if ((bm.KeyPressed(pg.player.buttons.Right(pg.player.facing)) || thought == Thought.MoveRight) && !WallInDirection(1))
+        if ((pg.inp.right || thought == Thought.MoveRight) && !WallInDirection(1))
         {
             moveDir += 1;
         }
 
-        if ((bm.KeyPressed(pg.player.buttons.Left(pg.player.facing)) || thought == Thought.MoveLeft) && !WallInDirection(-1))
+        if ((pg.inp.left || thought == Thought.MoveLeft) && !WallInDirection(-1))
         {
             moveDir -= 1;
-        }*/
+        }
 
         Vector3 rotDir = transform.right;
         rotDir.x = Mathf.Abs(rotDir.x);
@@ -436,7 +436,7 @@ public class Bahrue : MonoBehaviour
         pP.y = GetTopPoint() + 1;
         token.localPosition = pP;
 
-        /*if (bm.KeyPressed(pg.player.buttons.Down(pg.player.facing)) || thought == Thought.MoveDown)
+        if (pg.inp.down || thought == Thought.MoveDown)
         {
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Move);
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Bump);
@@ -457,7 +457,7 @@ public class Bahrue : MonoBehaviour
             pg.player.RemoveConstraint(gameObject, PlayerConstraint.Move);
             pg.player.RemoveConstraint(gameObject, PlayerConstraint.Bump);
             pg.player.super.amount = 0;
-        }*/
+        }
 
         ring.gameObject.SetActive(pg.player.super.amount != 0);
         emblem.gameObject.SetActive(pg.player.super.amount != 0);
@@ -489,7 +489,7 @@ public class Bahrue : MonoBehaviour
 
         pg.player.bump.readyPercent = bP;
 
-        /*if (bm.KeyPressed(pg.player.buttons.Up(pg.player.facing)) || thought == Thought.MoveUp)
+        if (pg.inp.up || thought == Thought.MoveUp)
         {
             if (timeTillReset >= bumpCooldown && pg.player.CanBump)
             {
@@ -526,7 +526,7 @@ public class Bahrue : MonoBehaviour
                     }
                 }
             }
-        }*/
+        }
 
         timeTillReset += Time.deltaTime;
     }
