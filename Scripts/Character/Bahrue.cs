@@ -518,7 +518,8 @@ public class Bahrue : MonoBehaviour
         pP.y = GetTopPoint() + 1;
         token.localPosition = pP;
 
-        if (pg.inp.down || thought == Thought.MoveDown)
+        // Hold-to-charge is intentional — use superHeld, not Enough()-alone activation
+        if (pg.inp.super || thought == Thought.MoveDown)
         {
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Move);
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Bump);

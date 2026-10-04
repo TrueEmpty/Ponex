@@ -16,6 +16,9 @@ public class Garmen : MonoBehaviour
 
     public float cannonOffset = .07f;
 
+    bool lastStickBack = false;
+    bool lastAiWantSuper = false;
+
     #region AI
     bool thinking = false;
     public float thinkTime = .5f;
@@ -61,27 +64,6 @@ public class Garmen : MonoBehaviour
 
             if (db.gameStart && p.currentHealth > 0)
             {
-                // Drive toggle on press edge only (held down was flipping every frame = auto cast / can't exit)
-                bool pressedSuper = pg.player.computer
-                    ? thought == Thought.MoveDown
-                    : pg.inp.tf_super;
-
-                if (pressedSuper)
-                {
-                    if (p.super.readyPercent >= 1f)
-                    {
-                        // Always free to leave Drive and return to stationary
-                        p.super.readyPercent = 0f;
-                    }
-                    else if (p.super.amount >= p.super.cost)
-                    {
-                        // Enter Drive only when there is gas
-                        p.super.readyPercent = 1f;
-                    }
-
-                    thought = Thought.Nothing;
-                }
-
                 if (pg.player.CanBump)
                 {
                     if ((pg.inp.up || thought == Thought.MoveUp) && p.bump.amount >= p.bump.cost && gbC >= .25f)
@@ -118,6 +100,90 @@ public class Garmen : MonoBehaviour
         {
             ll = pg.player.spawnedLifeline;
         }
+    }
+
+    // LateUpdate: ControllerLink + PlayerGrab have already updated this frame
+    void LateUpdate()
+    {
+        if (ll == null || pg == null || pg.player == null || db == null || !db.gameStart)
+            return;
+
+        Player p = pg.player;
+        if (p.currentHealth <= 0 || p.super == null)
+            return;
+
+        bool pressedSuper = ReadSuperPress(p);
+        bool hasGas = p.super.Enough();
+
+        // Exit free on press. Enter = press AND Enough()
+        if (pressedSuper && p.super.readyPercent >= 1f)
+        {
+            p.super.readyPercent = 0f;
+            thought = Thought.Nothing;
+        }
+        else if (pressedSuper && hasGas)
+        {
+            p.super.readyPercent = 1f;
+            thought = Thought.Nothing;
+        }
+    }
+
+    bool ReadSuperPress(Player p)
+    {
+        if (p.computer)
+        {
+            bool want = thought == Thought.MoveDown;
+            bool edge = want && !lastAiWantSuper;
+            lastAiWantSuper = want;
+            return edge;
+        }
+
+        // Prefer ControllerLink edges (valid in LateUpdate even if PlayerGrab ran early)
+        ControllerLink cL = p.cLink;
+        bool interactEdge = false;
+        bool stickBack = false;
+        if (cL != null)
+        {
+            ControllerButtons interact = cL["Interact"];
+            interactEdge = interact != null && interact.wasPressedThisFrame;
+
+            bool r = PressedAxis(cL, "Move", 1, 0);
+            bool l = PressedAxis(cL, "Move", -1, 0);
+            bool u = PressedAxis(cL, "Move", 0, 1);
+            bool d = PressedAxis(cL, "Move", 0, -1);
+
+            if (p.ignoreFacing)
+                stickBack = d;
+            else
+            {
+                switch (p.facing)
+                {
+                    case Facing.Down: stickBack = u; break;
+                    case Facing.Left: stickBack = l; break;
+                    case Facing.Right: stickBack = r; break;
+                    default: stickBack = d; break;
+                }
+            }
+        }
+
+        bool stickEdge = stickBack && !lastStickBack;
+        lastStickBack = stickBack;
+
+        return interactEdge || stickEdge || pg.inp.tf_super;
+    }
+
+    static bool PressedAxis(ControllerLink cL, string action, int xSign, int ySign)
+    {
+        ControllerButtons b = cL[action];
+        if (b == null)
+            return false;
+
+        const float deadzone = .5f;
+        if (xSign > 0) return b.value.x > deadzone;
+        if (xSign < 0) return b.value.x < -deadzone;
+        if (ySign > 0) return b.value.y > deadzone;
+        if (ySign < 0) return b.value.y < -deadzone;
+        return false;
     }
 
     IEnumerator AI()

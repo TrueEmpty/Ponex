@@ -1,12 +1,14 @@
 using UnityEngine;
 
+// Run before character scripts so tf_super / tf_dash edges are valid the same frame
+[DefaultExecutionOrder(-100)]
 public class PlayerGrab : MonoBehaviour
 {
     Database db;
     public int playerIndex = -1;
 
     public Inputs inp = new Inputs();
-    float deadzone = .5f;
+    float deadzone = .7f;
 
     void Start()
     {
@@ -29,30 +31,43 @@ public class PlayerGrab : MonoBehaviour
         if (cL == null)
             return;
 
-        // Get Last Frames
         bool lf_r = inp.right;
         bool lf_l = inp.left;
         bool lf_u = inp.up;
         bool lf_d = inp.down;
         bool lf_dashL = inp.dashLeft;
         bool lf_dashR = inp.dashRight;
+        bool lf_super = inp.superHeld;
 
-        // Stick / D-pad come through the Move action (both bound).
-        // Attack/Crouch apply AFTER facing remap so they stay lane left/right.
+        // Move stick / D-pad
         bool r = PressedAxis(cL, "Move", 1, 0);
         bool l = PressedAxis(cL, "Move", -1, 0);
         bool u = PressedAxis(cL, "Move", 0, 1);
         bool d = PressedAxis(cL, "Move", 0, -1);
+
         bool bumpBtn = IsPressed(cL, "Jump");
         bool superBtn = IsPressed(cL, "Interact");
         bool laneRightBtn = IsPressed(cL, "Crouch");
         bool laneLeftBtn = IsPressed(cL, "Attack");
-
-        // Dedicated dash buttons (bumpers / Q-R) — paddle left/right, no facing remap
         bool dashLeftBtn = IsPressed(cL, "DashLeft");
         bool dashRightBtn = IsPressed(cL, "DashRight");
 
+        // Facing-relative stick "back" (toward your wall) — separate from Interact
+        bool stickBack;
+        if (p.ignoreFacing)
+            stickBack = d;
+        else
+        {
+            switch (p.facing)
+            {
+                case Facing.Down: stickBack = u; break;
+                case Facing.Left: stickBack = l; break;
+                case Facing.Right: stickBack = r; break;
+                default: stickBack = d; break;
+            }
+        }
 
+        // Movement axes (bump/super buttons do NOT get remapped into lane left/right)
         if (p.ignoreFacing)
         {
             inp.up = u || bumpBtn;
@@ -91,16 +106,20 @@ public class PlayerGrab : MonoBehaviour
             }
         }
 
+        // Dedicated super channel: Interact and/or stick-back (for hold-charge chars like Bahrue)
+        inp.superHeld = stickBack || superBtn;
         inp.dashLeft = dashLeftBtn;
         inp.dashRight = dashRightBtn;
 
-        // Pressed this frame
         inp.tf_right = !lf_r && inp.right;
         inp.tf_left = !lf_l && inp.left;
         inp.tf_up = !lf_u && inp.up;
         inp.tf_down = !lf_d && inp.down;
         inp.tf_dashLeft = !lf_dashL && inp.dashLeft;
         inp.tf_dashRight = !lf_dashR && inp.dashRight;
+
+        // Super press edge — tracked on its own channel (not Enough(), not movement alone)
+        inp.tf_super = !lf_super && inp.superHeld;
     }
 
     bool IsPressed(ControllerLink cL, string action)
@@ -149,10 +168,12 @@ public class Inputs
     public bool dashLeft = false;
     public bool dashRight = false;
 
-    public bool bump => up;
-    public bool super => down;
+    /// <summary>Super held (Interact and/or stick-back). Use for hold-to-charge (Bahrue).</summary>
+    public bool superHeld = false;
 
-    // Activated this frame
+    public bool bump => up;
+    public bool super => superHeld;
+
     public bool tf_right = false;
     public bool tf_left = false;
     public bool tf_up = false;
@@ -160,6 +181,8 @@ public class Inputs
     public bool tf_dashLeft = false;
     public bool tf_dashRight = false;
 
+    /// <summary>Super pressed this frame. Activation must use this + Enough(), never Enough() alone.</summary>
+    public bool tf_super = false;
+
     public bool tf_bump => tf_up;
-    public bool tf_super => tf_down;
 }

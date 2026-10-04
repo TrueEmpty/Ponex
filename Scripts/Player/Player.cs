@@ -379,7 +379,8 @@ public class Skill
     public float max = 20;
     public float cost = 10;
     public float speed = 50;
-    public float readyPercent = 1;
+    // 0 by default — for Garmen this flag means Drive is ON when >= 1
+    public float readyPercent = 0;
 
     public Skill()
     {

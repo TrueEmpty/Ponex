@@ -150,10 +150,11 @@ public static class ComputerAI
         if (ballComingAtUs && GetCooldown(superCooldown, player.index) <= 0f)
         {
             float superChance = profile.aggression * 0.45f * skill;
+            // Only request a super press — characters decide enter/exit on their own.
+            // Do NOT require readyPercent: for Garmen that flag means "already in Drive".
             if (approach > 2.5f && Mathf.Abs(lateral) > 1.25f
                 && player.super != null
-                && player.super.Enough()
-                && player.super.readyPercent >= 1f)
+                && player.super.Enough())
             {
                 if (UnityEngine.Random.value < superChance * Time.deltaTime * 3f)
                 {

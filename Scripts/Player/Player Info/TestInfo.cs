@@ -103,12 +103,14 @@ public class TestInfo : MonoBehaviour
         Color superColor = superReady;
         bool currentSuperState = false;
 
-        if (p.super.cost <= p.super.amount && p.super.readyPercent >= 1)
+        // Meter ready = Enough(). readyPercent is also used as Garmen Drive-on, so don't require it here.
+        bool meterReady = p.super != null && p.super.cost > 0 && p.super.amount >= p.super.cost;
+        if (meterReady)
         {
             superColor = superReady;
             currentSuperState = true;
         }
-        else if (p.super.readyPercent < 1)
+        else if (p.super == null || p.super.cost <= 0 || p.super.amount <= 0)
         {
             superColor = superNotReady;
         }

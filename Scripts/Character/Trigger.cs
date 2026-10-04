@@ -110,14 +110,12 @@ public class Trigger : MonoBehaviour
                 superDelayAmount -= Time.deltaTime;
             }
 
-            // Keep ready flag in sync with meter (UI + OnSuper both use readyPercent >= 1)
+            // readyPercent here means "meter full enough to cast" (NOT an active mode).
+            // Actual cast still requires tf_super in OnSuper — Enough() alone must never fire.
             Skill superSkill = pg.player.super;
-            if (superSkill != null)
+            if (superSkill != null && superShotCount < 0)
             {
-                if (superSkill.Enough())
-                    superSkill.readyPercent = 1f;
-                else if (superShotCount < 0)
-                    superSkill.readyPercent = 0f;
+                superSkill.readyPercent = superSkill.Enough() ? 1f : 0f;
             }
         }
     }

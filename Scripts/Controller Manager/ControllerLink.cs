@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
 [RequireComponent(typeof(PlayerInput))]
+[DefaultExecutionOrder(-200)] // Before PlayerGrab so wasPressedThisFrame / isPressed are fresh
 public class ControllerLink : MonoBehaviour
 {
     Database db;

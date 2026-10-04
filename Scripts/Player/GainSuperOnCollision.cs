@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GainSuperOnCollision : MonoBehaviour
@@ -7,7 +5,6 @@ public class GainSuperOnCollision : MonoBehaviour
     PlayerGrab pG;
     public float amount = 1;
 
-    // Start is called before the first frame update
     void Start()
     {
         pG = GetComponent<PlayerGrab>();
@@ -15,14 +12,14 @@ public class GainSuperOnCollision : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.transform.tag.ToLower().Trim() == "ball")
-        {
-            if (pG == null || pG.player == null || pG.player.super == null)
-                return;
+        if (collision.transform.tag.ToLower().Trim() != "ball")
+            return;
 
-            pG.player.super.Gain(amount);
-            if (pG.player.super.Enough())
-                pG.player.super.readyPercent = 1f;
-        }
+        if (pG == null || pG.player == null || pG.player.super == null)
+            return;
+
+        // Only fill the meter — never activate supers.
+        // (readyPercent is Drive-on for Garmen; setting it here auto-cast Drive.)
+        pG.player.super.Gain(amount);
     }
 }
