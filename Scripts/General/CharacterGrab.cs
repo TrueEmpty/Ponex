@@ -61,8 +61,14 @@ public class CharacterGrab : MonoBehaviour
         if (db == null || outline == null || ch == null)
             return;
 
-        bool selected = db.players != null && db.players.Exists(x => x != null && x.name == ch.name);
-        outline.effectColor = selected ? Color.white : ch.portraitColor;
+        Player holder = db.players != null
+            ? db.players.Find(x => x != null && x.name == ch.name)
+            : null;
+
+        if (holder != null)
+            outline.effectColor = PlayerSkin.GetColor(holder, db);
+        else
+            outline.effectColor = ch.portraitColor;
     }
 
     public void OnClick(int player)
@@ -73,6 +79,14 @@ public class CharacterGrab : MonoBehaviour
         if(p != null)
         {
             p.SetUpCharacter(ch);
+            // Duplicate picks get a free distinct skin automatically
+            PlayerSkin.AssignUniqueForCharacter(p, db);
+            if (p.pso != null)
+            {
+                PlayerColors pc = PlayerSkin.GetPlayerColors(p, db);
+                if (pc != null)
+                    p.pso.SetCircleColor(pc);
+            }
             if (db != null)
                 db.RememberSelectedCharacter(p.index, ch.name);
         }

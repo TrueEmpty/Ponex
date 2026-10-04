@@ -9,15 +9,43 @@ public class PlayerGrab : MonoBehaviour
 
     public Inputs inp = new Inputs();
     float deadzone = .7f;
+    bool skinApplied = false;
 
     void Start()
     {
         db = Database.instance;
+        TryApplySkin();
+    }
+
+    void LateUpdate()
+    {
+        // playerIndex is often set the same frame after Instantiate — apply once linked
+        TryApplySkin();
     }
 
     void Update()
     {
         UpdateInputs();
+    }
+
+    void TryApplySkin()
+    {
+        if (skinApplied || playerIndex < 0)
+            return;
+
+        // Ball ownership changes — don't recolor the ball to the owner's skin
+        if (CompareTag("Ball"))
+        {
+            skinApplied = true;
+            return;
+        }
+
+        Player p = player;
+        if (p == null)
+            return;
+
+        PlayerSkin.Apply(gameObject, p);
+        skinApplied = true;
     }
 
     void UpdateInputs()
@@ -147,9 +175,9 @@ public class PlayerGrab : MonoBehaviour
         {
             if (db == null)
                 db = Database.instance;
-            if (db == null || playerIndex < 0 || playerIndex >= db.players.Count)
+            if (db == null || db.players == null || playerIndex < 0)
                 return null;
-            return db.players[playerIndex];
+            return db.players.Find(x => x != null && x.index == playerIndex);
         }
     }
 

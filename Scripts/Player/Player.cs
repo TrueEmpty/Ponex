@@ -12,6 +12,9 @@ public class Player
 
     public int index = -1;
 
+    /// <summary>Index into Database.playerColors for duplicate-character skins. -1 = use player index.</summary>
+    public int skinColorIndex = -1;
+
     public bool ignoreFacing = false;
 
     public string nickName = "";
@@ -94,6 +97,7 @@ public class Player
         uid = new UniqueId();
 
         index = p.index;
+        skinColorIndex = p.skinColorIndex;
 
         ignoreFacing = p.ignoreFacing;
 

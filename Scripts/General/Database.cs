@@ -167,6 +167,8 @@ public class Database : MonoBehaviour
             p.SetUpCharacter(remembered);
         else
             p.SetUpCharacter(RandomCharacter());
+
+        PlayerSkin.AssignUniqueForCharacter(p, this);
     }
 
     // Update is called once per frame
@@ -292,7 +294,10 @@ public class Database : MonoBehaviour
 
             PlayerSelectorObj pso = go.GetComponent<PlayerSelectorObj>();
             pso.cLink = cL;
-            pso.SetCircleColor(playerColors[pc]);
+            if (p.skinColorIndex < 0)
+                p.skinColorIndex = index;
+            PlayerColors startColor = PlayerSkin.GetPlayerColors(p, this);
+            pso.SetCircleColor(startColor != null ? startColor : playerColors[Mathf.Clamp(pc, 0, playerColors.Count - 1)]);
             pso.pI = index;
             p.pso = pso;
 
@@ -864,6 +869,7 @@ public class Database : MonoBehaviour
                 {
                     pG.playerIndex = p.index;
                 }
+                PlayerSkin.Apply(p.spawnedPlayer, p, this);
 
                 //Spawn Lifeline — always on that side's wall (not at coop player depth)
                 if (p.lifeline != null && p.lifeline.prefabs != null)
@@ -876,6 +882,7 @@ public class Database : MonoBehaviour
                     {
                         lifePG.playerIndex = p.index;
                     }
+                    PlayerSkin.Apply(p.spawnedLifeline, p, this);
                 }
 
                 //Spawn Info box
@@ -1081,7 +1088,7 @@ public class Database : MonoBehaviour
         for (int i = 0; i < hits.Length; i++)
         {
             string tag = hits[i].transform.tag;
-            if (tag != "Wall" && tag != "Walls")
+            if (tag != "Wall" && tag != "Walls" && tag != "Obstacle")
                 continue;
 
             point = hits[i].point;

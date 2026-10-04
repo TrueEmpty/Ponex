@@ -106,8 +106,8 @@ public class BallMovement : MonoBehaviour
 
         string tag = collision.transform.tag;
 
-        // Clean planar bounce off walls (tag is "Walls" on field prefabs)
-        if (tag == "Wall" || tag == "Walls")
+        // Clean planar bounce off walls / field obstacles
+        if (tag == "Wall" || tag == "Walls" || tag == "Obstacle")
         {
             ReflectOffContact(collision);
         }
@@ -197,6 +197,7 @@ public class BallMovement : MonoBehaviour
 
             case "Wall":
             case "Walls":
+            case "Obstacle":
                 SetSpeedPreservingDirection(speed * Mathf.Max(1f, bI.ball.speedIncrease * 1.25f));
                 break;
         }

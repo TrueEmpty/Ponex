@@ -18,11 +18,19 @@ public static class PaddleWall
         if (string.IsNullOrEmpty(tag))
             return false;
 
+        bool isObstacle = tag.Equals("Obstacle", StringComparison.OrdinalIgnoreCase);
+        bool isWall = tag.Equals("Wall", StringComparison.OrdinalIgnoreCase)
+            || tag.Equals("Walls", StringComparison.OrdinalIgnoreCase);
+
         if (wallTags == null || wallTags.Count == 0)
-        {
-            return tag.Equals("Wall", StringComparison.OrdinalIgnoreCase)
-                || tag.Equals("Walls", StringComparison.OrdinalIgnoreCase);
-        }
+            return isWall || isObstacle;
+
+        // "Walls" in hitTags also blocks field obstacles (logs, etc.)
+        if (isObstacle && wallTags.Exists(x => x != null
+            && (x.Equals("Walls", StringComparison.OrdinalIgnoreCase)
+                || x.Equals("Wall", StringComparison.OrdinalIgnoreCase)
+                || x.Equals("Obstacle", StringComparison.OrdinalIgnoreCase))))
+            return true;
 
         return wallTags.Exists(x => x != null && x.Equals(tag, StringComparison.OrdinalIgnoreCase));
     }

@@ -37,12 +37,10 @@ public class TestInfo : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(setup)
+        if (setup)
         {
-            if (pg.playerIndex >= 0 && pg.playerIndex < db.players.Count)
-            {
+            if (pg != null && pg.player != null)
                 ShowInfo();
-            }
         }
         else
         {
@@ -66,31 +64,35 @@ public class TestInfo : MonoBehaviour
 
     void ShowInfo()
     {
-        Player p = db.players[pg.playerIndex];
+        Player p = pg.player;
+        if (p == null)
+            return;
 
-        int shownColor = 5;
+        Color c = PlayerSkin.GetColor(p, db);
 
-        if (p.currentHealth > 0 && p.team >= 0 && p.team < db.teamColors.Count)
+        // Panel matches character skin; keep translucent like old team panels
+        if (background != null)
         {
-            shownColor = p.team;
+            Color bg = c;
+            if (p.currentHealth <= 0)
+                bg = Color.Lerp(c, Color.gray, 0.65f);
+            bg.a = 0.27f;
+            background.color = bg;
         }
-
-        background.color = db.teamColors[shownColor];
-
-        Color c = db.playerColors[pg.playerIndex].color;
 
         if (p.computer)
         {
-            playerName.text = "CPU" + (pg.playerIndex + 1);
+            playerName.text = "CPU" + (p.index + 1);
             playerName.color = Color.gray;
         }
         else
         {
-            playerName.text = (p.nickName == "" || p.nickName == null) ? "P" + (pg.playerIndex + 1) : p.nickName;
+            playerName.text = (p.nickName == "" || p.nickName == null) ? "P" + (p.index + 1) : p.nickName;
             playerName.color = c;
         }
 
         characterName.text = p.name;
+        characterName.color = c;
         health.text = p.currentHealth + "/" + p.maxHealth;
 
         bump.fillAmount = p.bump.amount/p.bump.max;

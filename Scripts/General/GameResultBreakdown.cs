@@ -80,8 +80,10 @@ public class GameResultBreakdown : MonoBehaviour
 
     void UpdateInfo()
     {
-        Player p = db.players[playerIndex];
-        Color c = db.playerColors[playerIndex].color;
+        Player p = db.players.Find(x => x != null && x.index == playerIndex);
+        if (p == null)
+            return;
+        Color c = PlayerSkin.GetColor(p, db);
         Color t = db.teamColors[p.team];
         t.a = alpha;
 

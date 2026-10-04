@@ -135,7 +135,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b84ad79613f0a404a958cd4d07d31dd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amount: 10
+  amount: 20
 --- !u!54 &7896727177120171187
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -241,7 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b84ad79613f0a404a958cd4d07d31dd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amount: 5
+  amount: 10
 --- !u!33 &6538498667439810065
 MeshFilter:
   m_ObjectHideFlags: 0

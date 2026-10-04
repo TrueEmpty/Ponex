@@ -78,17 +78,38 @@ public class NariTail : MonoBehaviour
 
                 if (pass)
                 {
-                    if (pG.player.currentHealth > healthIndex - 1)
-                    {
-                        pG.player.currentHealth = healthIndex - 1;
-                        pG.player.maxHealth = healthIndex - 1;
+                    // Sever from this segment outward — HP lost must go through ApplyGoalDamage
+                    // so taken/dealt stats (and dedupe) match other characters.
+                    int targetHealth = Mathf.Max(0, healthIndex - 1);
+                    int toLose = pG.player.currentHealth - targetHealth;
+                    if (toLose <= 0)
+                        return;
 
-                        destroy = 0;
+                    int ballId = collision.gameObject.GetInstanceID();
+                    int lost = pG.player.ApplyGoalDamage(toLose, ballId);
+                    if (lost <= 0)
+                        return;
+
+                    // Nari's max tracks body length
+                    pG.player.maxHealth = pG.player.currentHealth;
+
+                    if (tpG != null && tpG.IsLinked() && tpG.player != null)
+                    {
+                        tpG.player.RecordDamageDealt(lost);
+                        if (tpG.player.computer)
+                            ComputerAI.OnPaddleHitBall(tpG.player);
+                    }
+
+                    if (pG.player.computer)
+                        ComputerAI.OnTookGoalDamage(pG.player, lost);
+
+                    destroy = 0;
+                    if (nTU != null && nTU.tails != null)
                         nTU.tails.Remove(gameObject);
+                    if (oF != null)
                         oF.parent = null;
 
-                        rb.linearVelocity = new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0);
-                    }
+                    rb.linearVelocity = new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0);
                 }
             }
         }
