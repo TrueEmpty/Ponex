@@ -30,6 +30,15 @@ public class Bahrue : MonoBehaviour
     float timeTillReset = 0;
     public int healthGain = 3;
 
+    #region Dash
+    int canDash = 0;
+    float dashEnd = 0;
+    float speedIncrease = 1;
+    public float speedMultiplyer = 4;
+    float doubleClickTime = .3f;
+    public float dashTime = .3f;
+    #endregion
+
     #region AI
     bool thinking = false;
     public float thinkTime = .5f;
@@ -72,16 +81,13 @@ public class Bahrue : MonoBehaviour
 
             if (pg.player.computer)
             {
-                if(!thinking)
-                {
-                    thinking = true;
-                    StartCoroutine(AI());
-                }
+                thinking = false;
             }
 
             if(pg.player.CanMove)
             {
                 OnMove();
+                OnDash();
             }
 
             if (pg.player.CanSuper)
@@ -93,6 +99,17 @@ public class Bahrue : MonoBehaviour
             {
                 ActivateBump();
             }
+
+            if (dashEnd > 0)
+                dashEnd -= Time.deltaTime;
+            else
+            {
+                canDash = 0;
+                speedIncrease = 1;
+            }
+
+            if (pg.player.dash != null)
+                pg.player.dash.Charge();
         }
     }
 
@@ -308,14 +325,20 @@ public class Bahrue : MonoBehaviour
     {
         int moveDir = 0;
 
-        if ((pg.inp.right || thought == Thought.MoveRight) && !WallInDirection(1))
+        if (pg.player.computer)
         {
-            moveDir += 1;
+            ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, hitTags, 1f);
+            moveDir = d.moveDir;
+            if (d.wantBump) thought = Thought.MoveUp;
+            else if (d.wantSuper) thought = Thought.MoveDown;
+            else thought = Thought.Nothing;
         }
-
-        if ((pg.inp.left || thought == Thought.MoveLeft) && !WallInDirection(-1))
+        else
         {
-            moveDir -= 1;
+            if (pg.inp.right && !WallInDirection(1))
+                moveDir += 1;
+            if (pg.inp.left && !WallInDirection(-1))
+                moveDir -= 1;
         }
 
         Vector3 rotDir = transform.right;
@@ -323,9 +346,68 @@ public class Bahrue : MonoBehaviour
         rotDir.y = Mathf.Abs(rotDir.y);
         rotDir.z = Mathf.Abs(rotDir.z);
 
-        rb.linearVelocity = rotDir * moveDir * pg.player.movementSpeed;
+        rb.linearVelocity = rotDir * moveDir * speedIncrease * pg.player.movementSpeed;
     }
 
+    void OnDash()
+    {
+        Skill d = pg.player.dash;
+        if (d == null || d.max <= 0 || d.cost <= 0)
+            return;
+
+        if (pg.player.computer)
+        {
+            ComputerAI.Decision ai = ComputerAI.GetLastDecision(pg.playerIndex);
+            if (ai.wantDash && ai.moveDir != 0 && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+                StartDash(ai.moveDir > 0 ? 1 : -1, d);
+            return;
+        }
+
+        if (pg.inp.tf_dashRight && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+        {
+            StartDash(1, d);
+            return;
+        }
+        if (pg.inp.tf_dashLeft && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+        {
+            StartDash(-1, d);
+            return;
+        }
+
+        if (pg.inp.tf_right && d.amount >= d.cost)
+        {
+            if (Mathf.Abs(canDash) == 2) { }
+            else if (canDash == 1 && dashEnd > 0)
+                StartDash(1, d);
+            else
+            {
+                canDash = 1;
+                dashEnd = doubleClickTime;
+            }
+        }
+
+        if (pg.inp.tf_left && d.amount >= d.cost)
+        {
+            if (Mathf.Abs(canDash) == 2) { }
+            else if (canDash == -1 && dashEnd > 0)
+                StartDash(-1, d);
+            else
+            {
+                canDash = -1;
+                dashEnd = doubleClickTime;
+            }
+        }
+    }
+
+    void StartDash(int dir, Skill d)
+    {
+        speedIncrease = speedMultiplyer;
+        dashEnd = dashTime;
+        d.readyPercent = 0;
+        d.Spend();
+        canDash = dir > 0 ? 2 : -2;
+        pg.player.numberOfDashes++;
+    }
 
     bool WallInDirection(int dir)
     {

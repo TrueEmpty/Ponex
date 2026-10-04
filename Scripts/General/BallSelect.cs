@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,154 +14,94 @@ public class BallSelect : MonoBehaviour
     GameObject shownBall = null;
     public Text ballName;
 
+    public Transform controlsHolder;
+    bool setup;
+
     private void Awake()
     {
         if (instance != null)
-        {
             Destroy(this);
-        }
         else
-        {
             instance = this;
-        }
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         db = Database.instance;
         mm = MenuManager.instance;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        bool dontProcced = false;
+        if (!setup)
+            SetupControls();
 
-        if(db.selectedBall >= 0 && db.selectedBall < db.balls.Count)
+        bool dontProceed = false;
+
+        if (db.selectedBall >= 0 && db.selectedBall < db.balls.Count)
         {
             Ball b = db.balls[db.selectedBall];
-            ballName.text = b.name;
-            ballName.color = b.color;
-        }
-        else //Random
-        {
-            ballName.text = "Random";
-            ballName.color = Color.black;
-        }
-
-        #region Buttons
-        List<Player> rP = db.players.FindAll(x => !x.computer && x.WithinLastUpdate);
-
-        List<string> l = new List<string>();
-        List<string> r = new List<string>();
-        List<string> u = new List<string>();
-        List<string> d = new List<string>();
-        List<string> g = new List<string>();
-        List<string> x = new List<string>();
-
-        if (rP.Count > 0)
-        {
-            for (int z = 0; z < rP.Count; z++)
+            if (ballName != null)
             {
-                /*l.AddRange(rP[z].buttons.left);
-                r.AddRange(rP[z].buttons.right);
-                u.AddRange(rP[z].buttons.up);
-                d.AddRange(rP[z].buttons.down);
-                g.AddRange(rP[z].buttons.confirm);
-                x.AddRange(rP[z].buttons.cancel);*/
+                ballName.text = b.name;
+                ballName.color = b.color;
+            }
+        }
+        else
+        {
+            if (ballName != null)
+            {
+                ballName.text = "Random";
+                ballName.color = Color.black;
             }
         }
 
-        /*if (bm.KeyDown(r) || bm.KeyDown(u))
+        if (lastShownBall != db.selectedBall && !dontProceed)
         {
-            db.selectedBall++;
-
-            if(db.selectedBall >= db.balls.Count)
-            {
-                db.selectedBall = -1;
-            }
-
-            for (int i = 0; i < db.players.Count; i++)
-            {
-                db.players[i].lastGridUpdate = Time.time;
-            }
-        }
-        else if (bm.KeyDown(l) || bm.KeyDown(d))
-        {
-            db.selectedBall--;
-
-            if (db.selectedBall < -1)
-            {
-                db.selectedBall = db.balls.Count - 1;
-            }
-
-            for (int i = 0; i < db.players.Count; i++)
-            {
-                db.players[i].lastGridUpdate = Time.time;
-            }
-        }
-        else if (bm.KeyDown(g))
-        {
-            //Start game
-            if (shownBall != null)
-            {
-                Destroy(shownBall);
-            }
-            dontProcced = true;
-            db.CharactersPicked("balls");
-        }
-        else if (bm.KeyDown(x))
-        {
-            for(int i = 0; i < db.players.Count; i++)
-            {
-                db.players[i].lastGridUpdate = Time.time;
-                db.players[i].characterSelected = false;
-                db.players[i].gridLock = false;
-            }
-
-            if (shownBall != null)
-            {
-                Destroy(shownBall);
-            }
-            dontProcced = true;
-            mm.BackMenu();
-        }*/
-        #endregion
-
-        if (lastShownBall != db.selectedBall && !dontProcced)
-        {
-            if(db.selectedBall >= 0 && db.selectedBall < db.balls.Count)
+            if (db.selectedBall >= 0 && db.selectedBall < db.balls.Count)
             {
                 UpdateShownBall(db.selectedBall);
                 lastShownBall = db.selectedBall;
             }
-            else if(nextShow < Time.time)
+            else if (nextShow < Time.time)
             {
-                UpdateShownBall(Random.Range(0,db.balls.Count));
+                UpdateShownBall(Random.Range(0, db.balls.Count));
                 nextShow = Time.time + showSwap;
             }
         }
     }
 
+    void SetupControls()
+    {
+        if (setup) return;
+
+        // BallStepButton / ButtonInteraction / BoxCollider are authored on the UI
+        BallStepButton[] steps = GetComponentsInChildren<BallStepButton>(true);
+        if (steps == null || steps.Length == 0)
+            Debug.LogWarning("BallSelect: no BallStepButton components found. Run Tools/Ponex/Bake Selector UI.");
+
+        setup = true;
+    }
+
     void UpdateShownBall(int ballToShow)
     {
-        if(shownBall != null)
-        {
+        if (shownBall != null)
             Destroy(shownBall);
-        }
+
+        if (db.balls == null || ballToShow < 0 || ballToShow >= db.balls.Count)
+            return;
 
         Ball b = db.balls[ballToShow];
-        shownBall = Instantiate(b.selection);
+        if (b.selection == null)
+            return;
 
-        shownBall.transform.position = new Vector3(0,0,5);
+        shownBall = Instantiate(b.selection);
+        shownBall.transform.position = new Vector3(0, 0, 5);
     }
 
     private void OnDisable()
     {
-        if(shownBall != null)
-        {
+        if (shownBall != null)
             Destroy(shownBall);
-        }
     }
 }

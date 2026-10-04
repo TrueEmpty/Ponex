@@ -43,7 +43,9 @@ public class GarmenDrive : MonoBehaviour
 
             if(g != null)
             {
-                if (p.currentHealth > 0 && p.super.readyPercent == 1)
+                bool inDrive = p.currentHealth > 0 && p.super.readyPercent >= 1f;
+
+                if (inDrive)
                 {
                     Action();
 
@@ -57,7 +59,7 @@ public class GarmenDrive : MonoBehaviour
                         hub.transform.localPosition = new Vector3(0, .5f, 0);
                     }
                 }
-                else if (p.currentHealth > 0 && p.super.readyPercent == 0)
+                else if (p.currentHealth > 0)
                 {
                     rb.linearVelocity = Vector3.zero;
                     //Lower Garmen
@@ -80,14 +82,20 @@ public class GarmenDrive : MonoBehaviour
         {
             int moveDir = 0;
 
-            if ((pg.inp.right || g.thought == Thought.MoveRight) && !WallInDirection(1))
+            if (pg.player.computer)
             {
-                moveDir += 1;
+                // Thought is refreshed every frame by Garmen from ComputerAI
+                if (g.thought == Thought.MoveRight && !WallInDirection(1))
+                    moveDir += 1;
+                else if (g.thought == Thought.MoveLeft && !WallInDirection(-1))
+                    moveDir -= 1;
             }
-
-            if ((pg.inp.left || g.thought == Thought.MoveLeft) && !WallInDirection(-1))
+            else
             {
-                moveDir -= 1;
+                if (pg.inp.right && !WallInDirection(1))
+                    moveDir += 1;
+                if (pg.inp.left && !WallInDirection(-1))
+                    moveDir -= 1;
             }
 
             Vector3 rotDir = transform.right;

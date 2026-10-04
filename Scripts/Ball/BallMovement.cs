@@ -10,8 +10,8 @@ public class BallMovement : MonoBehaviour
     Database db;
 
     bool moveReady = false;
+    Vector3 velocityBeforePhysics;
 
-    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -19,133 +19,195 @@ public class BallMovement : MonoBehaviour
         db = Database.instance;
     }
 
-    // Update is called once per frame
+    void FixedUpdate()
+    {
+        velocityBeforePhysics = rb.linearVelocity;
+    }
+
     void Update()
     {
-        if(bI.ballReady && db.gameStart)
+        if (bI.ballReady && db.gameStart)
         {
-            if(moveReady)
+            if (moveReady)
             {
-                DeadZoneCheck();
-
-                if(bI.speedCap)
-                {
-                    MinCheck();
-                    MaxCheck();
-                }
+                EnforceSpeedLimits();
             }
             else
             {
                 BeginMovement();
             }
-        }        
+        }
     }
 
     public void BeginMovement()
     {
-        Vector3 dir = new Vector3(Random.Range(-bI.ball.startSpeed * 2, bI.ball.startSpeed * 2), Random.Range(-bI.ball.startSpeed * 2, bI.ball.startSpeed * 2), 0);
-        rb.linearVelocity = dir;
+        float speed = Mathf.Max(bI.ball.startSpeed, bI.ball.minSpeed);
+        Vector2 dir = Random.insideUnitCircle;
+        if (dir.sqrMagnitude < 0.001f)
+            dir = Vector2.right;
+        dir.Normalize();
 
+        rb.linearVelocity = new Vector3(dir.x, dir.y, 0f) * speed;
         moveReady = true;
     }
 
-    void DeadZoneCheck()
+    void EnforceSpeedLimits()
     {
-        float halfStartSpeed = (bI.ball.startSpeed / 3);
+        Vector3 velocity = rb.linearVelocity;
+        velocity.z = 0f;
 
-        if (Mathf.Abs(rb.linearVelocity.x) < halfStartSpeed && Mathf.Abs(rb.linearVelocity.y) < halfStartSpeed)
+        float speed = velocity.magnitude;
+        float minSpeed = Mathf.Max(0.01f, bI.ball.minSpeed);
+        // Allow bumps to push up to 2x max; everything shares that ceiling
+        float maxSpeed = Mathf.Max(minSpeed, bI.ball.BumpSpeedCap);
+
+        if (speed < 0.0001f)
         {
-            rb.linearVelocity *= 2 * Time.deltaTime;
+            Vector2 dir = Random.insideUnitCircle;
+            if (dir.sqrMagnitude < 0.001f)
+                dir = Vector2.right;
+            velocity = new Vector3(dir.x, dir.y, 0f) * minSpeed;
+        }
+        else if (bI.speedCap)
+        {
+            if (speed < minSpeed)
+                velocity = velocity.normalized * minSpeed;
+            else if (speed > maxSpeed)
+                velocity = velocity.normalized * maxSpeed;
+        }
+
+        rb.linearVelocity = velocity;
+    }
+
+    void SetSpeedPreservingDirection(float newSpeed)
+    {
+        Vector3 velocity = rb.linearVelocity;
+        velocity.z = 0f;
+
+        float minSpeed = Mathf.Max(0.01f, bI.ball.minSpeed);
+        newSpeed = Mathf.Max(newSpeed, minSpeed);
+
+        if (velocity.sqrMagnitude < 0.0001f)
+        {
+            Vector2 dir = Random.insideUnitCircle;
+            if (dir.sqrMagnitude < 0.001f)
+                dir = Vector2.right;
+            rb.linearVelocity = new Vector3(dir.x, dir.y, 0f) * newSpeed;
+            return;
+        }
+
+        rb.linearVelocity = velocity.normalized * newSpeed;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!moveReady || bI == null || !bI.ballReady)
+            return;
+
+        string tag = collision.transform.tag;
+
+        // Clean planar bounce off walls (tag is "Walls" on field prefabs)
+        if (tag == "Wall" || tag == "Walls")
+        {
+            ReflectOffContact(collision);
         }
     }
 
-    void MinCheck()
+    void ReflectOffContact(Collision collision)
     {
-        Vector3 newVelocity = rb.linearVelocity;
+        if (collision.contactCount <= 0)
+            return;
 
-        if (rb.linearVelocity.x < -bI.ball.maxSpeed)
+        Vector3 normal = collision.GetContact(0).normal;
+        normal.z = 0f;
+        if (normal.sqrMagnitude < 0.0001f)
+            return;
+        normal.Normalize();
+
+        // Use pre-solve velocity so we don't fight Unity's already-reflected result
+        Vector3 incoming = velocityBeforePhysics;
+        incoming.z = 0f;
+
+        if (incoming.sqrMagnitude < 0.0001f)
+            incoming = rb.linearVelocity;
+
+        incoming.z = 0f;
+        float speed = incoming.magnitude;
+
+        if (Vector3.Dot(incoming, normal) < 0f)
         {
-            newVelocity.x = -bI.ball.maxSpeed;
+            Vector3 reflected = Vector3.Reflect(incoming.normalized, normal) * speed;
+            reflected.z = 0f;
+            rb.linearVelocity = reflected;
+            velocityBeforePhysics = reflected;
         }
-
-        if (rb.linearVelocity.y < -bI.ball.maxSpeed)
-        {
-            newVelocity.y = -bI.ball.maxSpeed;
-        }
-
-        rb.linearVelocity = newVelocity;
-    }
-
-    void MaxCheck()
-    {
-        Vector3 newVelocity = rb.linearVelocity;
-
-        if(rb.linearVelocity.x > bI.ball.maxSpeed)
-        {
-            newVelocity.x = bI.ball.maxSpeed;
-        }
-
-        if(rb.linearVelocity.y > bI.ball.maxSpeed)
-        {
-            newVelocity.y = bI.ball.maxSpeed;
-        }
-
-        rb.linearVelocity = newVelocity;
     }
 
     private void OnCollisionExit(Collision collision)
     {
         PlayerGrab pG = collision.gameObject.GetComponent<PlayerGrab>();
+        string tag = collision.transform.tag;
+        float speed = rb.linearVelocity.magnitude;
 
-        switch (collision.transform.tag)
+        switch (tag)
         {
             case "Player":
-                rb.linearVelocity *= (bI.ball.speedIncrease * 1.2f);
+                SetSpeedPreservingDirection(speed * Mathf.Max(1f, bI.ball.speedIncrease * 1.2f));
 
-                if (pG != null)
+                if (pG != null && pG.IsLinked())
                 {
-                    if (pG.IsLinked())
-                    {
-                        Player p = db.players[pG.playerIndex];
-                        p.ballHits++;
-                    }
+                    Player p = db.players[pG.playerIndex];
+                    p.ballHits++;
+                    ComputerAI.OnPaddleHitBall(p);
                 }
                 break;
+
             case "Lifeline":
-                rb.linearVelocity *= (bI.ball.speedIncrease * 2);
+                SetSpeedPreservingDirection(speed * Mathf.Max(1f, bI.ball.speedIncrease * 2f));
 
-                if (pG != null)
+                if (pG != null && pG.IsLinked())
                 {
-                    if (pG.IsLinked())
-                    {
-                        Player p = db.players[pG.playerIndex];
-                        p.ballHits++;                        
-                    }
+                    Player p = db.players[pG.playerIndex];
+                    p.ballHits++;
                 }
                 break;
+
             case "Ball":
                 break;
-            case "Paddle":
-                if(pG != null)
-                {
-                    rb.linearVelocity *= (pG.player.pushBack / 100) * 3;
 
-                    if(pG.IsLinked())
+            case "Paddle":
+                // Bumps: raise speed toward 2x max ball speed (never slow the ball)
+                {
+                    float bumpCap = bI.ball.BumpSpeedCap;
+                    float boostFactor = Mathf.Max(1.15f, bI.ball.speedIncrease);
+                    float bumpedSpeed = Mathf.Min(Mathf.Max(speed, bI.ball.minSpeed) * boostFactor, bumpCap);
+                    // Always move at least a bit closer to the bump cap
+                    bumpedSpeed = Mathf.Max(bumpedSpeed, Mathf.MoveTowards(speed, bumpCap, bI.ball.maxSpeed * 0.15f));
+                    bumpedSpeed = Mathf.Min(bumpedSpeed, bumpCap);
+                    SetSpeedPreservingDirection(bumpedSpeed);
+
+                    if (pG != null && pG.IsLinked())
                     {
                         Player p = db.players[pG.playerIndex];
                         p.ballHits++;
+                        ComputerAI.OnPaddleHitBall(p);
                     }
                 }
                 break;
+
             case "Wall":
-                rb.linearVelocity *= (bI.ball.speedIncrease*1.25f);
+            case "Walls":
+                SetSpeedPreservingDirection(speed * Mathf.Max(1f, bI.ball.speedIncrease * 1.25f));
                 break;
         }
 
         if (bI.documentColisions)
         {
             bI.futureColisions.Add(collision);
-            bI.futureColisionPoints.Add(collision.collider.transform.position);
+            Vector3 hitPoint = collision.collider.transform.position;
+            if (collision.contactCount > 0)
+                hitPoint = collision.GetContact(0).point;
+            bI.futureColisionPoints.Add(hitPoint);
         }
         else
         {

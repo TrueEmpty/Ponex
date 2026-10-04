@@ -47,11 +47,13 @@ public class Garmen : MonoBehaviour
 
             if (pg.player.computer)
             {
-                if (!thinking)
-                {
-                    thinking = true;
-                    StartCoroutine(AI());
-                }
+                thinking = false;
+                ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, null, 2.4f);
+                if (d.wantBump) thought = Thought.MoveUp;
+                else if (d.wantSuper) thought = Thought.MoveDown;
+                else if (d.moveDir > 0) thought = Thought.MoveRight;
+                else if (d.moveDir < 0) thought = Thought.MoveLeft;
+                else thought = Thought.Nothing;
             }
 
             //Position Cannon
@@ -59,11 +61,26 @@ public class Garmen : MonoBehaviour
 
             if (db.gameStart && p.currentHealth > 0)
             {
-                if (pg.inp.down)
-                {
-                    p.super.readyPercent = p.super.readyPercent == 0 ? 1 : 0;
-                }
+                // Drive toggle on press edge only (held down was flipping every frame = auto cast / can't exit)
+                bool pressedSuper = pg.player.computer
+                    ? thought == Thought.MoveDown
+                    : pg.inp.tf_super;
 
+                if (pressedSuper)
+                {
+                    if (p.super.readyPercent >= 1f)
+                    {
+                        // Always free to leave Drive and return to stationary
+                        p.super.readyPercent = 0f;
+                    }
+                    else if (p.super.amount >= p.super.cost)
+                    {
+                        // Enter Drive only when there is gas
+                        p.super.readyPercent = 1f;
+                    }
+
+                    thought = Thought.Nothing;
+                }
 
                 if (pg.player.CanBump)
                 {

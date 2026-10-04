@@ -143,6 +143,23 @@ public class CharacterSelect : MonoBehaviour
 
         if(p != null)
         {
+            // Don't lock in until a real prefab is bound (portrait alone isn't enough)
+            if (p.character == null || p.character.prefabs == null)
+            {
+                Characters ch = db.characters.Find(x => x != null && x.name == p.name);
+                if (ch == null)
+                    ch = db.RandomCharacter();
+                if (ch != null)
+                    p.SetUpCharacter(ch);
+            }
+
+            if (p.character == null || p.character.prefabs == null)
+            {
+                Debug.LogWarning($"Player {p.index} confirmed without a character prefab — ignoring confirm.");
+                return;
+            }
+
+            db.RememberSelectedCharacter(p.index, p.name);
             p.characterSelected = true;
 
             //Check if all charactersAreSelected

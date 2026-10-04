@@ -44,14 +44,12 @@ public class PortraitClicked : MonoBehaviour
     {
         Color c = db.playerColors[p.index].color;
 
-        //Check if a character is attached to the player if not set to a random one
+        //Check if a character is attached to the player if not restore last pick / random
         int cC = db.characters.FindIndex(x => x.name == p.name);
         if (cC < 0 || cC >= db.characters.Count)
         {
-            Characters ch = db.RandomCharacter();
-            p.SetUpCharacter(ch);
-
-            cC = db.characters.FindIndex(x => x.name == ch.name);
+            db.ApplyRememberedOrRandomCharacter(p);
+            cC = db.characters.FindIndex(x => x.name == p.name);
         }
 
         image.texture = p.portrait;

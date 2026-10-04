@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,395 +7,173 @@ public class PositionSelect : MonoBehaviour
     public static PositionSelect instance;
     Database db;
     MenuManager mm;
-    /*public List<Portait> postionGrabs = new List<Portait>();*/
-    Vector3 setPos = new Vector3(225,175,25);
+
     public Color outlineColor = Color.blue;
     public Color readyColor = Color.green;
 
-    bool setup = false;
+    public Vector3 setPos = new Vector3(225, 175, 25);
+
+    public List<PositionSlot> slots = new List<PositionSlot>();
+    readonly List<Text> markers = new List<Text>();
+
+    Transform markerHolder;
+    bool setup;
 
     private void Awake()
     {
         if (instance != null)
-        {
             Destroy(this);
-        }
         else
-        {
             instance = this;
-        }
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         db = Database.instance;
         mm = MenuManager.instance;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (setup)
-        {
-            LoadPosition();
-        }
-        else
-        {
+        if (!setup)
             Setup();
-        }
+        else
+            RefreshMarkers();
     }
 
     void Setup()
     {
-       /* if (!setup)
+        if (setup) return;
+
+        // Authored PositionSlot components under Zones / menu (baked into the UI)
+        if (slots == null || slots.Count == 0)
         {
-            //Portraits
-            Transform porC = transform.GetChild(2);
-
-            for (int i = 0; i < porC.childCount; i++)
+            slots = new List<PositionSlot>();
+            PositionSlot[] found = GetComponentsInChildren<PositionSlot>(true);
+            for (int i = 0; i < found.Length; i++)
             {
-                GameObject container = porC.GetChild(i).gameObject;
-
-                Portait p = new Portait();
-                p.container = container;
-                p.playerText = container.GetComponent<Text>();
-                p.outline = container.GetComponent<Outline>();
-
-                postionGrabs.Add(p);
+                if (found[i] != null)
+                    slots.Add(found[i]);
             }
+        }
 
-            setup = true;
-        }*/
+        if (slots.Count == 0)
+            Debug.LogWarning("PositionSelect: no PositionSlot components found. Run Tools/Ponex/Bake Selector UI.");
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i] != null)
+                slots[i].SetupVisual();
+        }
+
+        markerHolder = FindChildNamed(transform, "Markers");
+        if (markerHolder == null && transform.childCount > 2)
+            markerHolder = transform.GetChild(2);
+
+        markers.Clear();
+        if (markerHolder != null)
+        {
+            for (int i = 0; i < markerHolder.childCount; i++)
+            {
+                Text t = markerHolder.GetChild(i).GetComponent<Text>();
+                if (t != null)
+                    markers.Add(t);
+            }
+        }
+
+        setup = true;
+        RefreshMarkers();
     }
 
-    void LoadPosition()
+    Transform FindChildNamed(Transform root, string name)
     {
-        /*for(int i = 0; i < postionGrabs.Count; i++)
+        if (root == null) return null;
+        if (root.name == name) return root;
+        for (int i = 0; i < root.childCount; i++)
         {
-            Portait pG = postionGrabs[i];
+            Transform f = FindChildNamed(root.GetChild(i), name);
+            if (f != null) return f;
+        }
+        return null;
+    }
 
-            if(i < db.players.Count)
+    public void RefreshMarkers()
+    {
+        if (db == null) return;
+
+        for (int i = 0; i < markers.Count; i++)
+        {
+            Text marker = markers[i];
+            if (i < db.players.Count)
             {
                 Player p = db.players[i];
-                Color c = db.playerColors[i].color;
+                marker.gameObject.SetActive(true);
 
-                pG.container.SetActive(true);
-
+                Color c = i < db.playerColors.Count ? db.playerColors[i].color : Color.white;
                 if (p.computer)
                 {
-                    pG.playerText.text = "CPU" + (i + 1);
-                    pG.playerText.color = Color.gray;
+                    marker.text = "CPU" + (i + 1);
+                    marker.color = Color.gray;
                 }
                 else
                 {
-                    pG.playerText.text = (p.nickName == "" || p.nickName == null) ? "P" + (i + 1) : p.nickName;
-                    pG.playerText.color = c;
+                    marker.text = string.IsNullOrEmpty(p.nickName) ? "P" + (i + 1) : p.nickName;
+                    marker.color = c;
                 }
 
-                pG.outline.effectColor = p.characterSelected ? readyColor : outlineColor;
+                Outline ol = marker.GetComponent<Outline>();
+                if (ol != null)
+                    ol.effectColor = p.characterSelected ? readyColor : outlineColor;
 
-                #region Preset off others
-                if (i > 0)
-                {
-                    Player sP = db.players.Find(x => x.facing == p.facing && x.position == p.position && x != p);
-
-                    if (sP != null)
-                    {
-                        if (db.players.Exists(x => x.facing == p.facing && x.position != p.position))
-                        {
-                            switch (p.facing)
-                            {
-                                case Facing.Up:
-                                    p.facing = Facing.Left;
-                                    break;
-                                case Facing.Down:
-                                    p.facing = Facing.Right;
-                                    break;
-                                case Facing.Right:
-                                    p.facing = Facing.Up;
-                                    break;
-                                case Facing.Left:
-                                    p.facing = Facing.Down;
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            p.position = (p.position == 0) ? 1 : 0;
-                        }
-                    }
-                }
-                #endregion
-
-                #region Set Position
-                if(p.WithinLastUpdate && !p.characterSelected)
-                {
-                    List<Player> rP = new List<Player>();
-                    List<string> l = new List<string>();
-                    List<string> r = new List<string>();
-                    List<string> u = new List<string>();
-                    List<string> d = new List<string>();
-                    List<string> g = new List<string>();
-                    List<string> x = new List<string>();
-
-                    if ((p.computer && p == db.players.Find(x => x.computer && !x.characterSelected)))
-                    {
-                        int fC = db.players.FindIndex(x => x.computer && !x.characterSelected);
-
-                        if (fC == i)
-                        {
-                            rP = db.players.FindAll(x => x.characterSelected && !x.computer && x.WithinLastUpdate);
-
-                            if (rP.Count > 0)
-                            {
-                                for (int z = 0; z < rP.Count; z++)
-                                {
-                                    l.AddRange(rP[z].buttons.left);
-                                    r.AddRange(rP[z].buttons.right);
-                                    u.AddRange(rP[z].buttons.up);
-                                    d.AddRange(rP[z].buttons.down);
-                                    g.AddRange(rP[z].buttons.confirm);
-                                    x.AddRange(rP[z].buttons.cancel);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        l.AddRange(p.buttons.left);
-                        r.AddRange(p.buttons.right);
-                        u.AddRange(p.buttons.up);
-                        d.AddRange(p.buttons.down);
-                        g.AddRange(p.buttons.confirm);
-                        x.AddRange(p.buttons.cancel);
-                    }
-
-                    //Get Button Inputs
-                    Facing oF = p.facing;
-                    int oP = p.position;
-
-                    TryAgain:
-                    if (bm.KeyDown(r))
-                    {
-                        p.lastGridUpdate = Time.time;
-
-                        if (rP.Count > 0)
-                        {
-                            for (int rpl = 0; rpl < rP.Count; rpl++)
-                            {
-                                rP[rpl].lastGridUpdate = Time.time;
-                            }
-                        }
-
-                        switch (p.facing)
-                        {
-                            case Facing.Up:
-                                p.facing = Facing.Left;
-                                p.position = 0;
-                                break;
-                            case Facing.Down:
-                                p.facing = Facing.Left;
-                                p.position = 0;
-                                break;
-                            case Facing.Right:
-                                p.position = (p.position == 0) ? 1 : 0;
-                                break;
-                            case Facing.Left:
-                                p.position = (p.position == 0) ? 1 : 0;
-                                break;
-                        }
-                    }
-                    else if (bm.KeyDown(l))
-                    {
-                        p.lastGridUpdate = Time.time;
-
-                        if (rP.Count > 0)
-                        {
-                            for (int rpl = 0; rpl < rP.Count; rpl++)
-                            {
-                                rP[rpl].lastGridUpdate = Time.time;
-                            }
-                        }
-
-                        switch (p.facing)
-                        {
-                            case Facing.Up:
-                                p.facing = Facing.Right;
-                                p.position = 0;
-                                break;
-                            case Facing.Down:
-                                p.facing = Facing.Right;
-                                p.position = 0;
-                                break;
-                            case Facing.Right:
-                                p.position = (p.position == 0) ? 1 : 0;
-                                break;
-                            case Facing.Left:
-                                p.position = (p.position == 0) ? 1 : 0;
-                                break;
-                        }
-                    }
-                    else if (bm.KeyDown(u))
-                    {
-                        p.lastGridUpdate = Time.time;
-
-                        if (rP.Count > 0)
-                        {
-                            for (int rpl = 0; rpl < rP.Count; rpl++)
-                            {
-                                rP[rpl].lastGridUpdate = Time.time;
-                            }
-                        }
-
-                        switch (p.facing)
-                        {
-                            case Facing.Up:
-                                p.position = (p.position == 0) ? 1 : 0;
-                                break;
-                            case Facing.Down:
-                                p.position = (p.position == 0) ? 1 : 0;
-                                break;
-                            case Facing.Right:
-                                p.facing = Facing.Down;
-                                p.position = 0;
-                                break;
-                            case Facing.Left:
-                                p.facing = Facing.Down;
-                                p.position = 0;
-                                break;
-                        }
-                    }
-                    else if (bm.KeyDown(d))
-                    {
-                        p.lastGridUpdate = Time.time;
-
-                        if (rP.Count > 0)
-                        {
-                            for (int rpl = 0; rpl < rP.Count; rpl++)
-                            {
-                                rP[rpl].lastGridUpdate = Time.time;
-                            }
-                        }
-
-                        switch (p.facing)
-                        {
-                            case Facing.Up:
-                                p.position = (p.position == 0) ? 1 : 0;
-                                break;
-                            case Facing.Down:
-                                p.position = (p.position == 0) ? 1 : 0;
-                                break;
-                            case Facing.Right:
-                                p.facing = Facing.Up;
-                                p.position = 0;
-                                break;
-                            case Facing.Left:
-                                p.facing = Facing.Up;
-                                p.position = 0;
-                                break;
-                        }
-                    }
-
-                    Player sP = db.players.Find(x => x.facing == p.facing && x.position == p.position && x != p);
-
-                    if (sP != null)
-                    {
-                        if (db.players.Exists(x => x.facing == p.facing && x.position != p.position && x != p))
-                        {
-                            if(sP.characterSelected)
-                            {
-                                goto TryAgain;
-                            }
-                            else
-                            {
-                                sP.facing = oF;
-                                sP.position = oP;
-                            }
-                        }
-                        else
-                        {
-                            if (sP.characterSelected)
-                            {
-                                p.position = (p.position == 0) ? 1 : 0;
-                            }
-                            else
-                            {
-                                sP.position = (p.position == 0) ? 1 : 0;
-                            }
-                        }
-                    }
-
-                    if (bm.KeyDown(g))
-                    {
-                        p.lastGridUpdate = Time.time;
-                        p.characterSelected = true;
-
-                        if(rP.Count > 0)
-                        {
-                            for(int rpl = 0; rpl < rP.Count; rpl++)
-                            {
-                                rP[rpl].lastGridUpdate = Time.time;
-                            }
-                        }
-
-                        if(!db.players.Exists(x=> !x.characterSelected))
-                        {
-                            db.CharactersPicked("positions");
-                        }
-                    }
-                    else if (bm.KeyDown(x))
-                    {
-                        p.lastGridUpdate = Time.time;
-
-                        if (rP.Count > 0)
-                        {
-                            for (int rpl = 0; rpl < rP.Count; rpl++)
-                            {
-                                rP[rpl].lastGridUpdate = Time.time;
-                            }
-                        }
-
-                        if (p.characterSelected)
-                        {
-                            p.characterSelected = false;
-                        }
-                        else
-                        {
-                            for(int z = 0; z < db.players.Count; z++)
-                            {
-                                db.players[z].characterSelected = false;
-                            }
-
-                            mm.BackMenu();
-                        }
-                    }
-                }                
-                #endregion
-
-                #region Position Update
-                Vector2 cP = new Vector2(((p.position == 0) ? setPos.z : -setPos.z), ((p.position == 0) ? setPos.x : setPos.y));
-                switch(p.facing)
+                Vector2 cP = new Vector2(p.position == 0 ? setPos.z : -setPos.z, p.position == 0 ? setPos.x : setPos.y);
+                switch (p.facing)
                 {
                     case Facing.Up:
-                        pG.container.transform.localPosition = new Vector3(cP.x, -cP.y, 0);
+                        marker.rectTransform.anchoredPosition = new Vector2(cP.x, -cP.y);
                         break;
                     case Facing.Down:
-                        pG.container.transform.localPosition = new Vector3(cP.x, cP.y, 0);
+                        marker.rectTransform.anchoredPosition = new Vector2(cP.x, cP.y);
                         break;
                     case Facing.Right:
-                        pG.container.transform.localPosition = new Vector3(-cP.y, cP.x, 0);
+                        marker.rectTransform.anchoredPosition = new Vector2(-cP.y, cP.x);
                         break;
                     case Facing.Left:
-                        pG.container.transform.localPosition = new Vector3(cP.y, cP.x, 0);
+                        marker.rectTransform.anchoredPosition = new Vector2(cP.y, cP.x);
                         break;
                 }
-                #endregion
             }
             else
             {
-                pG.container.SetActive(false);
+                marker.gameObject.SetActive(false);
             }
-        }*/
+        }
+
+        for (int s = 0; s < slots.Count; s++)
+        {
+            PositionSlot slot = slots[s];
+            if (slot == null) continue;
+            Player owner = db.players.Find(x => x.facing == slot.facing && x.position == slot.slot);
+            if (owner != null)
+            {
+                Color c = owner.index < db.playerColors.Count ? db.playerColors[owner.index].color : Color.white;
+                slot.SetOccupiedLook(true, c);
+            }
+            else
+            {
+                slot.SetOccupiedLook(false, Color.white);
+            }
+        }
+    }
+
+    public void PlayerConfirm(int player)
+    {
+        Player p = db.players.Find(x => x.index == player);
+        if (p == null) return;
+
+        p.characterSelected = true;
+        RefreshMarkers();
+
+        if (!db.players.Exists(x => !x.characterSelected))
+            db.CharactersPicked("positions");
     }
 }

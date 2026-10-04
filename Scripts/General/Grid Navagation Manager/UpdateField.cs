@@ -51,6 +51,14 @@ public class UpdateField : MonoBehaviour
 
     public void OnClick(int player)
     {
+        // Prefer FieldGrab selection; if this grab still has UpdateField only, advance
+        FieldGrab fg = GetComponent<FieldGrab>();
+        if (fg != null)
+        {
+            fg.OnClick(player);
+            return;
+        }
+
         db.CharactersPicked("fields");
     }
 

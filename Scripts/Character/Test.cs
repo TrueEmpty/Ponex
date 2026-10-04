@@ -63,11 +63,8 @@ public class Test : MonoBehaviour
         {
             if (pg.player.computer)
             {
-                if (!thinking)
-                {
-                    thinking = true;
-                    StartCoroutine(AI());
-                }
+                // Continuous brain — old sticky AI coroutine disabled
+                thinking = false;
             }
 
             if (pg.player.CanMove)
@@ -313,14 +310,21 @@ public class Test : MonoBehaviour
     {
         int moveDir = 0;
 
-        if ((pg.inp.right || thought == Thought.MoveRight) && !WallInDirection(1))
+        if (pg.player.computer)
         {
-            moveDir += 1;
+            ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, hitTags, dis);
+            moveDir = d.moveDir;
+            if (d.wantBump) thought = Thought.MoveUp;
+            else if (d.wantSuper) thought = Thought.MoveDown;
+            else thought = Thought.Nothing;
         }
-
-        if ((pg.inp.left || thought == Thought.MoveLeft) && !WallInDirection(-1))
+        else
         {
-            moveDir -= 1;
+            thought = Thought.Nothing;
+            if (pg.inp.right && !WallInDirection(1))
+                moveDir += 1;
+            if (pg.inp.left && !WallInDirection(-1))
+                moveDir -= 1;
         }
 
         Vector3 rotDir = transform.right;
@@ -334,21 +338,37 @@ public class Test : MonoBehaviour
     void OnDash()
     {
         Skill d = pg.player.dash;
+        if (d == null)
+            return;
 
-        if ((pg.inp.tf_right) && d.amount >= d.cost)
+        if (pg.player.computer)
         {
-            if(Mathf.Abs(canDash) == 2)
+            ComputerAI.Decision ai = ComputerAI.GetLastDecision(pg.playerIndex);
+            if (ai.wantDash && ai.moveDir != 0 && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
             {
+                StartDash(ai.moveDir > 0 ? 1 : -1, d);
+            }
+            return;
+        }
 
-            }
+        // Bumper / Q-R: instant dash (no double-tap)
+        if (pg.inp.tf_dashRight && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+        {
+            StartDash(1, d);
+            return;
+        }
+        if (pg.inp.tf_dashLeft && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+        {
+            StartDash(-1, d);
+            return;
+        }
+
+        // Stick / D-pad: double-tap still works
+        if (pg.inp.tf_right && d.amount >= d.cost)
+        {
+            if (Mathf.Abs(canDash) == 2) { }
             else if (canDash == 1 && dashEnd > 0)
-            {
-                speedIncrease = speedMultiplyer;
-                dashEnd = dashTime;
-                d.readyPercent = 0;
-                d.Spend();
-                canDash = 2;
-            }
+                StartDash(1, d);
             else
             {
                 canDash = 1;
@@ -356,25 +376,27 @@ public class Test : MonoBehaviour
             }
         }
 
-        if ((pg.inp.tf_left) && d.amount >= d.cost)
+        if (pg.inp.tf_left && d.amount >= d.cost)
         {
-            if (Mathf.Abs(canDash) == 2)
-            {
-
-            }
-            else if(canDash == -1 && dashEnd > 0)
-            {
-                speedIncrease = speedMultiplyer;
-                dashEnd = dashTime;
-                d.Spend();
-                canDash = -2;
-            }
+            if (Mathf.Abs(canDash) == 2) { }
+            else if (canDash == -1 && dashEnd > 0)
+                StartDash(-1, d);
             else
             {
                 canDash = -1;
                 dashEnd = doubleClickTime;
             }
         }
+    }
+
+    void StartDash(int dir, Skill d)
+    {
+        speedIncrease = speedMultiplyer;
+        dashEnd = dashTime;
+        d.readyPercent = 0;
+        d.Spend();
+        canDash = dir > 0 ? 2 : -2;
+        pg.player.numberOfDashes++;
     }
 
     void OnBump()
@@ -401,8 +423,15 @@ public class Test : MonoBehaviour
     void OnSuper()
     {
         Skill b = pg.player.super;
+        if (b == null)
+            return;
 
-        if ((pg.inp.super || thought == Thought.MoveDown) && b.Enough())
+        // Press edge only — held inp.super was re-casting every frame while ready
+        bool wantSuper = pg.player.computer
+            ? thought == Thought.MoveDown
+            : pg.inp.tf_super;
+
+        if (wantSuper && b.Enough())
         {
             GameObject go = Instantiate(super, transform.position, transform.rotation);
 

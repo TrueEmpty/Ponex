@@ -82,11 +82,13 @@ public class Celarus : MonoBehaviour
             {
                 if (pg.player.computer)
                 {
-                    if (!thinking)
-                    {
-                        thinking = true;
-                        StartCoroutine(AI());
-                    }
+                    thinking = false;
+                    ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, null, 1.5f);
+                    if (d.wantBump) thought = Thought.MoveUp;
+                    else if (d.wantSuper) thought = Thought.MoveDown;
+                    else if (d.moveDir > 0) thought = Thought.MoveRight;
+                    else if (d.moveDir < 0) thought = Thought.MoveLeft;
+                    else thought = Thought.Nothing;
                 }
 
                 UpdateDayAndNight();

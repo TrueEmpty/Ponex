@@ -72,7 +72,7 @@ MonoBehaviour:
   anchor: {fileID: 3003035067385091123}
   futureColisionPoints: []
   documentColisions: 0
-  tolorance: 0.05
+  tolorance: 0.5
   ttR: 0
   ballReady: 0
   checkStuck: 1

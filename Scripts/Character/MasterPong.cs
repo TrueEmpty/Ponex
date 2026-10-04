@@ -52,11 +52,7 @@ public class MasterPong : MonoBehaviour
         {
             if (pg.player.computer)
             {
-                if (!thinking)
-                {
-                    thinking = true;
-                    StartCoroutine(AI());
-                }
+                thinking = false;
             }
 
             if (pg.player.CanMove)
@@ -278,14 +274,20 @@ public class MasterPong : MonoBehaviour
     {
         int moveDir = 0;
 
-        if ((pg.inp.right || thought == Thought.MoveRight) && !WallInDirection(1))
+        if (pg.player.computer)
         {
-            moveDir += 1;
+            ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, hitTags, dis);
+            moveDir = d.moveDir;
+            if (d.wantBump) thought = Thought.MoveUp;
+            else if (d.wantSuper) thought = Thought.MoveDown;
+            else thought = Thought.Nothing;
         }
-
-        if ((pg.inp.left || thought == Thought.MoveLeft) && !WallInDirection(-1))
+        else
         {
-            moveDir -= 1;
+            if (pg.inp.right && !WallInDirection(1))
+                moveDir += 1;
+            if (pg.inp.left && !WallInDirection(-1))
+                moveDir -= 1;
         }
 
         Vector3 rotDir = transform.right;

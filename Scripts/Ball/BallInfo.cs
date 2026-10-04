@@ -17,9 +17,14 @@ public class BallInfo : MonoBehaviour
     Rigidbody rb;
 
     Vector3 lPos = Vector3.zero;
-    public float tolorance = .4f;
-    float timeTillReset = 10;
+    [Tooltip("How little X or Y can change before that axis counts as stuck.")]
+    public float tolorance = 0.5f;
+    [Tooltip("Seconds stuck on the same X or same Y before the ball is destroyed.")]
+    public float timeTillReset = 8f;
     public float ttR = 0;
+
+    float stuckTimerX = 0f;
+    float stuckTimerY = 0f;
 
     public bool ballReady = false;
     public bool checkStuck = true;
@@ -33,17 +38,16 @@ public class BallInfo : MonoBehaviour
 
     public bool showFutureCollisions = false;
 
-    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         db = Database.instance;
+        lPos = transform.position;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if(db.gameStart)
+        if (db.gameStart)
         {
             if (anchor == null)
             {
@@ -100,37 +104,33 @@ public class BallInfo : MonoBehaviour
 
     void StuckInAxis()
     {
-        bool within = false;
+        // Prefabs previously used 0.05 which never stayed "stuck" due to physics jitter
+        float tol = Mathf.Max(tolorance, 0.35f);
+        Vector3 pos = transform.position;
 
-        if (transform.position.y >= lPos.y - tolorance && transform.position.y <= lPos.y + tolorance)
+        if (Mathf.Abs(pos.x - lPos.x) <= tol)
         {
-            within = true;
+            stuckTimerX += Time.deltaTime;
         }
         else
         {
-            lPos.y = transform.position.y;
+            stuckTimerX = 0f;
+            lPos.x = pos.x;
         }
 
-        if (transform.position.x >= lPos.x - tolorance && transform.position.x <= lPos.x + tolorance)
+        if (Mathf.Abs(pos.y - lPos.y) <= tol)
         {
-            within = true;
+            stuckTimerY += Time.deltaTime;
         }
         else
         {
-            lPos.x = transform.position.x;
+            stuckTimerY = 0f;
+            lPos.y = pos.y;
         }
 
-        if (within)
-        {
-            ttR += Time.deltaTime;
-        }
-        else
-        {
-            ttR = 0;
-        }
+        ttR = Mathf.Max(stuckTimerX, stuckTimerY);
 
-
-        if (ttR > timeTillReset)
+        if (stuckTimerX > timeTillReset || stuckTimerY > timeTillReset)
         {
             Destroy(gameObject);
         }
@@ -138,7 +138,7 @@ public class BallInfo : MonoBehaviour
 
     IEnumerator RunProjection()
     {
-        if(projectionOn)
+        if (projectionOn)
         {
             GameObject ghostObj = Instantiate(gameObject);
             ghostObj.name = "(Ghost) " + gameObject.name;
@@ -161,9 +161,9 @@ public class BallInfo : MonoBehaviour
             gBI.projectionOn = false;
             gBI.runProjection = true;
 
-            if(gBI.transform.childCount > 0)
+            if (gBI.transform.childCount > 0)
             {
-                for(int i = 0; i < gBI.transform.childCount; i++)
+                for (int i = 0; i < gBI.transform.childCount; i++)
                 {
                     Transform cC = gBI.transform.GetChild(i);
                     cC.tag = "Ghost";
@@ -186,14 +186,17 @@ public class BallInfo : MonoBehaviour
 
             yield return new WaitForSeconds(_maxPhysicsFrameIterations / 60);
 
+            // Copy data before destroy — previously read after Destroy (always failed)
+            List<Collision> cols = gBI.futureColisions;
+            List<Vector3> points = gBI.futureColisionPoints;
             Destroy(ghostObj);
-            futureColisions = ghostObj.GetComponent<BallInfo>().futureColisions;
-            futureColisionPoints = ghostObj.GetComponent<BallInfo>().futureColisionPoints;
+            futureColisions = cols;
+            futureColisionPoints = points;
             yield return null;
 
             runProjection = false;
         }
-        
+
         yield return null;
     }
 }

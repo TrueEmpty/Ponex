@@ -58,8 +58,20 @@ public class DamageOnTagHit : MonoBehaviour
                     baseDamage = tbI.ball.damage;
                 }
 
+                int dealt = baseDamage + damageIncrease;
                 //Send out Ball hit to all
-                pg.player.Damage(baseDamage + damageIncrease);
+                pg.player.Damage(dealt);
+
+                // AI learning: victim got scored on; ball owner (if CPU) scored
+                if (pg.IsLinked() && pg.player != null && pg.player.computer)
+                {
+                    ComputerAI.OnTookGoalDamage(pg.player, dealt);
+                }
+
+                if (tpG != null && tpG.IsLinked() && tpG.player != null && tpG.player.computer)
+                {
+                    ComputerAI.OnPaddleHitBall(tpG.player);
+                }
             }
         }
     }

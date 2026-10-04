@@ -31,7 +31,8 @@ public class Database : MonoBehaviour
 
     #region Players
     public List<ControllerLink> controllers = new List<ControllerLink>();
-    public List<Characters> characters;
+    [Tooltip("Filled at runtime from Resources/Characters ScriptableObjects.")]
+    public List<Characters> characters = new List<Characters>();
     public List<Player> players;
     public Player allplay;
     public Color apColor = Color.yellow;
@@ -73,6 +74,8 @@ public class Database : MonoBehaviour
     public AudioSource effectAudio;
     #endregion
 
+    const string SelectedCharacterPref = "Ponex.SelectedCharacter.";
+
     private void Awake()
     {
         if(instance != null)
@@ -82,6 +85,7 @@ public class Database : MonoBehaviour
         else
         {
             instance = this;
+            LoadCharactersFromAssets();
         }
     }
 
@@ -90,6 +94,79 @@ public class Database : MonoBehaviour
     {
         mm = MenuManager.instance;
         cS = CharacterSelect.instance;
+        ComputerAI.EnsureLoaded();
+        if (characters == null || characters.Count == 0)
+            LoadCharactersFromAssets();
+    }
+
+    void LoadCharactersFromAssets()
+    {
+        CharacterData[] assets = Resources.LoadAll<CharacterData>("Characters");
+        if (assets == null || assets.Length == 0)
+        {
+            Debug.LogWarning("Database: no CharacterData found in Resources/Characters — keeping inspector list.");
+            if (characters == null)
+                characters = new List<Characters>();
+            return;
+        }
+
+        System.Array.Sort(assets, (a, b) =>
+        {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+            int byOrder = a.rosterOrder.CompareTo(b.rosterOrder);
+            if (byOrder != 0) return byOrder;
+            return string.CompareOrdinal(a.characterName, b.characterName);
+        });
+
+        characters = new List<Characters>(assets.Length);
+        for (int i = 0; i < assets.Length; i++)
+        {
+            if (assets[i] == null)
+                continue;
+            characters.Add(assets[i].ToCharacters());
+        }
+
+        Debug.Log($"Database: loaded {characters.Count} characters from ScriptableObjects.");
+    }
+
+    public void RememberSelectedCharacter(int playerIndex, string characterName)
+    {
+        if (playerIndex < 0 || string.IsNullOrEmpty(characterName))
+            return;
+
+        PlayerPrefs.SetString(SelectedCharacterPref + playerIndex, characterName);
+        PlayerPrefs.Save();
+    }
+
+    public Characters GetRememberedCharacter(int playerIndex)
+    {
+        if (playerIndex < 0 || characters == null)
+            return null;
+
+        string saved = PlayerPrefs.GetString(SelectedCharacterPref + playerIndex, "");
+        if (string.IsNullOrEmpty(saved))
+            return null;
+
+        return characters.Find(x =>
+            x != null
+            && x.name == saved
+            && x.active
+            && x.character != null
+            && x.character.prefabs != null);
+    }
+
+    public void ApplyRememberedOrRandomCharacter(Player p)
+    {
+        if (p == null)
+            return;
+
+        Characters remembered = GetRememberedCharacter(p.index);
+        if (remembered != null)
+            p.SetUpCharacter(remembered);
+        else
+            p.SetUpCharacter(RandomCharacter());
     }
 
     // Update is called once per frame
@@ -210,10 +287,8 @@ public class Database : MonoBehaviour
 
                     if (cC < 0 || cC >= cS.characterGrabs.Count)
                     {
-                        Characters ch = RandomCharacter();
-                        p.SetUpCharacter(ch);
-
-                        cC = characters.FindIndex(x => x.name == ch.name);
+                        ApplyRememberedOrRandomCharacter(p);
+                        cC = characters.FindIndex(x => x.name == p.name);
                     }
                 }
             }
@@ -305,7 +380,7 @@ public class Database : MonoBehaviour
 
             if (selectedBall < 0 || selectedBall >= balls.Count)
             {
-                sB = Random.Range(0, fields.Count);
+                sB = Random.Range(0, balls.Count);
             }
 
             if (selectedBall == -1)
@@ -331,25 +406,40 @@ public class Database : MonoBehaviour
         List<int> aliveTeams = new List<int>();
         List<Player> winners = new List<Player>();
 
-        if(players.Count > 0)
+        if (players.Count > 0)
         {
-            winners = players.FindAll(x=> x.currentHealth > 0);
-            
-            for(int i = 0; i < players.Count; i++)
+            // Players whose character was destroyed but health wasn't cleared still block the match end
+            for (int i = 0; i < players.Count; i++)
             {
                 Player p = players[i];
-
-                if(winners.Contains(p))
+                if (p.currentHealth > 0 && p.spawnedPlayer == null)
                 {
-                    if(!aliveTeams.Contains(p.team))
-                    {
-                        aliveTeams.Add(p.team);
-                    }
+                    p.currentHealth = 0;
+                }
+            }
+
+            winners = players.FindAll(x => x.currentHealth > 0);
+
+            for (int i = 0; i < winners.Count; i++)
+            {
+                int team = winners[i].team;
+                if (!aliveTeams.Contains(team))
+                {
+                    aliveTeams.Add(team);
                 }
             }
         }
 
-        if(aliveTeams.Count <= 1)
+        int eliminated = players.Count - winners.Count;
+        // FFA / default: last person standing. Team select: last team standing.
+        // Require someone eliminated so solo practice doesn't instantly end.
+        bool matchOver = eliminated > 0 && (
+            teamSelect
+                ? aliveTeams.Count <= 1
+                : winners.Count <= 1
+        );
+
+        if (matchOver)
         {
             //Set Winners and Losers
             if (players.Count > 0)
@@ -360,6 +450,9 @@ public class Database : MonoBehaviour
                     p.won = winners.Contains(p);
                 }
             }
+
+            // AI learns from match outcome (persisted across sessions)
+            ComputerAI.OnMatchEnd(players);
 
             //Run Time Slow
             if (!someoneWon)
@@ -380,48 +473,49 @@ public class Database : MonoBehaviour
         Time.timeScale = 1;
         yield return null;
 
-        //Clear all GameObjects and Field
-        GameObject[] allGo = FindObjectsByType<GameObject>();
-
-        if (allGo.Length > 0)
+        // Only clear objects marked for match cleanup.
+        // Do NOT SetActive/toggle every GameObject — that corrupts Canvas layout (Invalid AABB)
+        // and can freeze the match with winnerScreen stuck true if the coroutine dies mid-loop.
+        ClearAfterTheGame[] toClear = FindObjectsByType<ClearAfterTheGame>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = toClear.Length - 1; i >= 0; i--)
         {
-            for (int i = allGo.Length - 1; i >= 0; i--)
+            if (toClear[i] != null)
             {
-                if (allGo[i] != null)
-                {
-                    bool prevAS = allGo[i].activeInHierarchy;
-
-                    allGo[i].SetActive(true);
-                    allGo[i].SendMessage("ClearAllForNewGame", SendMessageOptions.DontRequireReceiver);
-                    yield return null;
-
-                    if (allGo[i] != null)
-                    {
-                        allGo[i].SetActive(prevAS);
-                    }
-                }
+                Destroy(toClear[i].gameObject);
             }
         }
+        yield return null;
 
         //Open Winners menu
-        mm.OpenMenu("Winners");
-        yield return null;
-        for (int i = 0; i < players.Count; i++)
+        if (mm != null)
         {
-            mmOp.AddPlayer(i);
+            mm.OpenMenu("Winners");
         }
+        yield return null;
 
-        //Add Win Box to Winner Menu
-        if (players.Count > 0)
+        if (mmOp != null)
         {
             for (int i = 0; i < players.Count; i++)
             {
-                GameObject wB = Instantiate(wonBox);
-                wB.transform.SetParent(showWinner);
+                mmOp.AddPlayer(i);
+            }
+        }
+
+        //Add Win Box to Winner Menu
+        if (players.Count > 0 && wonBox != null && showWinner != null)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                GameObject wB = Instantiate(wonBox, showWinner);
+                RectTransform rt = wB.transform as RectTransform;
+                if (rt != null)
+                {
+                    rt.localScale = Vector3.one;
+                    rt.localRotation = Quaternion.identity;
+                }
 
                 GameResultBreakdown grb = wB.GetComponent<GameResultBreakdown>();
-
-                if(grb != null)
+                if (grb != null)
                 {
                     grb.playerIndex = i;
                 }
@@ -504,12 +598,20 @@ public class Database : MonoBehaviour
     {
         List<Characters> avaliableChar = characters;
 
-        if(actives)
+        if (actives)
         {
             avaliableChar = characters.FindAll(x => x.active);
         }
 
-        return new Characters(avaliableChar[Random.Range(0,avaliableChar.Count)]);
+        if (avaliableChar == null || avaliableChar.Count == 0)
+        {
+            avaliableChar = characters.FindAll(x => x != null && x.character != null && x.character.prefabs != null);
+        }
+
+        if (avaliableChar == null || avaliableChar.Count == 0)
+            return null;
+
+        return new Characters(avaliableChar[Random.Range(0, avaliableChar.Count)]);
     }
 
     public bool InSetup()
@@ -659,6 +761,25 @@ public class Database : MonoBehaviour
 
                 Player p = players[i];
 
+                // Always re-bind from the character roster by name before spawn.
+                // Portraits/UI can show the right fighter while Player.character was never
+                // copied (or was wiped on rematch / domain reload) — that caused the NRE.
+                Characters rosterChar = null;
+                if (!string.IsNullOrEmpty(p.name))
+                    rosterChar = characters.Find(x => x != null && x.name == p.name);
+
+                if (rosterChar == null || rosterChar.character == null || rosterChar.character.prefabs == null)
+                    rosterChar = RandomCharacter();
+
+                if (rosterChar != null)
+                    p.SetUpCharacter(rosterChar);
+
+                if (p.character == null || p.character.prefabs == null)
+                {
+                    Debug.LogError($"StartGame: Player index={p.index} name='{p.name}' has no character prefab after roster bind. Skipping spawn.");
+                    continue;
+                }
+
                 switch(p.facing)
                 {
                     case Facing.Up:
@@ -680,36 +801,35 @@ public class Database : MonoBehaviour
                 }
 
                 //Spawn Player
-                if (p.character.prefabs != null)
-                {
-                    p.spawnedPlayer = Instantiate(p.character.prefabs);
-                    p.spawnedPlayer.transform.position = pPos;
-                    p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
-                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
-                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * (p.character.positionOffset.y * ((p.position == 0) ? 1 : 1.5f));
-                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
-                    PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
+                p.spawnedPlayer = Instantiate(p.character.prefabs);
+                p.spawnedPlayer.transform.position = pPos;
+                p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
+                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
+                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * (p.character.positionOffset.y * ((p.position == 0) ? 1 : 1.5f));
+                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
+                PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
 
-                    if(pG != null)
-                    {
-                        pG.playerIndex = i;
-                    }
+                if(pG != null)
+                {
+                    pG.playerIndex = p.index;
                 }
 
-                //Spawn Lifeline
-                if (p.lifeline.prefabs != null)
+                //Spawn Lifeline — place on the wall hit by a ray from map center toward that side
+                if (p.lifeline != null && p.lifeline.prefabs != null)
                 {
+                    Vector3 lifePos = GetLifelineWallSpawnPos(p.facing, pPos);
+
                     p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
-                    p.spawnedLifeline.transform.position = pPos;
+                    p.spawnedLifeline.transform.position = lifePos;
                     p.spawnedLifeline.transform.rotation = Quaternion.Euler(fRot + p.lifeline.rotationOffset);
                     p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.right * p.lifeline.positionOffset.x;
                     p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.up * p.lifeline.positionOffset.y;
                     p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.forward * p.lifeline.positionOffset.z;
-                    PlayerGrab pG = p.spawnedLifeline.GetComponent<PlayerGrab>();
+                    PlayerGrab lifePG = p.spawnedLifeline.GetComponent<PlayerGrab>();
 
-                    if (pG != null)
+                    if (lifePG != null)
                     {
-                        pG.playerIndex = i;
+                        lifePG.playerIndex = p.index;
                     }
                 }
 
@@ -721,23 +841,25 @@ public class Database : MonoBehaviour
                     sIB = p.playerInfo;
                 }
 
-                GameObject iB = Instantiate(sIB);
-
-                if((i % 2) == 0)
+                if (sIB != null)
                 {
-                    iB.transform.SetParent(playerInfoHolderRS);
-                }
-                else
-                {
-                    iB.transform.SetParent(playerInfoHolderLS);
-                }
+                    GameObject iB = Instantiate(sIB);
 
+                    if((i % 2) == 0)
+                    {
+                        iB.transform.SetParent(playerInfoHolderRS);
+                    }
+                    else
+                    {
+                        iB.transform.SetParent(playerInfoHolderLS);
+                    }
 
-                PlayerGrab ibpG = iB.GetComponent<PlayerGrab>();
+                    PlayerGrab ibpG = iB.GetComponent<PlayerGrab>();
 
-                if (ibpG != null)
-                {
-                    ibpG.playerIndex = i;
+                    if (ibpG != null)
+                    {
+                        ibpG.playerIndex = p.index;
+                    }
                 }
                 yield return null;
             }
@@ -804,6 +926,54 @@ public class Database : MonoBehaviour
 
         startingGame = false;
         yield return null;
+    }
+
+    /// <summary>
+    /// Ray from map center toward the player's side; first Wall/Walls hit is the lifeline base position.
+    /// Falls back to <paramref name="fallback"/> if nothing is hit.
+    /// </summary>
+    Vector3 GetLifelineWallSpawnPos(Facing facing, Vector3 fallback)
+    {
+        Vector3 origin = new Vector3(0f, 0f, fieldSize);
+        Vector3 dir;
+
+        switch (facing)
+        {
+            case Facing.Up:
+                dir = Vector3.down;
+                break;
+            case Facing.Down:
+                dir = Vector3.up;
+                break;
+            case Facing.Left:
+                dir = Vector3.right;
+                break;
+            case Facing.Right:
+                dir = Vector3.left;
+                break;
+            default:
+                return fallback;
+        }
+
+        float maxDist = Mathf.Max(fieldSize * 2f, 100f);
+        RaycastHit[] hits = Physics.RaycastAll(origin, dir, maxDist);
+        if (hits == null || hits.Length == 0)
+            return fallback;
+
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            string tag = hits[i].transform.tag;
+            if (tag != "Wall" && tag != "Walls")
+                continue;
+
+            Vector3 point = hits[i].point;
+            point.z = fieldSize;
+            return point;
+        }
+
+        return fallback;
     }
 
     public void PlaySound(string sname)

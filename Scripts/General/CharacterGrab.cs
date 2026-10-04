@@ -58,7 +58,11 @@ public class CharacterGrab : MonoBehaviour
     //Will update outline based on who has it selected
     void UpdateSelection()
     {
+        if (db == null || outline == null || ch == null)
+            return;
 
+        bool selected = db.players != null && db.players.Exists(x => x != null && x.name == ch.name);
+        outline.effectColor = selected ? Color.white : ch.portraitColor;
     }
 
     public void OnClick(int player)
@@ -69,6 +73,8 @@ public class CharacterGrab : MonoBehaviour
         if(p != null)
         {
             p.SetUpCharacter(ch);
+            if (db != null)
+                db.RememberSelectedCharacter(p.index, ch.name);
         }
     }
 }

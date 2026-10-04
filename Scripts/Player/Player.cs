@@ -130,6 +130,9 @@ public class Player
 
     public void SetUpCharacter(Characters p)
     {
+        if (p == null)
+            return;
+
         name = p.name;
 
         currentHealth = p.maxHealth;
@@ -144,9 +147,9 @@ public class Player
         super = new Skill(p.super);
         dash = new Skill(p.dash);
 
-        character = new ObjectInfo(p.character);
-
-        lifeline = new ObjectInfo(p.lifeline);
+        // Always keep non-null ObjectInfo instances so StartGame never NREs on .prefabs
+        character = p.character != null ? new ObjectInfo(p.character) : new ObjectInfo();
+        lifeline = p.lifeline != null ? new ObjectInfo(p.lifeline) : new ObjectInfo();
         selector = p.selector;
         playerInfo = p.playerInfo;
 
@@ -305,6 +308,9 @@ public class ObjectInfo
 
     public ObjectInfo(ObjectInfo oI)
     {
+        if (oI == null)
+            return;
+
         prefabs = oI.prefabs;
         positionOffset = oI.positionOffset;
         rotationOffset = oI.rotationOffset;

@@ -68,17 +68,13 @@ public class Trigger : MonoBehaviour
         {
             if (pg.player.computer)
             {
-                if (!thinking)
-                {
-                    thinking = true;
-                    StartCoroutine(AI());
-                }
+                thinking = false;
             }
 
             if (pg.player.CanMove)
             {
+                OnMove(); // evaluate AI first so dash can read the decision
                 OnDash();
-                OnMove();
             }
             else
             {
@@ -112,6 +108,16 @@ public class Trigger : MonoBehaviour
             if(superDelayAmount > 0)
             {
                 superDelayAmount -= Time.deltaTime;
+            }
+
+            // Keep ready flag in sync with meter (UI + OnSuper both use readyPercent >= 1)
+            Skill superSkill = pg.player.super;
+            if (superSkill != null)
+            {
+                if (superSkill.Enough())
+                    superSkill.readyPercent = 1f;
+                else if (superShotCount < 0)
+                    superSkill.readyPercent = 0f;
             }
         }
     }
@@ -304,14 +310,21 @@ public class Trigger : MonoBehaviour
     {
         int moveDir = 0;
 
-        if ((pg.inp.right || thought == Thought.MoveRight) && !WallInDirection(1))
+        if (pg.player.computer)
         {
-            moveDir += 1;
+            ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, hitTags, dis);
+            moveDir = d.moveDir;
+            if (d.wantBump) thought = Thought.MoveUp;
+            else if (d.wantSuper) thought = Thought.MoveDown;
+            else thought = Thought.Nothing;
         }
-
-        if ((pg.inp.left || thought == Thought.MoveLeft) && !WallInDirection(-1))
+        else
         {
-            moveDir -= 1;
+            thought = Thought.Nothing;
+            if (pg.inp.right && !WallInDirection(1))
+                moveDir += 1;
+            if (pg.inp.left && !WallInDirection(-1))
+                moveDir -= 1;
         }
 
         Vector3 rotDir = transform.right;
@@ -325,21 +338,37 @@ public class Trigger : MonoBehaviour
     void OnDash()
     {
         Skill d = pg.player.dash;
+        if (d == null)
+            return;
 
+        if (pg.player.computer)
+        {
+            ComputerAI.Decision ai = ComputerAI.GetLastDecision(pg.playerIndex);
+            if (ai.wantDash && ai.moveDir != 0 && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+            {
+                StartDash(ai.moveDir > 0 ? 1 : -1, d);
+            }
+            return;
+        }
+
+        // Bumper / Q-R: instant dash (no double-tap)
+        if (pg.inp.tf_dashRight && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+        {
+            StartDash(1, d);
+            return;
+        }
+        if (pg.inp.tf_dashLeft && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+        {
+            StartDash(-1, d);
+            return;
+        }
+
+        // Stick / D-pad: double-tap still works
         if (pg.inp.tf_right && d.amount >= d.cost)
         {
-            if (Mathf.Abs(canDash) == 2)
-            {
-
-            }
+            if (Mathf.Abs(canDash) == 2) { }
             else if (canDash == 1 && dashEnd > 0)
-            {
-                speedIncrease = speedMultiplyer;
-                dashEnd = dashTime;
-                d.readyPercent = 0;
-                d.Spend();
-                canDash = 2;
-            }
+                StartDash(1, d);
             else
             {
                 canDash = 1;
@@ -349,23 +378,25 @@ public class Trigger : MonoBehaviour
 
         if (pg.inp.tf_left && d.amount >= d.cost)
         {
-            if (Mathf.Abs(canDash) == 2)
-            {
-
-            }
+            if (Mathf.Abs(canDash) == 2) { }
             else if (canDash == -1 && dashEnd > 0)
-            {
-                speedIncrease = speedMultiplyer;
-                dashEnd = dashTime;
-                d.Spend();
-                canDash = -2;
-            }
+                StartDash(-1, d);
             else
             {
                 canDash = -1;
                 dashEnd = doubleClickTime;
             }
         }
+    }
+
+    void StartDash(int dir, Skill d)
+    {
+        speedIncrease = speedMultiplyer;
+        dashEnd = dashTime;
+        d.readyPercent = 0;
+        d.Spend();
+        canDash = dir > 0 ? 2 : -2;
+        pg.player.numberOfDashes++;
     }
 
     void OnBump()
@@ -389,11 +420,25 @@ public class Trigger : MonoBehaviour
         }
     }
 
+    bool SuperReady()
+    {
+        Skill b = pg.player != null ? pg.player.super : null;
+        return b != null && b.Enough() && b.readyPercent >= 1f;
+    }
+
     void OnSuper()
     {
         Skill b = pg.player.super;
 
-        if (((pg.inp.super || thought == Thought.MoveDown) && b.Enough()) || (superShotCount > 0 && superDelayAmount <= 0))
+        // Humans: only the super input edge. AI: MoveDown thought from ComputerAI.
+        bool wantStart = SuperReady() && (
+            pg.player.computer
+                ? thought == Thought.MoveDown
+                : pg.inp.tf_super);
+
+        bool volleyContinue = superShotCount > 0 && superDelayAmount <= 0;
+
+        if (wantStart || volleyContinue)
         {
             GameObject go = Instantiate(super, transform.position + (transform.up * bumpOffsetY), transform.rotation);
 
@@ -404,9 +449,10 @@ public class Trigger : MonoBehaviour
                 spG.playerIndex = pg.playerIndex;
             }
 
-            if(superShotCount < 0)
+            if (superShotCount < 0)
             {
                 b.Spend();
+                b.readyPercent = 0f;
                 thought = Thought.Nothing;
                 superShotCount = 0;
             }

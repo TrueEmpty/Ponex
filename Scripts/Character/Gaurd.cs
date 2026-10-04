@@ -15,6 +15,7 @@ public class Gaurd : MonoBehaviour
     public GameObject attackers;
 
     public List<Pawn> pawns = new List<Pawn>();
+    bool savedByPawns = false;
 
     #region AI
     bool thinking = false;
@@ -52,28 +53,26 @@ public class Gaurd : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(pg.IsLinked())
+        // Destroyed pawns leave null entries and can soft-lock Gaurd at 1 HP forever
+        pawns.RemoveAll(pawn => pawn == null);
+
+        if (pg.IsLinked())
         {
             Player p = pg.player;
 
-            if (db.gameStart && p.currentHealth > 1)
+            if (db.gameStart)
             {
-                if (p.currentHealth == 1 && pawns.Count == 0)
+                // Killing blow was absorbed by pawns; once they are gone, finish the player
+                if (savedByPawns && pawns.Count == 0)
                 {
-                    p.currentHealth = 0;
+                    if (p.currentHealth <= 1)
+                        p.currentHealth = 0;
+                    savedByPawns = false;
                 }
-                else
+                else if (p.computer)
                 {
-                    if (p.computer)
-                    {
-                        if (!thinking)
-                        {
-                            thinking = true;
-                            //StartCoroutine(AI());
-                        }
-                    }
-
-
+                    thinking = false;
+                    // Gaurd movement is pawn-based; brain still learns from match outcomes
                 }
             }
         }
@@ -111,15 +110,19 @@ public class Gaurd : MonoBehaviour
                 //Send out Ball hit to all
                 pg.player.currentHealth -= baseDamage;
 
+                pawns.RemoveAll(pawn => pawn == null);
+
                 if (pg.player.currentHealth <= 0)
                 {
-                    if(pawns.Count > 0)
+                    if (pawns.Count > 0)
                     {
                         pg.player.currentHealth = 1;
+                        savedByPawns = true;
                     }
                     else
                     {
                         pg.player.currentHealth = 0;
+                        savedByPawns = false;
                     }
                 }
             }

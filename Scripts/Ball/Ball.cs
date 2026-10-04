@@ -11,6 +11,7 @@ public class Ball
     public Color color = Color.red;
 
     public float startSpeed = 1;
+    public float minSpeed = 1;
     public float maxSpeed = 2;
     public float speedIncrease = .5f;
 
@@ -28,9 +29,13 @@ public class Ball
         selection = ball.selection;
 
         startSpeed = ball.startSpeed;
+        minSpeed = ball.minSpeed;
         maxSpeed = ball.maxSpeed;
         speedIncrease = ball.speedIncrease;
 
         damage = ball.damage;
     }
+
+    /// <summary>Highest speed bumps can push the ball toward.</summary>
+    public float BumpSpeedCap => maxSpeed * 2f;
 }

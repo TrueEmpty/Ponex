@@ -17,7 +17,12 @@ public class GainSuperOnCollision : MonoBehaviour
     {
         if (collision.transform.tag.ToLower().Trim() == "ball")
         {
+            if (pG == null || pG.player == null || pG.player.super == null)
+                return;
+
             pG.player.super.Gain(amount);
+            if (pG.player.super.Enough())
+                pG.player.super.readyPercent = 1f;
         }
     }
 }

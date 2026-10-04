@@ -41,16 +41,16 @@ public class NariMove : MonoBehaviour
                 switch (pg.player.facing)
                 {
                     case Facing.Right:
-                        moveDir = Vector3.right;
-                        break;
-                    case Facing.Left:
                         moveDir = Vector3.left;
                         break;
+                    case Facing.Left:
+                        moveDir = Vector3.right;
+                        break;
                     case Facing.Up:
-                        moveDir = Vector3.up;
+                        moveDir = Vector3.down;
                         break;
                     case Facing.Down:
-                        moveDir = Vector3.down;
+                        moveDir = Vector3.up;
                         break;
                 }
 

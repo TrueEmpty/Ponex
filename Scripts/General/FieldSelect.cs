@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,259 +6,242 @@ public class FieldSelect : MonoBehaviour
 {
     public static FieldSelect instance;
     Database db;
-    public List<CharacterGrab> characterGrabs = new List<CharacterGrab>();
-    /*public Portait portrait;*/
-    bool setup = false;
-    List<Field> fieldPage = new List<Field>(); //Fist 6-10 records in the first 4 rows are perma Blanked
-    public Vector3Int skipAmount = new Vector3Int(6,5,4);
-    public int maxInrow = 15;
-    int page = 0;
-    int maxpage = 1;
-    int lastFieldsCount = 0;
-    public Field skipField = new Field();
-    public Field blankField = new Field();
+
+    public List<FieldGrab> fieldGrabs = new List<FieldGrab>();
+
+    public Transform grabHolder;
+    public GameObject fieldGrab_pf;
+
+    public int perPage = 45;
+    int page;
+    int maxpage;
+
     public Text pageDisplay;
+
+    public RawImage portrait;
+    public Text portraitName;
+    public Text portraitInfo;
+
+    public Transform pageButtonsHolder;
+
+    int lastShownField = -999;
 
     private void Awake()
     {
         if (instance != null)
-        {
             Destroy(this);
-        }
         else
-        {
             instance = this;
-        }
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         db = Database.instance;
+        ResolveRefs();
     }
 
-    // Update is called once per frame
+    void OnEnable()
+    {
+        if (db == null)
+            db = Database.instance;
+        ResolveRefs();
+        SpawnGrabs();
+        UpdateSelectedPortrait();
+    }
+
+    void OnDisable()
+    {
+        ClearGrabs(false);
+    }
+
     void Update()
     {
-        if (setup)
+        if (db == null)
+            db = Database.instance;
+
+        if (lastShownField != db.selectedField)
+            UpdateSelectedPortrait();
+    }
+
+    void ResolveRefs()
+    {
+        if (grabHolder == null)
         {
-            if(lastFieldsCount != db.fields.Count)
+            Transform t = FindChildNamed(transform, "Field Select");
+            if (t != null && t != transform)
+                grabHolder = t;
+            else if (transform.childCount > 1)
+                grabHolder = transform.GetChild(1);
+        }
+
+        if (pageButtonsHolder == null)
+            pageButtonsHolder = FindChildNamed(transform, "PageButtons");
+
+        if (pageDisplay == null && pageButtonsHolder != null)
+        {
+            Transform pageNum = FindChildNamed(pageButtonsHolder, "Page Number");
+            if (pageNum == null)
+                pageNum = FindChildNamed(pageButtonsHolder, "PageDisplay");
+            if (pageNum != null)
+                pageDisplay = pageNum.GetComponent<Text>();
+        }
+
+        if (portrait == null)
+        {
+            Transform t = FindChildNamed(transform, "Portrait");
+            if (t != null)
+                portrait = t.GetComponent<RawImage>();
+        }
+
+        if (portrait != null)
+        {
+            if (portraitName == null)
             {
-                UpdateFieldPage();
+                Transform n = FindChildNamed(portrait.transform, "Name");
+                if (n != null)
+                    portraitName = n.GetComponent<Text>();
             }
-            
-            LoadPortrait();
-            LoadInfo();
+
+            if (portraitInfo == null)
+            {
+                Transform info = FindChildNamed(portrait.transform, "Info");
+                if (info != null)
+                    portraitInfo = info.GetComponent<Text>();
+            }
         }
-        else
+    }
+
+    Transform FindChildNamed(Transform root, string name)
+    {
+        if (root == null) return null;
+        if (root.name == name) return root;
+        for (int i = 0; i < root.childCount; i++)
         {
-            Setup();
+            Transform f = FindChildNamed(root.GetChild(i), name);
+            if (f != null) return f;
         }
+        return null;
     }
 
     public void PageChange(int d)
     {
         page += d;
-
-        if (page > maxpage)
-        {
-            page = maxpage;
-        }
-
-        if(page < 0)
-        {
-            page = 0;
-        }
-
-        lastFieldsCount = -1;
+        if (page > maxpage) page = maxpage;
+        if (page < 0) page = 0;
+        SpawnGrabs();
     }
 
-    public void Setup()
+    void ClearGrabs(bool immediate)
     {
-        if (!setup)
+        fieldGrabs.Clear();
+
+        if (grabHolder == null)
+            return;
+
+        for (int i = grabHolder.childCount - 1; i >= 0; i--)
         {
-            //Character Grabs
-            Transform pgC = transform.GetChild(1);
-
-            int row = 0;
-            int column = 0;
-
-            for (int i = 0; i < pgC.childCount; i++)
-            {
-                GameObject container = pgC.GetChild(i).gameObject;
-
-                /*CharacterGrab c = new CharacterGrab();
-                c.container = container;
-                c.background = container.GetComponent<Image>();
-                c.image = container.transform.GetChild(0).GetComponent<RawImage>();
-                c.charName = container.transform.GetChild(1).GetComponent<Text>();
-
-                characterGrabs.Add(c);*/
-
-
-                column++;
-
-                if (column >= 15)
-                {
-                    column = 0;
-                    row--;
-                }
-            }
-
-
-            //Portraits
-            Transform porC = transform.GetChild(0);
-
-            /*portrait.container = porC.gameObject;
-            portrait.image = portrait.container.GetComponent<RawImage>();
-            portrait.playerText = portrait.container.transform.GetChild(0).GetComponent<Text>();
-            portrait.infoText = portrait.container.transform.GetChild(1).GetComponent<Text>();*/
-
-            setup = true;
-        }
-    }
-
-    public void UpdateFieldPage()
-    {
-        fieldPage.Clear();
-
-        if(db.fields.Count > 0)
-        {
-            int skipping = skipAmount.y * skipAmount.z;
-            int amountPerPage = characterGrabs.Count;
-            int startingField = (amountPerPage - skipping) * page;
-
-            maxpage = Mathf.FloorToInt(db.fields.Count / (amountPerPage - skipping));
-
-            if (startingField >= db.fields.Count)
-            {
-                page = maxpage;
-            }
-
-            Vector3Int curSkip = new Vector3Int(1,1,1);
-            int actField = startingField;
-            int mir = 1;
-
-            for (int i = 0; i < amountPerPage; i++)
-            {
-                if(curSkip.x >= skipAmount.x && curSkip.z <= skipAmount.z)
-                {
-                    if(curSkip.y <= skipAmount.y)
-                    {
-                        fieldPage.Add(skipField);
-                        curSkip.y++;
-
-                        if(curSkip.y > skipAmount.y)
-                        {
-                            curSkip.x = -1000;
-                            curSkip.y = 1;
-                        }
-                    }
-
-                }
-                else
-                {
-                    if (actField >= db.fields.Count)
-                    {
-                        fieldPage.Add(blankField);
-                    }
-                    else
-                    {
-                        fieldPage.Add(db.fields[actField]);
-                    }
-                    
-                    actField++;
-                    curSkip.x++;
-                }
-
-                mir++;
-
-                if(mir > maxInrow)
-                {
-                    mir = 1;
-                    curSkip.x = 1;
-                    curSkip.z++;
-                }
-            }
-
-            pageDisplay.text = "Page " + (page + 1) + " of " + (maxpage + 1);
-        }
-
-        lastFieldsCount = db.fields.Count;
-    }
-
-    void LoadInfo()
-    {
-        //Load Character grabs
-        /*for (int i = 0; i < characterGrabs.Count; i++)
-        {
-            CharacterGrab cG = characterGrabs[i];
-
-            if (i < fieldPage.Count)
-            {
-                Field f = fieldPage[i];
-
-                //Check if it is an auto skip block
-                if(f.size == -100) //Skip Field
-                {
-                    cG.canSelect = false;
-                    cG.background.color = Color.clear;
-                    cG.image.color = Color.clear;
-                    cG.charName.color = Color.clear;
-                }
-                else if(f.size == -10) //Blank Field
-                {
-                    cG.canSelect = false;
-                    cG.background.color = Color.white;
-                    cG.image.color = Color.clear;
-                    cG.charName.color = Color.clear;
-                }
-                else
-                {
-                    cG.canSelect = f.active;
-                    cG.background.color = Color.white;
-                    cG.image.texture = f.icon;
-                    cG.image.color = (f.active) ? Color.white : Color.black;
-                    cG.charName.color = Color.white;
-                    cG.charName.text = f.name;
-                }
-            }
+            GameObject go = grabHolder.GetChild(i).gameObject;
+            if (immediate)
+                DestroyImmediate(go);
             else
-            {
-                cG.canSelect = false;
-                cG.background.color = Color.white;
-                cG.image.color = Color.clear;
-                cG.charName.color = Color.clear;
-            }
-        }*/
+                Destroy(go);
+        }
     }
 
-    void LoadPortrait()
+    void SpawnGrabs()
     {
-        //Load in portaits
-        /*if (db.selectedField >= 0 && db.selectedField < db.fields.Count)
+        if (db == null || db.fields == null || fieldGrab_pf == null || grabHolder == null)
         {
-            Field f = db.fields[db.selectedField];
-            portrait.container.SetActive(true);
-
-            portrait.image.texture = f.icon;
-
-            portrait.playerText.text = f.name;
-
-            string authur = f.arthur;
-            bool tE = false;
-
-            if(authur == "#True Empty")
-            {
-                authur = "True Empty";
-                tE = true;
-            }
-
-            portrait.infoText.text = "Size: " + f.size + "   " + ((tE) ? "<color=#1BFF00>" : "<color=#FFED00>") +"Aurthur: " + authur + "</color>";
+            if (fieldGrab_pf == null)
+                Debug.LogWarning("FieldSelect: assign fieldGrab_pf (Field Grab prefab).");
+            return;
         }
-        else
+
+        ClearGrabs(true);
+
+        int total = db.fields.Count;
+        int countPerPage = Mathf.Max(1, perPage);
+        maxpage = Mathf.Max(0, Mathf.FloorToInt((total - 1) / (float)countPerPage));
+        if (page > maxpage) page = maxpage;
+        if (page < 0) page = 0;
+
+        int start = page * countPerPage;
+        int end = Mathf.Min(start + countPerPage, total);
+
+        for (int i = start; i < end; i++)
         {
-            portrait.container.SetActive(false);
-        }*/
+            Field f = db.fields[i];
+            if (f == null) continue;
+
+            GameObject go = Instantiate(fieldGrab_pf, grabHolder);
+            go.name = "Field Grab";
+            FieldGrab fg = go.GetComponent<FieldGrab>();
+            if (fg == null)
+                continue;
+            fg.Bind(f, i);
+            fieldGrabs.Add(fg);
+        }
+
+        if (pageDisplay != null)
+            pageDisplay.text = "Page " + (page + 1) + " of " + (maxpage + 1);
+
+        UpdateSelectedPortrait();
+    }
+
+    public void RefreshAllSelectionLooks()
+    {
+        for (int i = 0; i < fieldGrabs.Count; i++)
+        {
+            if (fieldGrabs[i] != null)
+                fieldGrabs[i].RefreshSelectedLook();
+        }
+    }
+
+    public void UpdateSelectedPortrait()
+    {
+        if (db == null)
+            db = Database.instance;
+        if (db == null || db.fields == null)
+            return;
+
+        if (portrait == null)
+            ResolveRefs();
+
+        lastShownField = db.selectedField;
+
+        if (db.selectedField < 0 || db.selectedField >= db.fields.Count)
+        {
+            if (portrait != null)
+                portrait.color = new Color(1f, 1f, 1f, 0.35f);
+            if (portraitName != null)
+                portraitName.text = "Random";
+            if (portraitInfo != null)
+                portraitInfo.text = "";
+            return;
+        }
+
+        Field f = db.fields[db.selectedField];
+        if (f == null)
+            return;
+
+        if (portrait != null)
+        {
+            if (f.portrait != null)
+                portrait.texture = f.portrait;
+            portrait.color = Color.white;
+        }
+
+        if (portraitName != null)
+        {
+            portraitName.text = string.IsNullOrEmpty(f.name) ? "Field" : f.name;
+            portraitName.color = Color.white;
+        }
+
+        if (portraitInfo != null)
+        {
+            string author = string.IsNullOrEmpty(f.arthur) ? "Unknown" : f.arthur;
+            portraitInfo.text = "Size: " + f.size + "    Aurthur: " + author;
+            portraitInfo.color = new Color(1f, 0.93f, 0f, 1f);
+        }
     }
 }
