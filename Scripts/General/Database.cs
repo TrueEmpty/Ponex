@@ -777,6 +777,7 @@ public class Database : MonoBehaviour
             Field_Info fI = fSpawned.GetComponent<Field_Info>();
             fI.field = field;
             yield return null;
+            Physics.SyncTransforms(); // walls ready for lifeline raycasts
             #endregion
 
             #region Add Players
@@ -855,17 +856,11 @@ public class Database : MonoBehaviour
                     pG.playerIndex = p.index;
                 }
 
-                //Spawn Lifeline — place on the wall hit by a ray from map center toward that side
+                //Spawn Lifeline — always on that side's wall (not at coop player depth)
                 if (p.lifeline != null && p.lifeline.prefabs != null)
                 {
-                    Vector3 lifePos = GetLifelineWallSpawnPos(p.facing, pPos);
-
                     p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
-                    p.spawnedLifeline.transform.position = lifePos;
-                    p.spawnedLifeline.transform.rotation = Quaternion.Euler(fRot + p.lifeline.rotationOffset);
-                    p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.right * p.lifeline.positionOffset.x;
-                    p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.up * p.lifeline.positionOffset.y;
-                    p.spawnedLifeline.transform.position += p.spawnedLifeline.transform.forward * p.lifeline.positionOffset.z;
+                    PlaceLifelineOnWall(p.spawnedLifeline, p.facing, p.spawnedPlayer.transform.position, fRot, p.lifeline);
                     PlayerGrab lifePG = p.spawnedLifeline.GetComponent<PlayerGrab>();
 
                     if (lifePG != null)
@@ -970,36 +965,107 @@ public class Database : MonoBehaviour
     }
 
     /// <summary>
-    /// Ray from map center toward the player's side; first Wall/Walls hit is the lifeline base position.
-    /// Falls back to <paramref name="fallback"/> if nothing is hit.
+    /// Place a lifeline flush on that side's wall. Uses the player's lateral position along the wall
+    /// (coop can sit further inward) but never inherits the player's depth off the wall.
     /// </summary>
-    Vector3 GetLifelineWallSpawnPos(Facing facing, Vector3 fallback)
+    void PlaceLifelineOnWall(GameObject lifeline, Facing facing, Vector3 playerWorldPos, Vector3 facingEuler, ObjectInfo lifeInfo)
     {
+        if (lifeline == null)
+            return;
+
+        Physics.SyncTransforms();
+
+        Vector3 wallPos = GetMathematicalWallPos(facing);
+        Vector3 rayWall;
+        if (TryRaycastWall(facing, out rayWall))
+        {
+            // Keep ray depth only — lateral comes from the player
+            switch (facing)
+            {
+                case Facing.Up:
+                case Facing.Down:
+                    wallPos.y = rayWall.y;
+                    break;
+                case Facing.Left:
+                case Facing.Right:
+                    wallPos.x = rayWall.x;
+                    break;
+            }
+        }
+
+        // Match player lane along the wall; ignore how far inward the character sits
+        switch (facing)
+        {
+            case Facing.Up:
+            case Facing.Down:
+                wallPos.x = playerWorldPos.x;
+                break;
+            case Facing.Left:
+            case Facing.Right:
+                wallPos.y = playerWorldPos.y;
+                break;
+        }
+
+        wallPos.z = fieldSize;
+
+        Quaternion rot = Quaternion.Euler(facingEuler + (lifeInfo != null ? lifeInfo.rotationOffset : Vector3.zero));
+        lifeline.transform.rotation = rot;
+        lifeline.transform.position = wallPos;
+
+        Vector3 offset = lifeInfo != null ? lifeInfo.positionOffset : Vector3.zero;
+        // x = along wall, y = small inward inset from wall into playfield, z = forward
+        lifeline.transform.position += lifeline.transform.right * offset.x;
+        lifeline.transform.position += lifeline.transform.up * offset.y;
+        lifeline.transform.position += lifeline.transform.forward * offset.z;
+
+        // Keep physics bodies from drifting off the wall on spawn
+        Rigidbody rb = lifeline.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.position = lifeline.transform.position;
+            rb.rotation = lifeline.transform.rotation;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+    }
+
+    Vector3 GetMathematicalWallPos(Facing facing)
+    {
+        float half = fieldSize * 0.5f;
+        switch (facing)
+        {
+            case Facing.Up:
+                return new Vector3(0f, -half, fieldSize);
+            case Facing.Down:
+                return new Vector3(0f, half, fieldSize);
+            case Facing.Left:
+                return new Vector3(half, 0f, fieldSize);
+            case Facing.Right:
+                return new Vector3(-half, 0f, fieldSize);
+            default:
+                return new Vector3(0f, 0f, fieldSize);
+        }
+    }
+
+    bool TryRaycastWall(Facing facing, out Vector3 point)
+    {
+        point = Vector3.zero;
         Vector3 origin = new Vector3(0f, 0f, fieldSize);
         Vector3 dir;
 
         switch (facing)
         {
-            case Facing.Up:
-                dir = Vector3.down;
-                break;
-            case Facing.Down:
-                dir = Vector3.up;
-                break;
-            case Facing.Left:
-                dir = Vector3.right;
-                break;
-            case Facing.Right:
-                dir = Vector3.left;
-                break;
-            default:
-                return fallback;
+            case Facing.Up: dir = Vector3.down; break;
+            case Facing.Down: dir = Vector3.up; break;
+            case Facing.Left: dir = Vector3.right; break;
+            case Facing.Right: dir = Vector3.left; break;
+            default: return false;
         }
 
         float maxDist = Mathf.Max(fieldSize * 2f, 100f);
-        RaycastHit[] hits = Physics.RaycastAll(origin, dir, maxDist);
+        RaycastHit[] hits = Physics.RaycastAll(origin, dir, maxDist, ~0, QueryTriggerInteraction.Ignore);
         if (hits == null || hits.Length == 0)
-            return fallback;
+            return false;
 
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
@@ -1009,12 +1075,12 @@ public class Database : MonoBehaviour
             if (tag != "Wall" && tag != "Walls")
                 continue;
 
-            Vector3 point = hits[i].point;
+            point = hits[i].point;
             point.z = fieldSize;
-            return point;
+            return true;
         }
 
-        return fallback;
+        return false;
     }
 
     public void PlaySound(string sname)

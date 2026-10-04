@@ -44,67 +44,69 @@ public class Garmen : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (ll != null)
-        {
-            Player p = pg.player;
-
-            if (pg.player.computer)
-            {
-                thinking = false;
-                ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, null, 2.4f);
-                if (d.wantBump) thought = Thought.MoveUp;
-                else if (d.wantSuper) thought = Thought.MoveDown;
-                else if (d.moveDir > 0) thought = Thought.MoveRight;
-                else if (d.moveDir < 0) thought = Thought.MoveLeft;
-                else thought = Thought.Nothing;
-            }
-
-            //Position Cannon
-            transform.position = ll.transform.position + (ll.transform.up * cannonOffset);
-
-            if (db.gameStart && p.currentHealth > 0)
-            {
-                if (pg.player.CanBump)
-                {
-                    if ((pg.inp.up || thought == Thought.MoveUp) && p.bump.amount >= p.bump.cost && gbC >= .25f)
-                    {
-                        GameObject pro = Instantiate(projectile, shootPoint.position, shootPoint.rotation);
-                        
-                        PlayerGrab pPg = pro.GetComponent<PlayerGrab>();
-                        
-                        if(pPg != null)
-                        {
-                            pPg.playerIndex = pg.playerIndex;
-                        }
-
-                        p.bump.Spend();
-                        gbC = 0;
-                    }
-                }
-
-                gbC += Time.deltaTime;
-
-                if(p.bump.amount < p.bump.max)
-                {
-                    p.bump.readyPercent += Time.deltaTime/3;
-
-                    if(p.bump.readyPercent >= 1)
-                    {
-                        p.bump.Gain(1);
-                        p.bump.readyPercent = 0;
-                    }
-                }
-            }
-        }
-        else
-        {
+        if (ll == null && pg != null && pg.player != null)
             ll = pg.player.spawnedLifeline;
+
+        if (ll == null || pg == null || pg.player == null)
+            return;
+
+        Player p = pg.player;
+
+        if (pg.player.computer)
+        {
+            thinking = false;
+            ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, null, 2.4f);
+            if (d.wantBump) thought = Thought.MoveUp;
+            else if (d.wantSuper) thought = Thought.MoveDown;
+            else if (d.moveDir > 0) thought = Thought.MoveRight;
+            else if (d.moveDir < 0) thought = Thought.MoveLeft;
+            else thought = Thought.Nothing;
+        }
+
+        if (db != null && db.gameStart && p.currentHealth > 0)
+        {
+            if (pg.player.CanBump)
+            {
+                if ((pg.inp.up || thought == Thought.MoveUp) && p.bump.amount >= p.bump.cost && gbC >= .25f)
+                {
+                    GameObject pro = Instantiate(projectile, shootPoint.position, shootPoint.rotation);
+
+                    PlayerGrab pPg = pro.GetComponent<PlayerGrab>();
+
+                    if (pPg != null)
+                    {
+                        pPg.playerIndex = pg.playerIndex;
+                    }
+
+                    p.bump.Spend();
+                    gbC = 0;
+                }
+            }
+
+            gbC += Time.deltaTime;
+
+            if (p.bump.amount < p.bump.max)
+            {
+                p.bump.readyPercent += Time.deltaTime / 3;
+
+                if (p.bump.readyPercent >= 1)
+                {
+                    p.bump.Gain(1);
+                    p.bump.readyPercent = 0;
+                }
+            }
         }
     }
 
-    // LateUpdate: ControllerLink + PlayerGrab have already updated this frame
+    // LateUpdate: stay glued to lifeline (wall), then handle Drive toggle after inputs
     void LateUpdate()
     {
+        if (ll == null && pg != null && pg.player != null)
+            ll = pg.player.spawnedLifeline;
+
+        if (ll != null)
+            transform.position = ll.transform.position + (ll.transform.up * cannonOffset);
+
         if (ll == null || pg == null || pg.player == null || db == null || !db.gameStart)
             return;
 
