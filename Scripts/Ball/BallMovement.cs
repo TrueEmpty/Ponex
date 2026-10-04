@@ -157,7 +157,7 @@ public class BallMovement : MonoBehaviour
                 if (pG != null && pG.IsLinked())
                 {
                     Player p = db.players[pG.playerIndex];
-                    p.ballHits++;
+                    p.RecordBallHit();
                     ComputerAI.OnPaddleHitBall(p);
                 }
                 break;
@@ -168,7 +168,7 @@ public class BallMovement : MonoBehaviour
                 if (pG != null && pG.IsLinked())
                 {
                     Player p = db.players[pG.playerIndex];
-                    p.ballHits++;
+                    p.RecordBallHit();
                 }
                 break;
 
@@ -189,7 +189,7 @@ public class BallMovement : MonoBehaviour
                     if (pG != null && pG.IsLinked())
                     {
                         Player p = db.players[pG.playerIndex];
-                        p.ballHits++;
+                        p.RecordBallHit();
                         ComputerAI.OnPaddleHitBall(p);
                     }
                 }

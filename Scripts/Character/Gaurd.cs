@@ -102,13 +102,15 @@ public class Gaurd : MonoBehaviour
             {
                 int baseDamage = 0;
 
-                if (tbI != null)
+                if (tbI != null && tbI.ball != null)
                 {
                     baseDamage = tbI.ball.damage;
                 }
 
-                //Send out Ball hit to all
-                pg.player.currentHealth -= baseDamage;
+                int lost = pg.player.ApplyGoalDamage(baseDamage, collision.gameObject.GetInstanceID());
+
+                if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null)
+                    tpG.player.RecordDamageDealt(lost);
 
                 pawns.RemoveAll(pawn => pawn == null);
 

@@ -125,6 +125,7 @@ public class Garmen : MonoBehaviour
         {
             p.super.readyPercent = 1f;
             thought = Thought.Nothing;
+            p.RecordUltUsed();
         }
     }
 

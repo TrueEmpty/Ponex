@@ -72,6 +72,7 @@ public class NariTailUpkeep : MonoBehaviour
             pG.player.maxHealth++;
             pG.player.currentHealth++;
             pG.player.super.amount = 0;
+            pG.player.RecordUltUsed();
         }
     }
 }

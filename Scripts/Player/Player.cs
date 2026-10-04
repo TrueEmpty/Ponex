@@ -57,6 +57,8 @@ public class Player
     public float lastGridUpdate = 0;
     public bool gridLock = false;
     public string state = "";
+    /// <summary>Win screen: stats card this human is manually scrolling (null = free cursor).</summary>
+    [System.NonSerialized] public GameResultBreakdown winScrollTarget;
 
     #endregion
 
@@ -273,25 +275,103 @@ public class Player
         }
     }
 
-    public void Damage(int amount)
+    // Same-frame dedupe so multi-collider lifelines (e.g. Garmen hub+body) don't multi-hit
+    int lastGoalDamageFrame = -1;
+    int lastGoalDamageBallId = 0;
+
+    /// <summary>Apply HP change. Positive = damage (records damage taken as actual HP lost). Returns HP lost.</summary>
+    public int Damage(int amount)
     {
+        if (amount > 0)
+        {
+            int lost = Mathf.Min(amount, currentHealth);
+            currentHealth -= amount;
+            if (currentHealth < 0)
+                currentHealth = 0;
+
+            if (lost > 0)
+                RecordDamageTaken(lost);
+
+            return lost;
+        }
+
+        // Heal (negative amount)
         currentHealth -= amount;
-
-        if (currentHealth < 0)
-        {
-            currentHealth = 0;
-        }
-
         if (currentHealth > maxHealth)
-        {
             currentHealth = maxHealth;
-        }
+        if (currentHealth < 0)
+            currentHealth = 0;
+        return 0;
+    }
+
+    /// <summary>Goal/ball damage with per-ball per-frame dedupe. Returns actual HP lost.</summary>
+    public int ApplyGoalDamage(int amount, int ballInstanceId)
+    {
+        if (amount <= 0)
+            return 0;
+
+        if (ballInstanceId != 0
+            && lastGoalDamageFrame == Time.frameCount
+            && lastGoalDamageBallId == ballInstanceId)
+            return 0;
+
+        lastGoalDamageFrame = Time.frameCount;
+        lastGoalDamageBallId = ballInstanceId;
+        return Damage(amount);
     }
 
     public void Heal(int amount)
     {
         Damage(-amount);
     }
+
+    #region Win-screen stat recording
+    public void RecordDamageTaken(int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        damageTaken += amount;
+        if (amount > highestSingleDamageTaken)
+            highestSingleDamageTaken = amount;
+    }
+
+    public void RecordDamageDealt(int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        damageDealt += amount;
+        if (amount > highestSingleDamgeDealt)
+            highestSingleDamgeDealt = amount;
+
+        if (currentHealth <= 0)
+            afterDeathDamage += amount;
+    }
+
+    public void RecordBallHit()
+    {
+        ballHits++;
+        if (currentHealth <= 0)
+            afterDeathHits++;
+    }
+
+    public void RecordBallOwnershipSeconds(int seconds)
+    {
+        if (seconds > longestBallOwnership)
+            longestBallOwnership = seconds;
+    }
+
+    public void RecordUltUsed()
+    {
+        ultsUsed++;
+    }
+
+    public void RecordDash()
+    {
+        numberOfDashes++;
+    }
+    #endregion
 }
 
 [System.Serializable]

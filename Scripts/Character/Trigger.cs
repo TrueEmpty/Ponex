@@ -394,7 +394,7 @@ public class Trigger : MonoBehaviour
         d.readyPercent = 0;
         d.Spend();
         canDash = dir > 0 ? 2 : -2;
-        pg.player.numberOfDashes++;
+        pg.player.RecordDash();
     }
 
     void OnBump()
@@ -453,6 +453,7 @@ public class Trigger : MonoBehaviour
                 b.readyPercent = 0f;
                 thought = Thought.Nothing;
                 superShotCount = 0;
+                pg.player.RecordUltUsed();
             }
 
             superShotCount++;

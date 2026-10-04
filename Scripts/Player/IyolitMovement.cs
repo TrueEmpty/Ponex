@@ -147,6 +147,7 @@ public class IyolitMovement : MonoBehaviour
                 {
                     superOn = superTime;
                     superCooldownTimer = 0;
+                    pG.player.RecordUltUsed();
                     //pG.player.CostSuper(pG.player.player.player.superCost);
                 }
             }

@@ -55,6 +55,14 @@ public class PlayerSelectorObj : MonoBehaviour
     {
         if (cLink != null)
         {
+            // Win screen: while manually scrolling a stats card, Move scrolls text — freeze cursor/clicks
+            if (IsWinScrolling())
+            {
+                ShowOverlay();
+                ControllingUI();
+                return;
+            }
+
             MoveCircle();
             HandleActions();
             ShowOverlay();
@@ -65,6 +73,25 @@ public class PlayerSelectorObj : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    bool IsWinScrolling()
+    {
+        if (db == null || !db.winnerScreen || db.players == null)
+            return false;
+        if (pI < 0 || pI >= db.players.Count)
+            return false;
+
+        Player p = db.players[pI];
+        return p != null && p.winScrollTarget != null;
+    }
+
+    int ClickPlayerIndex()
+    {
+        // On win screen always use the human cursor owner (so CPU cards can be opened for scroll)
+        if (db != null && db.winnerScreen)
+            return pI;
+        return ControllingCPU() ? cpuControl : pI;
     }
 
     public void SetCircleColor(PlayerColors c)
@@ -137,15 +164,16 @@ public class PlayerSelectorObj : MonoBehaviour
 
                     Debug.Log(hit.name);
 
+                    int clickPlayer = ClickPlayerIndex();
                     if (cooldown)
                     {
                         // Short Press
-                        hit.SendMessage("OnClick", (ControllingCPU() ? cpuControl : pI), SendMessageOptions.DontRequireReceiver);
+                        hit.SendMessage("OnClick", clickPlayer, SendMessageOptions.DontRequireReceiver);
                     }
                     else
                     {
                         // Long Press
-                        hit.SendMessage("OnLongClick", (ControllingCPU() ? cpuControl : pI), SendMessageOptions.DontRequireReceiver);
+                        hit.SendMessage("OnLongClick", clickPlayer, SendMessageOptions.DontRequireReceiver);
                     }
                 }
 

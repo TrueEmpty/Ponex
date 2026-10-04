@@ -187,13 +187,8 @@ public class Database : MonoBehaviour
 
     void ShowAndHidePlayerSelectors()
     {
-        bool show = true;
-
-        if(gameStart || startingGame)
-        {
-            show = false;
-        }
-
+        // Hide during active match; show again on the win screen for menu navigation
+        bool show = winnerScreen || !(gameStart || startingGame);
         playerSelectors.gameObject.SetActive(show);
     }
 
@@ -493,6 +488,8 @@ public class Database : MonoBehaviour
         }
         yield return null;
 
+        EnsureWinnersButtonsClickable();
+
         if (mmOp != null)
         {
             for (int i = 0; i < players.Count; i++)
@@ -520,12 +517,42 @@ public class Database : MonoBehaviour
                     grb.playerIndex = i;
                 }
 
-                players[i].state = "";
+                // Free cursor + menu buttons; scroll only after clicking a stats card
+                players[i].state = "Winners";
+                players[i].winScrollTarget = null;
             }
         }
 
         someoneWon = false;
         yield return null;
+    }
+
+    void EnsureWinnersButtonsClickable()
+    {
+        GridControl[] controls = FindObjectsByType<GridControl>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < controls.Length; i++)
+        {
+            GridControl gc = controls[i];
+            if (gc == null || gc.group == null)
+                continue;
+            if (gc.group.ToLower().Trim() != "winners")
+                continue;
+
+            GameObject go = gc.gameObject;
+            SelectorClickable.Ensure(go, 100f);
+
+            WinMenuButton btn = go.GetComponent<WinMenuButton>();
+            if (btn == null)
+                btn = go.AddComponent<WinMenuButton>();
+
+            string n = go.name.ToLowerInvariant();
+            if (n.Contains("replay") || n.Contains("rematch"))
+                btn.buttonPressed = "Rematch";
+            else if (n.Contains("champion"))
+                btn.buttonPressed = "Champion Select";
+            else if (n.Contains("main"))
+                btn.buttonPressed = "Main Menu";
+        }
     }
 
     public void WinButtonPressed(string buttonPressed)
@@ -550,6 +577,7 @@ public class Database : MonoBehaviour
             p.lastGridUpdate = 0;
             p.gridLock = false;
             p.state = "";
+            p.winScrollTarget = null;
             p.won = false;
             p.damageDealt = 0;
             p.damageTaken = 0;
@@ -760,6 +788,19 @@ public class Database : MonoBehaviour
                 }
 
                 Player p = players[i];
+
+                // Fresh match stats (also cleared on win-menu exit; belt-and-suspenders here)
+                p.won = false;
+                p.damageDealt = 0;
+                p.damageTaken = 0;
+                p.ballHits = 0;
+                p.longestBallOwnership = 0;
+                p.highestSingleDamgeDealt = 0;
+                p.highestSingleDamageTaken = 0;
+                p.ultsUsed = 0;
+                p.numberOfDashes = 0;
+                p.afterDeathHits = 0;
+                p.afterDeathDamage = 0;
 
                 // Always re-bind from the character roster by name before spawn.
                 // Portraits/UI can show the right fighter while Player.character was never

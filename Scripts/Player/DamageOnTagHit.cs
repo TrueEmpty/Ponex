@@ -10,7 +10,6 @@ public class DamageOnTagHit : MonoBehaviour
     public string tagHit = "Ball";
     public int damageIncrease = 0;
 
-    // Start is called before the first frame update
     void Start()
     {
         pg = GetComponent<PlayerGrab>();
@@ -19,60 +18,57 @@ public class DamageOnTagHit : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.transform.tag.ToLower().Trim() == tagHit.ToLower().Trim())
+        if (collision.transform.tag.ToLower().Trim() != tagHit.ToLower().Trim())
+            return;
+
+        if (pg == null || !pg.IsLinked() || pg.player == null)
+            return;
+
+        PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
+        BallInfo tbI = collision.gameObject.GetComponent<BallInfo>();
+        bool pass = true;
+
+        if (tpG != null && tpG.IsLinked())
         {
-            //Check if you own the object
-            PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
-            BallInfo tbI = collision.gameObject.GetComponent<BallInfo>();
-            bool pass = true;
-
-            //Debug.Log("Got Hit By Ball! with your index at: " + pg.playerIndex + " & target at: " + tpG.playerIndex);
-
-            if (tpG != null)
+            if (tpG.playerIndex == pg.playerIndex)
             {
-                if(tpG.IsLinked())
-                {
-                    if(tpG.playerIndex == pg.playerIndex)
-                    {
-                        pass = false;
-                    }
-                    else
-                    {
-                        Player tp = db.players[tpG.playerIndex];
-                        Player yp = db.players[pg.playerIndex];
-
-                        if(tp.team == yp.team)
-                        {
-                            pass = false;
-                        }
-                    }
-                }
+                pass = false;
             }
-
-            if (pass)
+            else if (db != null && db.players != null
+                && tpG.playerIndex >= 0 && tpG.playerIndex < db.players.Count
+                && pg.playerIndex >= 0 && pg.playerIndex < db.players.Count)
             {
-                int baseDamage = 0;
-
-                if(tbI != null)
-                {
-                    baseDamage = tbI.ball.damage;
-                }
-
-                int dealt = baseDamage + damageIncrease;
-                //Send out Ball hit to all
-                pg.player.Damage(dealt);
-
-                // AI learning: victim got scored on; ball owner (if CPU) scored
-                if (pg.IsLinked() && pg.player != null && pg.player.computer)
-                {
-                    ComputerAI.OnTookGoalDamage(pg.player, dealt);
-                }
-
-                if (tpG != null && tpG.IsLinked() && tpG.player != null && tpG.player.computer)
-                {
-                    ComputerAI.OnPaddleHitBall(tpG.player);
-                }
+                Player tp = db.players[tpG.playerIndex];
+                Player yp = db.players[pg.playerIndex];
+                if (tp != null && yp != null && tp.team == yp.team)
+                    pass = false;
             }
         }
+
+        if (!pass)
+            return;
+
+        int baseDamage = 0;
+        if (tbI != null && tbI.ball != null)
+            baseDamage = tbI.ball.damage;
+
+        int dealt = baseDamage + damageIncrease;
+        if (dealt <= 0)
+            return;
+
+        // Actual HP lost (deduped if multiple DamageOnTagHit colliders hit the same ball this frame)
+        int lost = pg.player.ApplyGoalDamage(dealt, collision.gameObject.GetInstanceID());
+
+        // Credit ball owner for the HP actually removed — keeps Dealt/Taken in sync
+        if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null)
+        {
+            tpG.player.RecordDamageDealt(lost);
+
+            if (tpG.player.computer)
+                ComputerAI.OnPaddleHitBall(tpG.player);
+        }
+
+        if (pg.player.computer && lost > 0)
+            ComputerAI.OnTookGoalDamage(pg.player, lost);
     }
 }

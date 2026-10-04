@@ -406,7 +406,7 @@ public class Bahrue : MonoBehaviour
         d.readyPercent = 0;
         d.Spend();
         canDash = dir > 0 ? 2 : -2;
-        pg.player.numberOfDashes++;
+        pg.player.RecordDash();
     }
 
     bool WallInDirection(int dir)
@@ -532,6 +532,7 @@ public class Bahrue : MonoBehaviour
                 pg.player.maxHealth += healthGain;
                 pg.player.Heal(healthGain);
                 pg.player.super.amount = 0;
+                pg.player.RecordUltUsed();
                 //Play Shine Animation/Sound/Particle
             }
         }

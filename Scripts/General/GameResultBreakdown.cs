@@ -30,53 +30,52 @@ public class GameResultBreakdown : MonoBehaviour
     public float scrollspeed = 10;
     int compScrollDir = 1;
 
-    // Start is called before the first frame update
     void Start()
     {
         alpha = (200f / 255f);
         rt = GetComponent<RectTransform>();
         db = Database.instance;
+        SelectorClickable.Ensure(gameObject, 180f);
     }
 
-    // Update is called once per frame
     void Update()
     {
         Resize();
 
-        if(playerIndex >= 0 && playerIndex < db.players.Count)
+        if (db == null || playerIndex < 0 || playerIndex >= db.players.Count)
+            return;
+
+        UpdateInfo();
+
+        // Humans currently scrolling this card (their own or a CPU's)
+        bool humanScrollingThis = false;
+        for (int i = 0; i < db.players.Count; i++)
         {
-            UpdateInfo();
+            Player scroller = db.players[i];
+            if (scroller == null || scroller.computer || scroller.winScrollTarget != this)
+                continue;
 
-            Player p = db.players[playerIndex];
-
-            if (p.state.ToLower().Trim() != "winners")
-            {
-                if(p.computer)
-                {
-                    ComputerScroll();
-                }
-                else
-                {
-                    ButtonInput();
-                }
-            }
+            humanScrollingThis = true;
+            HandleManualScroll(scroller);
         }
+
+        // CPU cards auto-scroll only when nobody has taken over this card
+        Player cardOwner = db.players[playerIndex];
+        if (cardOwner != null && cardOwner.computer && !humanScrollingThis)
+            ComputerScroll();
     }
 
     void Resize()
     {
-        int pCC = transform.parent.childCount;
+        int pCC = transform.parent != null ? transform.parent.childCount : 1;
 
         if (pCC > 4)
-        {
-            rt.sizeDelta = new Vector2(FiveMoreWidth,rt.sizeDelta.y);
-        }
+            rt.sizeDelta = new Vector2(FiveMoreWidth, rt.sizeDelta.y);
         else
-        {
             rt.sizeDelta = new Vector2(FourLessWidth, rt.sizeDelta.y);
-        }
 
-        height = info.GetComponent<RectTransform>().sizeDelta.y;
+        if (info != null)
+            height = info.GetComponent<RectTransform>().sizeDelta.y;
     }
 
     void UpdateInfo()
@@ -86,10 +85,20 @@ public class GameResultBreakdown : MonoBehaviour
         Color t = db.teamColors[p.team];
         t.a = alpha;
 
-        border.effectColor = (p.state.ToLower().Trim() != "winners") ? selected : notSelected;
+        bool someoneScrolling = false;
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            if (db.players[i] != null && db.players[i].winScrollTarget == this)
+            {
+                someoneScrolling = true;
+                break;
+            }
+        }
+
+        border.effectColor = someoneScrolling ? selected : notSelected;
         teamColor.color = t;
 
-        if(p.won)
+        if (p.won)
         {
             winnerSymbol.text = "W";
             winnerSymbol.color = winner;
@@ -114,18 +123,17 @@ public class GameResultBreakdown : MonoBehaviour
         charName.text = p.name;
         charName.color = (p.currentHealth > 0) ? charName.color : Color.gray;
 
-        #region Output Info
         string infoOut = "Damage Dealt: " + p.damageDealt;
         infoOut += "\n";
         infoOut += "Damage Taken: " + p.damageTaken;
         infoOut += "\n";
         infoOut += "Ball Hits: " + p.ballHits;
         infoOut += "\n";
-        infoOut += "Longest Ball Ownership: " + p.longestBallOwnership;
+        infoOut += "Longest Ball Ownership: " + p.longestBallOwnership + "s";
         infoOut += "\n";
-        infoOut += "Highest Single Damge Dealt: " + p.highestSingleDamgeDealt;
+        infoOut += "Biggest Hit Dealt: " + p.highestSingleDamgeDealt;
         infoOut += "\n";
-        infoOut += "Highest Single Damage Taken: " + p.highestSingleDamageTaken;
+        infoOut += "Biggest Hit Taken: " + p.highestSingleDamageTaken;
         infoOut += "\n";
         infoOut += "Ults used: " + p.ultsUsed;
         infoOut += "\n";
@@ -136,48 +144,63 @@ public class GameResultBreakdown : MonoBehaviour
         infoOut += "After Death Damage Dealt: " + p.afterDeathDamage;
 
         info.text = infoOut;
-        #endregion
-
         portrait.texture = p.portrait;
     }
 
-    void ButtonInput()
+    /// <summary>Selector click — enter manual scroll for this card (yours or a CPU's).</summary>
+    void OnClick(int player)
     {
-        Player p = db.players[playerIndex];
+        if (db == null || player < 0 || player >= db.players.Count)
+            return;
+
+        Player p = db.players[player];
+        if (p == null || p.computer || p.cLink == null)
+            return;
+
+        // Leave any other card first
+        p.winScrollTarget = this;
+    }
+
+    void HandleManualScroll(Player scroller)
+    {
+        ControllerLink cL = scroller.cLink;
+        if (cL == null || info == null)
+            return;
+
+        // Exit scroll: bump (Jump), super (Interact), or Menu (Esc / Start / Options)
+        if (WasPressed(cL, "Jump") || WasPressed(cL, "Interact") || WasPressed(cL, "Menu"))
+        {
+            scroller.winScrollTarget = null;
+            return;
+        }
 
         Vector3 curPos = info.transform.localPosition;
+        ControllerButtons move = cL["Move"];
+        float axisY = move != null ? move.value.y : 0f;
 
-        /*if(bm.KeyPressed(p.buttons.up))
-        {
-            curPos.y += scrollspeed * Time.deltaTime;
-        }
+        if (Mathf.Abs(axisY) > 0.01f)
+            curPos.y += axisY * scrollspeed * 20f * Time.deltaTime;
 
-        if(bm.KeyPressed(p.buttons.down))
-        {
-            curPos.y -= scrollspeed * Time.deltaTime;
-        }*/
-
-        if(curPos.y < 0)
-        {
+        if (curPos.y < 0)
             curPos.y = 0;
-        }
         else if (curPos.y > height)
-        {
             curPos.y = height;
-        }
-
-        /*if(bm.KeyDown(p.buttons.cancel) || bm.KeyDown(p.buttons.confirm))
-        {
-            p.state = "Winners";
-        }*/
 
         info.transform.localPosition = curPos;
     }
 
+    static bool WasPressed(ControllerLink cL, string action)
+    {
+        ControllerButtons b = cL[action];
+        return b != null && b.wasPressedThisFrame;
+    }
+
     void ComputerScroll()
     {
-        Vector3 curPos = info.transform.localPosition;
+        if (info == null)
+            return;
 
+        Vector3 curPos = info.transform.localPosition;
         curPos.y += compScrollDir * (scrollspeed / 3) * Time.deltaTime;
 
         if (curPos.y < 0)

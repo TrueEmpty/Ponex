@@ -38,11 +38,16 @@ public class BallInfo : MonoBehaviour
 
     public bool showFutureCollisions = false;
 
+    PlayerGrab ownerGrab;
+    int ownershipPlayerIndex = -1;
+    float ownershipTimer = 0f;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         db = Database.instance;
         lPos = transform.position;
+        ownerGrab = GetComponent<PlayerGrab>();
     }
 
     void Update()
@@ -56,6 +61,8 @@ public class BallInfo : MonoBehaviour
 
             if (ballReady)
             {
+                TrackBallOwnership();
+
                 if (checkStuck)
                 {
                     StuckInAxis();
@@ -198,5 +205,28 @@ public class BallInfo : MonoBehaviour
         }
 
         yield return null;
+    }
+
+    void TrackBallOwnership()
+    {
+        if (ownerGrab == null || db == null || db.players == null)
+            return;
+
+        int idx = ownerGrab.playerIndex;
+        if (idx < 0 || idx >= db.players.Count)
+        {
+            ownershipPlayerIndex = -1;
+            ownershipTimer = 0f;
+            return;
+        }
+
+        if (idx != ownershipPlayerIndex)
+        {
+            ownershipPlayerIndex = idx;
+            ownershipTimer = 0f;
+        }
+
+        ownershipTimer += Time.deltaTime;
+        db.players[idx].RecordBallOwnershipSeconds(Mathf.FloorToInt(ownershipTimer));
     }
 }

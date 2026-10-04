@@ -396,7 +396,7 @@ public class Test : MonoBehaviour
         d.readyPercent = 0;
         d.Spend();
         canDash = dir > 0 ? 2 : -2;
-        pg.player.numberOfDashes++;
+        pg.player.RecordDash();
     }
 
     void OnBump()
@@ -443,6 +443,7 @@ public class Test : MonoBehaviour
             }
 
             b.Spend();
+            pg.player.RecordUltUsed();
 
             GameObject goE = Instantiate(superEffect, transform.position, transform.rotation);
             goE.transform.parent = transform;

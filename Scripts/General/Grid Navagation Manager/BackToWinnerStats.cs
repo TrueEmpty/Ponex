@@ -25,11 +25,11 @@ public class BackToWinnerStats : MonoBehaviour
 
     public void OnCancel(int player)
     {
-        if(player >= 0 && player < db.players.Count)
+        if (player >= 0 && player < db.players.Count)
         {
             Player p = db.players[player];
-
-            p.state = "";
+            p.state = "Winners";
+            p.winScrollTarget = null;
         }
     }
 }

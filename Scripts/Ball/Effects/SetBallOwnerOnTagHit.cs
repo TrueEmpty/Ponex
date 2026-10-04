@@ -22,12 +22,17 @@ public class SetBallOwnerOnTagHit : MonoBehaviour
         {
             PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
 
-            if(tpG != null)
+            if (tpG != null && pG != null)
             {
-                if(delay > 0)
+                // Only claim ownership of balls — never overwrite Player/Lifeline indices
+                if (collision.transform.tag.ToLower().Trim() != "ball")
+                    return;
+
+                if (delay > 0)
                 {
+                    target = tpG;
                     ppg = tpG.playerIndex;
-                    Invoke("SetTag",delay);
+                    Invoke(nameof(SetTag), delay);
                 }
                 else
                 {
