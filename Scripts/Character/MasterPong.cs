@@ -63,6 +63,9 @@ public class MasterPong : MonoBehaviour
             {
                 rb.linearVelocity = Vector3.zero;
             }
+
+            // Fast wall contact can overshoot soft stop — push out so leave-input always works
+            PaddleWall.Unstick(rb, transform, hitTags);
         }
     }
 
@@ -284,38 +287,22 @@ public class MasterPong : MonoBehaviour
         }
         else
         {
-            if (pg.inp.right && !WallInDirection(1))
+            if (pg.inp.right)
                 moveDir += 1;
-            if (pg.inp.left && !WallInDirection(-1))
+            if (pg.inp.left)
                 moveDir -= 1;
         }
 
-        Vector3 rotDir = transform.right;
-        rotDir.x = Mathf.Abs(rotDir.x);
-        rotDir.y = Mathf.Abs(rotDir.y);
-        rotDir.z = Mathf.Abs(rotDir.z);
+        // Block only into-wall travel; moving away from a wall is always allowed
+        if (moveDir != 0 && WallInDirection(moveDir))
+            moveDir = 0;
 
+        Vector3 rotDir = PaddleWall.AbsAxes(transform.right);
         rb.linearVelocity = rotDir * moveDir * pg.player.movementSpeed;
     }
 
     bool WallInDirection(int dir)
     {
-        bool result = false;
-
-        RaycastHit[] hits = Physics.RaycastAll(transform.position,dir * transform.right, (dis));
-
-        if (hits.Length > 0)
-        {
-            for (int i = 0; i < hits.Length; i++)
-            {
-                if (hitTags.Exists(x => x.ToLower().Trim() == hits[i].transform.tag.ToLower().Trim()))
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-
-        return result;
+        return PaddleWall.WallInDirection(transform, dir, hitTags, dis);
     }
 }

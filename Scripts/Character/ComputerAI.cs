@@ -337,24 +337,7 @@ public static class ComputerAI
 
     public static bool WallInDirection(Transform paddle, int dir, List<string> wallTags, float distance)
     {
-        if (paddle == null || distance <= 0f)
-            return false;
-
-        RaycastHit[] hits = Physics.RaycastAll(paddle.position, dir * paddle.right, distance);
-        for (int i = 0; i < hits.Length; i++)
-        {
-            string tag = hits[i].transform.tag;
-            if (wallTags == null || wallTags.Count == 0)
-            {
-                if (tag == "Wall" || tag == "Walls")
-                    return true;
-            }
-            else if (wallTags.Exists(x => x.Equals(tag, StringComparison.OrdinalIgnoreCase)))
-            {
-                return true;
-            }
-        }
-        return false;
+        return PaddleWall.WallInDirection(paddle, dir, wallTags, distance);
     }
 
     public static Thought ThoughtFromDecision(Decision decision)

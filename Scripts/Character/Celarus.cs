@@ -44,23 +44,42 @@ public class Celarus : MonoBehaviour
     [Header("Moon Skate")]
     public float moonPullAccel = 55f;
     public float skateAccel = 70f;
-    public float airSteerAccel = 21f;
+    public float airSteerAccel = 48f;
     public float maxSkateSpeed = 40f;
-    public float starRadius = 0.05f;
-    public float surfaceRide = 0f;
+    [Tooltip("Air max speed as a fraction of maxSkateSpeed.")]
+    public float airSpeedScale = 0.28f;
+    public float starRadius = 0f;
+    public float surfaceRide = -0.12f;
     public float spinDuration = 0.35f;
+    public float spinCooldownTime = 1.1f;
     public float slamSpeed = 48f;
+    public float slamCooldownTime = 1.25f;
     public float bounceRestitution = 0.9f;
     public float maxBounceBoost = 1.55f;
     public float slamBounceBonus = 1.25f;
     public float groundFriction = 0.15f;
     public float launchAssist = 1.15f;
+    public float launchImpulse = 3.2f;
+    public float launchSpeedFactor = 0.055f;
+    public float maxLaunchOutSpeed = 12.5f;
+    public float launchGraceTime = 0.12f;
+    public float peelLift = 8f;
+    public float peelMinSpeed = 8f;
+    public float maxOuterOutSpeed = 5.5f;
+    [Tooltip("Core gravity well radius. 0 = use Moon PullObjectIn range.")]
+    public float pullRadius = 0f;
+    [Tooltip("Pull always applied outside/far from the moon (fraction of moonPullAccel).")]
+    public float outerPullScale = 0.28f;
+    [Tooltip("How fast inner gravity ramps up once inside the well (higher = quicker climb).")]
+    public float pullClimbRate = 2.8f;
 
     bool onMoon;
     bool slamming;
     float spinLeft;
     float spinCooldown;
     float slamCooldown;
+    float launchGrace;
+    float pullBlend;
     Transform visual;
 
     // Buffered from Update so FixedUpdate never misses press edges
@@ -439,8 +458,12 @@ public class Celarus : MonoBehaviour
         Vector3 radialIn = -radialOut;
         Vector3 tangentRight = Vector3.Cross(radialOut, Vector3.forward).normalized;
 
-        // Hard surface: never allow the star inside the moon
-        if (dist < rideRadius)
+        if (launchGrace > 0f)
+            launchGrace -= Time.fixedDeltaTime;
+
+        // Hard surface: keep star out of the moon (skip while launching so ramps can leave)
+        bool deepInside = dist < rideRadius * 0.9f;
+        if (dist < rideRadius && (launchGrace <= 0f || deepInside))
         {
             Vector3 fixedPos = moonPos + radialOut * rideRadius;
             fixedPos.z = transform.position.z;
@@ -451,7 +474,7 @@ public class Celarus : MonoBehaviour
         }
 
         float clearance = dist - rideRadius;
-        onMoon = clearance <= 0.12f;
+        onMoon = launchGrace <= 0f && clearance <= 0.12f;
 
         // Bump spin locks the star in place (ground or air)
         TryStartSpin();
@@ -459,7 +482,6 @@ public class Celarus : MonoBehaviour
         {
             pendingSlam = false;
             rb.linearVelocity = Vector3.zero;
-            // Stay glued to current orbit radius while spinning
             Vector3 holdPos = moonPos + radialOut * Mathf.Max(dist, rideRadius);
             holdPos.z = transform.position.z;
             rb.position = holdPos;
@@ -471,19 +493,24 @@ public class Celarus : MonoBehaviour
         Vector3 v = rb.linearVelocity;
         v.z = 0f;
 
-        // Kill inward velocity while riding so gravity can't push through the surface
-        if (onMoon)
+        int moveDir = pendingMoveDir;
+        float tanSpeed = Vector3.Dot(v, tangentRight);
+        float radSpeed = Vector3.Dot(v, radialOut); // + = leaving moon
+        float airSpeedCap = maxSkateSpeed * airSpeedScale;
+        bool peeling = onMoon && moveDir != 0 && Mathf.Abs(tanSpeed) >= peelMinSpeed && !slamming;
+
+        // Kill inward velocity while riding — but allow peel-away when holding L/R with speed
+        if (onMoon && !peeling)
         {
             float inward = Vector3.Dot(v, radialIn);
             if (inward > 0f)
+            {
                 v -= radialIn * inward;
+                radSpeed = Vector3.Dot(v, radialOut);
+            }
         }
 
-        int moveDir = pendingMoveDir;
-        float tanSpeed = Vector3.Dot(v, tangentRight);
-        float airSpeedCap = maxSkateSpeed * 0.5f;
-
-        // Skate / air steer along the moon tangent (air is half speed)
+        // Skate / air steer — air is slower but steers harder for tighter turns
         if (moveDir != 0)
         {
             float accel = onMoon ? skateAccel : airSteerAccel;
@@ -493,27 +520,68 @@ public class Celarus : MonoBehaviour
         {
             tanSpeed = Mathf.MoveTowards(tanSpeed, 0f, groundFriction * maxSkateSpeed * Time.fixedDeltaTime);
         }
+        else if (!onMoon && moveDir == 0)
+        {
+            tanSpeed = Mathf.MoveTowards(tanSpeed, 0f, airSteerAccel * 0.35f * Time.fixedDeltaTime);
+        }
 
-        float tanCap = onMoon ? maxSkateSpeed : airSpeedCap;
+        float tanCap = (onMoon || launchGrace > 0f) ? maxSkateSpeed : airSpeedCap;
         tanSpeed = Mathf.Clamp(tanSpeed, -tanCap, tanCap);
 
-        // Radial velocity + gravity, with launch when skating fast enough (centrifugal)
-        float radSpeed = Vector3.Dot(v, radialOut); // + = leaving moon
         float centripetalNeeded = (tanSpeed * tanSpeed) / Mathf.Max(0.1f, rideRadius);
-        float pull = slamming ? moonPullAccel * 3f : moonPullAccel;
+        float coreRadius = GetMoonPullRadius(rideRadius);
+        bool inCore = dist <= coreRadius;
 
-        if (onMoon && !slamming && centripetalNeeded > pull * launchAssist)
+        // Inner gravity climbs quickly (not an instant snap) when inside the well
+        float blendTarget = inCore ? 1f : 0f;
+        float blendRate = pullClimbRate * (inCore ? 1f : 0.65f);
+        pullBlend = Mathf.MoveTowards(pullBlend, blendTarget, blendRate * Time.fixedDeltaTime);
+
+        // Always pull toward the moon — solid far pull, stronger in-core after climb
+        float farFade = 1f / (1f + Mathf.Max(0f, dist - rideRadius) * 0.025f);
+        float coreFade = inCore
+            ? Mathf.SmoothStep(1f, 0.55f, Mathf.InverseLerp(rideRadius, coreRadius, dist))
+            : 0f;
+        float outerPull = moonPullAccel * outerPullScale * farFade;
+        float innerPull = moonPullAccel * pullBlend * coreFade;
+        float pull = outerPull + innerPull;
+        if (slamming)
+            pull *= 3f;
+        if (launchGrace > 0f)
+            pull *= 0.35f;
+
+        // Holding L/R with speed: gentle peel so you can leave sides and cut back in
+        if (peeling)
         {
-            // Fast enough to ramp off — lift instead of glue
-            radSpeed += (centripetalNeeded - pull) * Time.fixedDeltaTime;
-            onMoon = false;
+            float peelT = Mathf.InverseLerp(peelMinSpeed, maxSkateSpeed, Mathf.Abs(tanSpeed));
+            radSpeed += peelLift * Mathf.Lerp(0.25f, 0.85f, peelT) * Time.fixedDeltaTime;
+            if (radSpeed > 0.35f)
+            {
+                onMoon = false;
+                launchGrace = Mathf.Max(launchGrace, launchGraceTime * 0.45f);
+            }
         }
-        else
+
+        // Ramp launch — modest hop at skate speed (enough to clear core, not a rocket)
+        if (onMoon && !slamming && centripetalNeeded > moonPullAccel * launchAssist
+            && Mathf.Abs(tanSpeed) > maxSkateSpeed * 0.4f)
+        {
+            float launchOut = launchImpulse + Mathf.Abs(tanSpeed) * launchSpeedFactor;
+            launchOut = Mathf.Min(launchOut, maxLaunchOutSpeed);
+            radSpeed = Mathf.Max(radSpeed, launchOut);
+            onMoon = false;
+            launchGrace = launchGraceTime;
+        }
+        else if (!slamming)
         {
             radSpeed -= pull * Time.fixedDeltaTime;
-            if (onMoon && radSpeed < 0f)
+            if (onMoon && !peeling && radSpeed < 0f)
                 radSpeed = 0f;
         }
+
+        // Outside core gravity: don't keep shooting outward — soft cap exit speed
+        if (!inCore && !slamming && radSpeed > maxOuterOutSpeed)
+            radSpeed = Mathf.MoveTowards(radSpeed, maxOuterOutSpeed, 40f * Time.fixedDeltaTime);
 
         // Super slam only in the air
         if (!onMoon)
@@ -527,13 +595,28 @@ public class Celarus : MonoBehaviour
         }
 
         Vector3 newVel = tangentRight * tanSpeed + radialOut * radSpeed;
-        float speedCap = onMoon ? maxSkateSpeed * 1.35f : airSpeedCap * 1.35f;
+        float speedCap = maxSkateSpeed * 1.35f;
         if (newVel.magnitude > speedCap)
             newVel = newVel.normalized * speedCap;
         newVel.z = 0f;
         rb.linearVelocity = newVel;
 
         UpdateMoonVisual(tangentRight, tanSpeed);
+    }
+
+    float GetMoonPullRadius(float rideRadius)
+    {
+        if (pullRadius > 0.1f)
+            return pullRadius;
+
+        if (moonGravity != null)
+        {
+            float fromPuller = moonGravity.distance * Mathf.Max(0.1f, moonGravity.disScale);
+            // Stay a bit beyond the surface so you can peel and cut back in
+            return Mathf.Max(rideRadius + 1.25f, fromPuller);
+        }
+
+        return rideRadius + 1.5f;
     }
 
     void TryStartSpin()
@@ -546,7 +629,7 @@ public class Celarus : MonoBehaviour
             return;
 
         spinLeft = spinDuration;
-        spinCooldown = spinDuration + 0.05f;
+        spinCooldown = spinCooldownTime;
         rb.linearVelocity = Vector3.zero;
     }
 
@@ -555,7 +638,7 @@ public class Celarus : MonoBehaviour
         if (pendingSlam && slamCooldown <= 0f)
         {
             slamming = true;
-            slamCooldown = 0.25f;
+            slamCooldown = slamCooldownTime;
             radSpeed = -slamSpeed;
             pg.player.RecordUltUsed();
         }
@@ -707,12 +790,28 @@ public class Celarus : MonoBehaviour
         {
             Vector3 spPo = sunGravity.transform.position + (spinPoint.parent.transform.up * sFoffset);
 
+            // Match moon skate: top/right seats have mirrored left/right
+            bool wantLeft = pg.inp.tf_left || thought == Thought.MoveLeft;
+            bool wantRight = pg.inp.tf_right || thought == Thought.MoveRight;
+            bool wantMiddle = pg.inp.tf_up || thought == Thought.MoveUp;
+            switch (p.facing)
+            {
+                case Facing.Down:
+                case Facing.Right:
+                    {
+                        bool swap = wantLeft;
+                        wantLeft = wantRight;
+                        wantRight = swap;
+                    }
+                    break;
+            }
+
             if (sunLeft >= 0)
             {
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                if ( pg.inp.tf_left || thought == Thought.MoveLeft)
+                if (wantLeft)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo + (-spinPoint.parent.transform.right * sFoffset), spinPoint.parent.rotation);
 
@@ -757,7 +856,7 @@ public class Celarus : MonoBehaviour
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                if (pg.inp.tf_up || thought == Thought.MoveUp)
+                if (wantMiddle)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo, spinPoint.parent.rotation);
 
@@ -791,7 +890,7 @@ public class Celarus : MonoBehaviour
                 //Spawn Ready Bubbles
 
                 //Send Solar Flare
-                if (pg.inp.tf_right || thought == Thought.MoveRight)
+                if (wantRight)
                 {
                     GameObject ls = Instantiate(solarFlare, spPo + (spinPoint.parent.transform.right * sFoffset), spinPoint.parent.rotation);
 
@@ -858,54 +957,102 @@ public class Celarus : MonoBehaviour
     {
         float rot = 0;
         int dir = 1;
+        float playZ = moonGravity != null ? moonGravity.transform.position.z : transform.position.z;
 
-        //Start Celarus Leaving
+        // day was already toggled: true = entering sun, false = returning to moon
         if (day)
         {
             rot = 180;
             dir = -1;
 
-            //Raise Celarus
             float leaveTime = 0;
             float timeframe = .75f;
 
-            while(leaveTime < 1)
+            while (leaveTime < 1)
             {
-                transform.position += transform.up * Time.deltaTime;
+                Vector3 p = transform.position + transform.up * Time.deltaTime;
+                p.z = playZ;
+                transform.position = p;
 
-                leaveTime += (1/ timeframe) * Time.deltaTime;
+                leaveTime += (1f / timeframe) * Time.deltaTime;
                 yield return new WaitForEndOfFrame();
             }
-
-            //Make Celarus Spin
         }
 
         Vector3 curRot = spinPoint.transform.localRotation.eulerAngles;
 
-        while(Mathf.Abs(curRot.z - rot) > 1)
+        while (Mathf.Abs(Mathf.DeltaAngle(curRot.z, rot)) > 1f)
         {
             spinPoint.transform.localRotation = Quaternion.Euler(0, 0, curRot.z + (dir * spinSpeed * Time.deltaTime));
 
-            //Make Celarus Leave/Return
-            transform.position = (moonGravity.transform.position + leavePoint);
+            // Park in the playfield plane (leavePoint.z used to yank the star off-field)
+            Vector3 park = moonGravity.transform.position;
+            park.x += leavePoint.x;
+            park.y += leavePoint.y;
+            park.z = playZ;
+            transform.position = park;
+            if (rb != null)
+            {
+                rb.position = park;
+                rb.linearVelocity = Vector3.zero;
+            }
+
             yield return new WaitForEndOfFrame();
             curRot = spinPoint.transform.localRotation.eulerAngles;
         }
 
         spinPoint.transform.localRotation = Quaternion.Euler(0, 0, rot);
-        rb.linearVelocity = Vector3.zero;
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
         yield return null;
 
-        //Finish Celarus Return
+        // Back to moon phase — seat the star on the moon in-play
         if (!day)
         {
-            transform.position = (moonGravity.transform.position + (moonGravity.transform.up * 3));
+            PlaceStarOnMoonSurface();
             yield return null;
         }
 
         cycle = 0;
         moving = false;
         yield return null;
+    }
+
+    void PlaceStarOnMoonSurface()
+    {
+        if (moonGravity == null)
+            return;
+
+        Vector3 moonPos = moonGravity.transform.position;
+        float ride = GetMoonRadius() + starRadius + surfaceRide;
+
+        Vector3 outDir = moonGravity.transform.up;
+        outDir.z = 0f;
+        if (outDir.sqrMagnitude < 0.0001f)
+            outDir = Vector3.up;
+        outDir.Normalize();
+
+        Vector3 pos = moonPos + outDir * Mathf.Max(0.05f, ride);
+        pos.z = moonPos.z;
+
+        transform.position = pos;
+        if (rb != null)
+        {
+            rb.position = pos;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        onMoon = true;
+        slamming = false;
+        launchGrace = 0f;
+        pullBlend = 1f;
+        pendingSpin = false;
+        pendingSlam = false;
+        spinLeft = 0f;
     }
 
     void GetLifelineObjs()

@@ -85,25 +85,25 @@ public class GarmenDrive : MonoBehaviour
             if (pg.player.computer)
             {
                 // Thought is refreshed every frame by Garmen from ComputerAI
-                if (g.thought == Thought.MoveRight && !WallInDirection(1))
+                if (g.thought == Thought.MoveRight)
                     moveDir += 1;
-                else if (g.thought == Thought.MoveLeft && !WallInDirection(-1))
+                else if (g.thought == Thought.MoveLeft)
                     moveDir -= 1;
             }
             else
             {
-                if (pg.inp.right && !WallInDirection(1))
+                if (pg.inp.right)
                     moveDir += 1;
-                if (pg.inp.left && !WallInDirection(-1))
+                if (pg.inp.left)
                     moveDir -= 1;
             }
 
-            Vector3 rotDir = transform.right;
-            rotDir.x = Mathf.Abs(rotDir.x);
-            rotDir.y = Mathf.Abs(rotDir.y);
-            rotDir.z = Mathf.Abs(rotDir.z);
+            if (moveDir != 0 && WallInDirection(moveDir))
+                moveDir = 0;
 
+            Vector3 rotDir = PaddleWall.AbsAxes(transform.right);
             rb.linearVelocity = rotDir * moveDir * pg.player.movementSpeed;
+            PaddleWall.Unstick(rb, transform, hitTags);
 
             if(moveDir != 0)
             {
@@ -118,22 +118,6 @@ public class GarmenDrive : MonoBehaviour
 
     bool WallInDirection(int dir)
     {
-        bool result = false;
-
-        RaycastHit[] hits = Physics.RaycastAll(transform.position, dir * transform.right, searchLength);
-
-        if (hits.Length > 0)
-        {
-            for (int i = 0; i < hits.Length; i++)
-            {
-                if (hitTags.Exists(x => x.ToLower().Trim() == hits[i].transform.tag.ToLower().Trim()))
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-
-        return result;
+        return PaddleWall.WallInDirection(transform, dir, hitTags, searchLength);
     }
 }

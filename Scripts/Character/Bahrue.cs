@@ -28,7 +28,9 @@ public class Bahrue : MonoBehaviour
 
     public float bumpCooldown = 2;
     float timeTillReset = 0;
-    public int healthGain = 3;
+    public int healthGain = 4;
+    [Tooltip("Super charge lost when hit while charging (cost is 1).")]
+    public float chargeLossOnHit = 0.45f;
 
     #region Dash
     int canDash = 0;
@@ -84,18 +86,29 @@ public class Bahrue : MonoBehaviour
                 thinking = false;
             }
 
-            if(pg.player.CanMove)
-            {
-                OnMove();
-                OnDash();
-            }
-
+            // Super first so Move constraint applies before movement this frame
             if (pg.player.CanSuper)
             {
                 ActivateSuper();
             }
 
-            if (pg.player.CanBump)
+            bool chargingSuper = pg.player.super != null && pg.player.super.amount > 0f
+                && (pg.inp.super || thought == Thought.MoveDown);
+
+            if (chargingSuper || !pg.player.CanMove)
+            {
+                rb.linearVelocity = Vector3.zero;
+                canDash = 0;
+                speedIncrease = 1;
+                dashEnd = 0f;
+            }
+            else if (pg.player.CanMove)
+            {
+                OnMove();
+                OnDash();
+            }
+
+            if (pg.player.CanBump && !chargingSuper)
             {
                 ActivateBump();
             }
@@ -110,6 +123,9 @@ public class Bahrue : MonoBehaviour
 
             if (pg.player.dash != null)
                 pg.player.dash.Charge();
+
+            // Dash/contact can overshoot soft wall stop — push out so leave-input always works
+            PaddleWall.Unstick(rb, transform, hitTags);
         }
     }
 
@@ -335,17 +351,17 @@ public class Bahrue : MonoBehaviour
         }
         else
         {
-            if (pg.inp.right && !WallInDirection(1))
+            if (pg.inp.right)
                 moveDir += 1;
-            if (pg.inp.left && !WallInDirection(-1))
+            if (pg.inp.left)
                 moveDir -= 1;
         }
 
-        Vector3 rotDir = transform.right;
-        rotDir.x = Mathf.Abs(rotDir.x);
-        rotDir.y = Mathf.Abs(rotDir.y);
-        rotDir.z = Mathf.Abs(rotDir.z);
+        // Block only into-wall travel; moving away from a wall is always allowed
+        if (moveDir != 0 && WallInDirection(moveDir))
+            moveDir = 0;
 
+        Vector3 rotDir = PaddleWall.AbsAxes(transform.right);
         rb.linearVelocity = rotDir * moveDir * speedIncrease * pg.player.movementSpeed;
     }
 
@@ -411,36 +427,28 @@ public class Bahrue : MonoBehaviour
 
     bool WallInDirection(int dir)
     {
-        bool result = false;
-        float dis = 1;
-
+        float wallDis = 1f;
         if (amountPerRow.Count >= 1)
         {
             float halfDis = (((float)amountPerRow[0].x / 2) * (offsetAmounts.x * transform.localScale.x));
-            dis = halfDis;
+            wallDis = halfDis;
         }
 
-        RaycastHit[] hits = Physics.RaycastAll(holder.position, dir * holder.right, (dis));
-
-        if (hits.Length > 0)
-        {
-            for (int i = 0; i < hits.Length; i++)
-            {
-                if (hitTags.Exists(x=> x.ToLower().Trim() == hits[i].transform.tag.ToLower().Trim()))
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-
-        return result;
+        Transform wallOrigin = holder != null ? holder : transform;
+        return PaddleWall.WallInDirection(wallOrigin, dir, hitTags, wallDis);
     }
 
     void BahrueUpkeep()
     {
         if (pg.player.currentHealth > 0)
         {
+            // Hit while charging super — dump a large chunk of charge
+            if (lastHealth >= 0 && pg.player.currentHealth < lastHealth
+                && pg.player.super != null && pg.player.super.amount > 0f)
+            {
+                pg.player.super.amount = Mathf.Max(0f, pg.player.super.amount - chargeLossOnHit);
+            }
+
             if (lastHealth != pg.player.currentHealth)
             {
                 UpdateBahrue();
@@ -523,8 +531,9 @@ public class Bahrue : MonoBehaviour
         {
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Move);
             pg.player.AddConstraint(gameObject, -1, PlayerConstraint.Bump);
+            rb.linearVelocity = Vector3.zero;
 
-            float superGainSpeed = .9f * (50 / (float)pg.player.currentHealth);
+            float superGainSpeed = .9f * (50 / (float)Mathf.Max(1, pg.player.currentHealth));
             pg.player.super.amount += ((Time.deltaTime * superGainSpeed) / 100);
 
             if (pg.player.super.amount >= pg.player.super.cost)
@@ -533,6 +542,8 @@ public class Bahrue : MonoBehaviour
                 pg.player.Heal(healthGain);
                 pg.player.super.amount = 0;
                 pg.player.RecordUltUsed();
+                pg.player.RemoveConstraint(gameObject, PlayerConstraint.Move);
+                pg.player.RemoveConstraint(gameObject, PlayerConstraint.Bump);
                 //Play Shine Animation/Sound/Particle
             }
         }

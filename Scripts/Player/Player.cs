@@ -217,28 +217,13 @@ public class Player
         switch (constraint)
         {
             case PlayerConstraint.Move:
-                PlayerConstraints pMC = canMove.Find(x => x.caller == caller);
-
-                if (pMC != null)
-                {
-                    pMC.endTime = 0;
-                }
+                canMove.RemoveAll(x => x != null && x.caller == caller);
                 break;
             case PlayerConstraint.Bump:
-                PlayerConstraints pBC = canBump.Find(x => x.caller == caller);
-
-                if (pBC != null)
-                {
-                    pBC.endTime = 0;
-                }
+                canBump.RemoveAll(x => x != null && x.caller == caller);
                 break;
             case PlayerConstraint.Super:
-                PlayerConstraints pSC = canSuper.Find(x => x.caller == caller);
-
-                if (pSC != null)
-                {
-                    pSC.endTime = 0;
-                }
+                canSuper.RemoveAll(x => x != null && x.caller == caller);
                 break;
         }
     }

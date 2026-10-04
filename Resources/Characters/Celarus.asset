@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   rosterOrder: 6
   characterName: Celarus
-  maxHealth: 15
+  maxHealth: 20
   movementSpeed: 1000
   pushBack: 1000
   ignoreFacing: 0
