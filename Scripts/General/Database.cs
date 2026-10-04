@@ -403,13 +403,17 @@ public class Database : MonoBehaviour
 
         if (players.Count > 0)
         {
-            // Players whose character was destroyed but health wasn't cleared still block the match end
-            for (int i = 0; i < players.Count; i++)
+            // Players whose character was destroyed but health wasn't cleared still block the match end.
+            // Skip while a rematch/new match is loading (gameStart false / startingGame).
+            if (!startingGame)
             {
-                Player p = players[i];
-                if (p.currentHealth > 0 && p.spawnedPlayer == null)
+                for (int i = 0; i < players.Count; i++)
                 {
-                    p.currentHealth = 0;
+                    Player p = players[i];
+                    if (p.currentHealth > 0 && p.spawnedPlayer == null)
+                    {
+                        p.currentHealth = 0;
+                    }
                 }
             }
 
@@ -557,10 +561,16 @@ public class Database : MonoBehaviour
 
     public void WinButtonPressed(string buttonPressed)
     {
+        // Stop match logic first — otherwise CheckForWinner sees destroyed
+        // spawnedPlayer refs, zeros restored health, and instantly re-ends the match.
+        gameStart = false;
+        someoneWon = false;
+        startingGame = false;
+
         //Clear WonBoxes
-        if(showWinner.childCount > 0)
+        if (showWinner != null && showWinner.childCount > 0)
         {
-            for(int i = showWinner.childCount - 1; i >= 0; i--)
+            for (int i = showWinner.childCount - 1; i >= 0; i--)
             {
                 Destroy(showWinner.GetChild(i).gameObject);
             }
@@ -589,33 +599,32 @@ public class Database : MonoBehaviour
             p.numberOfDashes = 0;
             p.afterDeathHits = 0;
             p.afterDeathDamage = 0;
+            p.spawnedPlayer = null;
+            p.spawnedLifeline = null;
 
-            //Reset Character info with main Char
+            //Reset Character info with main Char (restores health / skills)
             Characters character = characters.Find(x => x.name == p.name);
 
-            if(character != null)
+            if (character != null)
             {
                 p.SetUpCharacter(character);
             }
         }
 
         //Perform action
-        switch(buttonPressed)
+        switch (buttonPressed)
         {
             case "Rematch":
                 CharactersPicked("balls");
                 break;
             case "Champion Select":
-                gameStart = false;
                 mm.BackUnitl("Character Select");
                 break;
             case "Main Menu":
-                gameStart = false;
                 mm.openMenu.Clear();
                 mm.OpenMenu("Main Menu");
                 break;
             default://Main Menu
-                gameStart = false;
                 mm.openMenu.Clear();
                 mm.OpenMenu("Main Menu");
                 break;
