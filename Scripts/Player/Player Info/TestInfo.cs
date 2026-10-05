@@ -95,11 +95,8 @@ public class TestInfo : MonoBehaviour
         characterName.color = c;
         health.text = p.currentHealth + "/" + p.maxHealth;
 
-        bump.fillAmount = p.bump.amount/p.bump.max;
-
-        float sP = p.super.amount / p.super.max;
-
-        super.fillAmount = sP;
+        SetFillSafe(bump, p.bump);
+        SetFillSafe(super, p.super);
 
         //Change Super's Color based on Ready
         Color superColor = superReady;
@@ -166,6 +163,27 @@ public class TestInfo : MonoBehaviour
             superOutline.effectDistance = new Vector2(Mathf.Lerp(1, 30, superEffectPecent / 100), -1);
         }
 
-        dash.fillAmount = p.dash.amount / p.dash.max;
+        SetFillSafe(dash, p.dash);
+    }
+
+    /// <summary>
+    /// Avoid NaN/Infinity fillAmount (div by zero when skill.max is 0) — that triggers
+    /// "Invalid AABB inAABB" on Canvas.SendWillRenderCanvases.
+    /// </summary>
+    static void SetFillSafe(Image img, Skill skill)
+    {
+        if (img == null)
+            return;
+
+        float fill = 0f;
+        if (skill != null && skill.max > 0.0001f)
+            fill = Mathf.Clamp01(skill.amount / skill.max);
+        else if (skill != null && skill.cost > 0.0001f)
+            fill = Mathf.Clamp01(skill.amount / skill.cost);
+
+        if (float.IsNaN(fill) || float.IsInfinity(fill))
+            fill = 0f;
+
+        img.fillAmount = fill;
     }
 }

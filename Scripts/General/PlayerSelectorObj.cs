@@ -353,7 +353,10 @@ public class PlayerSelectorObj : MonoBehaviour
     {
         if (clickimg != null)
         {
-            clickimg.fillAmount = clicking;
+            float fill = clicking;
+            if (float.IsNaN(fill) || float.IsInfinity(fill))
+                fill = 0f;
+            clickimg.fillAmount = Mathf.Clamp01(fill);
         }
     }
 

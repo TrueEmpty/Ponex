@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   rosterOrder: 12
   characterName: Sunshine Celarus
-  maxHealth: 20
+  maxHealth: 25
   movementSpeed: 1000
   pushBack: 1000
   ignoreFacing: 0

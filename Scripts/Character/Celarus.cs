@@ -59,8 +59,8 @@ public class Celarus : MonoBehaviour
     public float skateAccel = 70f;
     public float airSteerAccel = 48f;
     public float maxSkateSpeed = 40f;
-    [Tooltip("Air max speed as a fraction of maxSkateSpeed.")]
-    public float airSpeedScale = 0.28f;
+    [Tooltip("Air max tangential speed as a fraction of maxSkateSpeed (1 = full skate speed left/right).")]
+    public float airSpeedScale = 1f;
     public float starRadius = 0f;
     public float surfaceRide = -0.12f;
     public float spinDuration = 0.35f;
@@ -86,6 +86,14 @@ public class Celarus : MonoBehaviour
     [Tooltip("How fast inner gravity ramps up once inside the well (higher = quicker climb).")]
     public float pullClimbRate = 2.8f;
 
+    [Header("Moon Residue")]
+    public float spinResidueDuration = 1.5f;
+    public float dropTrailDuration = 0.75f;
+    [Tooltip("Distance between drop-trail samples as a multiple of star diameter.")]
+    public float dropTrailSpacingScale = 0.85f;
+    public float dropTrailPullStrength = 2600f;
+    public float dropTrailPullRadiusScale = 3.5f;
+
     bool onMoon;
     bool slamming;
     float spinLeft;
@@ -94,6 +102,10 @@ public class Celarus : MonoBehaviour
     float launchGrace;
     float pullBlend;
     Transform visual;
+    float slamPathAcc;
+    bool wasSlamming;
+    Vector3 lastDropEmitPos;
+    readonly System.Collections.Generic.List<CelarusResidue> activeDropResidues = new System.Collections.Generic.List<CelarusResidue>(16);
 
     // Buffered from Update so FixedUpdate never misses press edges
     int pendingMoveDir;
@@ -127,38 +139,54 @@ public class Celarus : MonoBehaviour
         if (db == null || pg == null || pg.player == null)
             return;
 
-        if (db.gameStart && pg.player.currentHealth > 0)
+        if (pg.player.currentHealth <= 0)
+            return;
+
+        // Lifelines spawn during countdown (startingGame) before gameStart —
+        // snap Sunshine/Moonlight visuals immediately so the moon isn't shown pre-match.
+        if (!db.gameStart)
         {
-            if (spinPoint != null && sunHit != null && sunGravity != null && moonHit != null && moonGravity != null)
-            {
-                if (!phaseLockApplied)
-                    ApplyPhaseLock();
-
-                if (pg.player.computer)
-                {
-                    ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, null, 1.5f);
-                    if (d.wantBump) thought = Thought.MoveUp;
-                    else if (d.wantSuper) thought = Thought.MoveDown;
-                    else if (d.moveDir > 0) thought = Thought.MoveRight;
-                    else if (d.moveDir < 0) thought = Thought.MoveLeft;
-                    else thought = Thought.Nothing;
-                }
-
-                UpdateDayAndNight();
-                PlanetsUpdate();
-                SunAttacks();
-                BufferMoonInput();
-                TickSpin();
-                if (spinCooldown > 0f)
-                    spinCooldown -= Time.deltaTime;
-                if (slamCooldown > 0f)
-                    slamCooldown -= Time.deltaTime;
-            }
-            else
-            {
-                GetLifelineObjs();
-            }
+            if (db.startingGame)
+                PreparePhaseVisuals();
+            return;
         }
+
+        if (spinPoint != null && sunHit != null && sunGravity != null && moonHit != null && moonGravity != null)
+        {
+            EnsurePhaseLock();
+
+            if (pg.player.computer)
+            {
+                ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, null, 1.5f);
+                if (d.wantBump) thought = Thought.MoveUp;
+                else if (d.wantSuper) thought = Thought.MoveDown;
+                else if (d.moveDir > 0) thought = Thought.MoveRight;
+                else if (d.moveDir < 0) thought = Thought.MoveLeft;
+                else thought = Thought.Nothing;
+            }
+
+            UpdateDayAndNight();
+            PlanetsUpdate();
+            SunAttacks();
+            BufferMoonInput();
+            TickSpin();
+            if (spinCooldown > 0f)
+                spinCooldown -= Time.deltaTime;
+            if (slamCooldown > 0f)
+                slamCooldown -= Time.deltaTime;
+        }
+        else
+        {
+            GetLifelineObjs();
+        }
+    }
+
+    void PreparePhaseVisuals()
+    {
+        if (spinPoint == null || sunHit == null || sunGravity == null || moonHit == null || moonGravity == null)
+            GetLifelineObjs();
+        else
+            EnsurePhaseLock();
     }
 
     void FixedUpdate()
@@ -287,7 +315,6 @@ public class Celarus : MonoBehaviour
         int moveDir = pendingMoveDir;
         float tanSpeed = Vector3.Dot(v, tangentRight);
         float radSpeed = Vector3.Dot(v, radialOut); // + = leaving moon
-        float airSpeedCap = maxSkateSpeed * airSpeedScale;
         bool peeling = onMoon && moveDir != 0 && Mathf.Abs(tanSpeed) >= peelMinSpeed && !slamming;
 
         // Kill inward velocity while riding — but allow peel-away when holding L/R with speed
@@ -301,7 +328,7 @@ public class Celarus : MonoBehaviour
             }
         }
 
-        // Skate / air steer — air is slower but steers harder for tighter turns
+        // Skate / air steer — air keeps full L/R along the moon path while gravity pulls in
         if (moveDir != 0)
         {
             float accel = onMoon ? skateAccel : airSteerAccel;
@@ -311,12 +338,14 @@ public class Celarus : MonoBehaviour
         {
             tanSpeed = Mathf.MoveTowards(tanSpeed, 0f, groundFriction * maxSkateSpeed * Time.fixedDeltaTime);
         }
-        else if (!onMoon && moveDir == 0)
+        else if (!onMoon && moveDir == 0 && !slamming)
         {
-            tanSpeed = Mathf.MoveTowards(tanSpeed, 0f, airSteerAccel * 0.35f * Time.fixedDeltaTime);
+            // Light coast in air — don't kill side travel while orbiting the moon path
+            tanSpeed = Mathf.MoveTowards(tanSpeed, 0f, airSteerAccel * 0.12f * Time.fixedDeltaTime);
         }
 
-        float tanCap = (onMoon || launchGrace > 0f) ? maxSkateSpeed : airSpeedCap;
+        // Free left/right travel in air (no short leash) — still pulled down radially
+        float tanCap = maxSkateSpeed * ((onMoon || launchGrace > 0f) ? 1f : Mathf.Max(airSpeedScale, 1f));
         tanSpeed = Mathf.Clamp(tanSpeed, -tanCap, tanCap);
 
         float centripetalNeeded = (tanSpeed * tanSpeed) / Mathf.Max(0.1f, rideRadius);
@@ -381,17 +410,27 @@ public class Celarus : MonoBehaviour
         }
         else
         {
+            if (wasSlamming || slamming)
+                FinishDropTrail(transform.position);
             slamming = false;
             pendingSlam = false;
         }
 
+        // No overall speed leash on air L/R — only cap slam/boost spikes while on/near moon
         Vector3 newVel = tangentRight * tanSpeed + radialOut * radSpeed;
-        float speedCap = maxSkateSpeed * 1.35f;
-        if (newVel.magnitude > speedCap)
-            newVel = newVel.normalized * speedCap;
+        if (onMoon || slamming)
+        {
+            float speedCap = maxSkateSpeed * (slamming ? 1.6f : 1.35f);
+            if (newVel.magnitude > speedCap)
+                newVel = newVel.normalized * speedCap;
+        }
         newVel.z = 0f;
         rb.linearVelocity = newVel;
 
+        if (slamming)
+            EmitDropTrailAlongFall(transform.position);
+
+        wasSlamming = slamming;
         UpdateMoonVisual(tangentRight, tanSpeed);
     }
 
@@ -422,6 +461,7 @@ public class Celarus : MonoBehaviour
         spinLeft = spinDuration;
         spinCooldown = spinCooldownTime;
         rb.linearVelocity = Vector3.zero;
+        SpawnSpinResidue(transform.position);
     }
 
     void ApplyAirSlam(ref float radSpeed)
@@ -431,12 +471,149 @@ public class Celarus : MonoBehaviour
             slamming = true;
             slamCooldown = slamCooldownTime;
             radSpeed = -slamSpeed;
+            slamPathAcc = 0f;
+            activeDropResidues.Clear();
+            lastDropEmitPos = transform.position;
+            // Spawn the first trail collider immediately as the drop begins
+            SpawnDropResidue(transform.position, ProjectDropAim(transform.position));
             pg.player.RecordUltUsed();
         }
         pendingSlam = false;
 
         if (slamming)
             radSpeed = Mathf.Min(radSpeed, -slamSpeed * 0.85f);
+    }
+
+    /// <summary>Leave trail colliders while falling — not after landing.</summary>
+    void EmitDropTrailAlongFall(Vector3 pos)
+    {
+        float starR = GetStarHitRadius();
+        float spacing = Mathf.Max(0.15f, starR * 2f * dropTrailSpacingScale);
+        float step = Vector3.Distance(lastDropEmitPos, pos);
+        slamPathAcc += step;
+        if (slamPathAcc < spacing)
+            return;
+
+        slamPathAcc = 0f;
+        lastDropEmitPos = pos;
+        SpawnDropResidue(pos, ProjectDropAim(pos));
+    }
+
+    void SpawnDropResidue(Vector3 pos, Vector3 pullAim)
+    {
+        if (pg == null)
+            return;
+
+        float starR = GetStarHitRadius();
+        Color c = PlayerSkin.GetColor(pg.player, db);
+        CelarusResidue residue = CelarusResidue.Spawn(
+            pos,
+            pg.playerIndex,
+            dropTrailDuration,
+            starR,
+            c,
+            true,
+            pullAim,
+            dropTrailPullStrength,
+            starR * dropTrailPullRadiusScale);
+
+        if (residue != null)
+            activeDropResidues.Add(residue);
+    }
+
+    Vector3 ProjectDropAim(Vector3 from)
+    {
+        if (moonGravity == null)
+            return from;
+
+        Vector3 moonPos = moonGravity.transform.position;
+        moonPos.z = from.z;
+        Vector3 outward = from - moonPos;
+        outward.z = 0f;
+        if (outward.sqrMagnitude < 0.0001f)
+            outward = Vector3.up;
+        outward.Normalize();
+
+        float ride = GetMoonRadius() + starRadius + surfaceRide;
+        Vector3 aim = moonPos + outward * Mathf.Max(0.05f, ride);
+        aim.z = from.z;
+        return aim;
+    }
+
+    float GetStarHitRadius()
+    {
+        Collider[] cols = GetComponentsInChildren<Collider>();
+        float best = 0f;
+        for (int i = 0; i < cols.Length; i++)
+        {
+            Collider c = cols[i];
+            if (c == null || !c.enabled || c.isTrigger)
+                continue;
+            // Prefer planar size (ignore thin Z on flat stars)
+            Vector3 e = c.bounds.extents;
+            float planar = Mathf.Max(e.x, e.y);
+            if (planar > best)
+                best = planar;
+        }
+
+        if (best > 0.05f)
+            return best;
+
+        Renderer[] rends = GetComponentsInChildren<Renderer>();
+        for (int i = 0; i < rends.Length; i++)
+        {
+            if (rends[i] == null)
+                continue;
+            Vector3 e = rends[i].bounds.extents;
+            float planar = Mathf.Max(e.x, e.y);
+            if (planar > best)
+                best = planar;
+        }
+
+        return Mathf.Max(0.35f, best > 0f ? best : 0.5f);
+    }
+
+    void SpawnSpinResidue(Vector3 pos)
+    {
+        if (pg == null)
+            return;
+
+        Color c = PlayerSkin.GetColor(pg.player, db);
+        CelarusResidue.Spawn(
+            pos,
+            pg.playerIndex,
+            spinResidueDuration,
+            GetStarHitRadius(),
+            c,
+            false);
+    }
+
+    void FinishDropTrail(Vector3 dropPos)
+    {
+        // Trail already spawned during the fall — just retarget pull to the real drop point
+        if (!slamming && !wasSlamming && activeDropResidues.Count == 0)
+            return;
+
+        wasSlamming = false;
+        slamming = false;
+
+        for (int i = activeDropResidues.Count - 1; i >= 0; i--)
+        {
+            CelarusResidue r = activeDropResidues[i];
+            if (r == null)
+            {
+                activeDropResidues.RemoveAt(i);
+                continue;
+            }
+            r.SetPullTarget(dropPos);
+        }
+
+        // Landing puff at the impact point
+        if (pg != null)
+            SpawnDropResidue(dropPos, dropPos);
+
+        activeDropResidues.Clear();
+        slamPathAcc = 0f;
     }
 
     void TickSpin()
@@ -531,10 +708,15 @@ public class Celarus : MonoBehaviour
         Vector3 vTan = tangentRight * Vector3.Dot(v, tangentRight);
         float intoMoon = Mathf.Max(0f, Vector3.Dot(v, -radialOut));
 
-        if (!fromImpact && intoMoon < 1f && !slamming)
+        bool dropped = slamming || wasSlamming;
+        if (dropped)
+            FinishDropTrail(pos);
+
+        if (!fromImpact && intoMoon < 1f && !dropped)
         {
             rb.linearVelocity = vTan;
             slamming = false;
+            wasSlamming = false;
             onMoon = true;
             return;
         }
@@ -543,7 +725,7 @@ public class Celarus : MonoBehaviour
         float speed = v.magnitude + 0.001f;
         float skimQuality = Mathf.Clamp01(tanSpeed / speed);
         float boost = Mathf.Lerp(1f, maxBounceBoost, skimQuality);
-        if (slamming)
+        if (dropped)
             boost *= slamBounceBonus;
 
         Vector3 bounced = vTan + radialOut * (intoMoon * bounceRestitution);
@@ -551,12 +733,13 @@ public class Celarus : MonoBehaviour
             bounced = (tanSpeed > 0.1f ? vTan : tangentRight * 8f);
 
         bounced *= boost;
-        float cap = maxSkateSpeed * (slamming ? 1.4f : 1.25f);
+        float cap = maxSkateSpeed * (dropped ? 1.4f : 1.25f);
         if (bounced.magnitude > cap)
             bounced = bounced.normalized * cap;
 
         rb.linearVelocity = bounced;
         slamming = false;
+        wasSlamming = false;
         onMoon = true;
     }
 
@@ -722,11 +905,17 @@ public class Celarus : MonoBehaviour
 
     void PlanetsUpdate()
     {
-        sunHit.enabled = (!moving && day);
-        sunGravity.active = (!moving && day);
+        if (sunHit == null || sunGravity == null || moonHit == null || moonGravity == null)
+            return;
 
-        moonHit.enabled = (!moving && !day);
-        moonGravity.active = (!moving && !day);
+        bool sunOn = !moving && day && sunGravity.gameObject.activeInHierarchy;
+        bool moonOn = !moving && !day && moonGravity.gameObject.activeInHierarchy;
+
+        sunHit.enabled = sunOn;
+        sunGravity.active = sunOn;
+
+        moonHit.enabled = moonOn;
+        moonGravity.active = moonOn;
     }
 
     void UpdateDayAndNight()
@@ -748,6 +937,15 @@ public class Celarus : MonoBehaviour
         }
     }
 
+    void EnsurePhaseLock()
+    {
+        if (phaseLockApplied || phaseLock == CelarusPhaseLock.Cycle)
+            return;
+        if (spinPoint == null || sunHit == null || sunGravity == null || moonHit == null || moonGravity == null)
+            return;
+        ApplyPhaseLock();
+    }
+
     /// <summary>
     /// Locks day/night for Sunshine (sun flares only) / Moonlight (moon skate only).
     /// </summary>
@@ -764,8 +962,10 @@ public class Celarus : MonoBehaviour
         if (phaseLock == CelarusPhaseLock.ForceSun)
         {
             day = true;
+            // Prefab starts moon-forward (z=0). Snap to sun-forward immediately and hide the moon.
             if (spinPoint != null)
                 spinPoint.localRotation = Quaternion.Euler(0f, 0f, 180f);
+            SetCelestialActive(sun: true, moon: false);
             ParkStarForSun();
         }
         else
@@ -773,10 +973,29 @@ public class Celarus : MonoBehaviour
             day = false;
             if (spinPoint != null)
                 spinPoint.localRotation = Quaternion.Euler(0f, 0f, 0f);
+            SetCelestialActive(sun: false, moon: true);
             PlaceStarOnMoonSurface();
         }
 
         PlanetsUpdate();
+    }
+
+    void SetCelestialActive(bool sun, bool moon)
+    {
+        if (sunGravity != null)
+            sunGravity.gameObject.SetActive(sun);
+        if (moonGravity != null)
+            moonGravity.gameObject.SetActive(moon);
+
+        // Keep component refs usable while inactive parents are toggled
+        if (sunHit != null)
+            sunHit.enabled = sun && day && !moving;
+        if (sunGravity != null)
+            sunGravity.active = sun && day && !moving;
+        if (moonHit != null)
+            moonHit.enabled = moon && !day && !moving;
+        if (moonGravity != null)
+            moonGravity.active = moon && !day && !moving;
     }
 
     void ParkStarForSun()
@@ -956,5 +1175,8 @@ public class Celarus : MonoBehaviour
                 }
             }
         }
+
+        // Snap Sunshine/Moonlight phase as soon as the lifeline exists (don't wait for Update)
+        EnsurePhaseLock();
     }
 }
