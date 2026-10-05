@@ -65,6 +65,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
             MoveCircle();
             HandleActions();
+            HandleCharacterSelectShortcuts();
             ShowOverlay();
             ControllingUI();
             CPUSelections();
@@ -122,11 +123,145 @@ public class PlayerSelectorObj : MonoBehaviour
         );
     }
 
+    bool IsCharacterSelectOpen()
+    {
+        MenuManager mm = MenuManager.instance;
+        if (mm == null)
+            return false;
+
+        MenuClass open = mm.GetOpenMenu(true);
+        if (open == null || string.IsNullOrEmpty(open.title))
+            return false;
+
+        string title = open.title.Trim().ToLowerInvariant();
+        return title == "character select" || title == "characters";
+    }
+
+    bool WasPressed(string action)
+    {
+        if (cLink == null)
+            return false;
+        ControllerButtons b = cLink[action];
+        return b != null && b.wasPressedThisFrame;
+    }
+
+    /// <summary>
+    /// Character Select: Super (Interact) unready / jump to Back;
+    /// Dash Left/Right cycle skins for the controlled slot.
+    /// </summary>
+    void HandleCharacterSelectShortcuts()
+    {
+        if (!IsCharacterSelectOpen() || db == null || db.players == null)
+            return;
+
+        Player self = db.players.Find(x => x.index == pI);
+        if (self == null)
+            return;
+
+        // Super button = Interact in the input map
+        if (WasPressed("Interact"))
+        {
+            if (self.characterSelected)
+            {
+                if (CharacterSelect.instance != null)
+                    CharacterSelect.instance.PlayerUnconfirm(pI);
+            }
+            else
+            {
+                JumpSelectorToBack();
+            }
+        }
+
+        int skinDir = 0;
+        if (WasPressed("DashRight"))
+            skinDir = 1;
+        else if (WasPressed("DashLeft"))
+            skinDir = -1;
+
+        if (skinDir == 0)
+            return;
+
+        int skinPlayer = ClickPlayerIndex();
+        Player target = db.players.Find(x => x.index == skinPlayer);
+        if (target == null || target.wantRandomCharacter)
+            return;
+
+        // Only cycle your own (or a CPU you're driving)
+        if (skinPlayer != pI && !(target.computer && ControllingCPU() && cpuControl == skinPlayer))
+            return;
+
+        PlayerSkin.Cycle(target, db, skinDir);
+
+        PlayerColors pc = PlayerSkin.GetPlayerColors(target, db);
+        if (pc != null && target.pso != null)
+            target.pso.SetCircleColor(pc);
+        if (skinPlayer == pI && pc != null)
+            SetCircleColor(pc);
+    }
+
+    void JumpSelectorToBack()
+    {
+        if (rt == null)
+            return;
+
+        RectTransform backRt = FindActiveBackRect();
+        if (backRt == null)
+            return;
+
+        rt.position = backRt.position;
+
+        float hW = width / 2;
+        float hH = height / 2;
+        rt.anchoredPosition = new Vector2(
+            Mathf.Clamp(rt.anchoredPosition.x, -hW, hW),
+            Mathf.Clamp(rt.anchoredPosition.y, -hH, hH)
+        );
+    }
+
+    static RectTransform FindActiveBackRect()
+    {
+        BackButtonClick[] backs = UnityEngine.Object.FindObjectsByType<BackButtonClick>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < backs.Length; i++)
+        {
+            BackButtonClick b = backs[i];
+            if (b == null || !b.isActiveAndEnabled || !b.gameObject.activeInHierarchy)
+                continue;
+
+            RectTransform brt = b.GetComponent<RectTransform>();
+            if (brt != null)
+                return brt;
+        }
+
+        // Fallback: name match if EnsureAll hasn't run yet
+        GameObject[] all = UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < all.Length; i++)
+        {
+            GameObject go = all[i];
+            if (go == null || !go.activeInHierarchy)
+                continue;
+
+            string n = go.name != null ? go.name.Trim() : "";
+            if (!n.Equals("Back", System.StringComparison.OrdinalIgnoreCase)
+                && !n.StartsWith("Back ", System.StringComparison.OrdinalIgnoreCase)
+                && !n.EndsWith(" Back", System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            RectTransform brt = go.GetComponent<RectTransform>();
+            if (brt != null)
+                return brt;
+        }
+
+        return null;
+    }
+
     void HandleActions()
     {
         string clickAction = "Jump";
+        ControllerButtons clickBtn = cLink != null ? cLink[clickAction] : null;
+        if (clickBtn == null)
+            return;
 
-        if (cLink[clickAction].wasPressedThisFrame &&
+        if (clickBtn.wasPressedThisFrame &&
             clicking == 0 &&
             !cooldown)
         {
@@ -135,7 +270,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
         if (clicking > 0)
         {
-            if (!cLink[clickAction].isPressed)
+            if (!clickBtn.isPressed)
             {
                 cooldown = true;
             }
@@ -152,19 +287,34 @@ public class PlayerSelectorObj : MonoBehaviour
             }
 
             clicking +=
-                ((cLink[clickAction].isPressed && !cooldown) ? .25f : 20)
+                ((clickBtn.isPressed && !cooldown) ? .25f : 20)
                 * Time.deltaTime;
 
             if (clicking > 1)
             {
+                int clickPlayer = ClickPlayerIndex();
+                bool hittingCpuLevel = false;
+                for (int i = 0; i < ucd.trackedColliders.Count; i++)
+                {
+                    Collider c = ucd.trackedColliders[i];
+                    if (c != null && c.GetComponent<CpuDifficultyButton>() != null)
+                    {
+                        hittingCpuLevel = true;
+                        break;
+                    }
+                }
+
                 foreach (Collider hit in ucd.trackedColliders)
                 {
                     if (hit == null)
                         continue;
 
+                    // Prefer the CPU level chip over the portrait skin cycle when both overlap
+                    if (hittingCpuLevel && hit.GetComponent<PortraitClicked>() != null)
+                        continue;
+
                     Debug.Log(hit.name);
 
-                    int clickPlayer = ClickPlayerIndex();
                     if (cooldown)
                     {
                         // Short Press

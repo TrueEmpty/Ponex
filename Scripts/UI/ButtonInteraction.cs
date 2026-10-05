@@ -147,6 +147,13 @@ public class ButtonInteraction : MonoBehaviour
         }
     }
 
+    /// <summary>Update the colors LateUpdate restores to when idle/highlighted.</summary>
+    public void SetBaseColors(Color backgroundColor, Color outlineColor)
+    {
+        base_background = backgroundColor;
+        base_outline = outlineColor;
+    }
+
     private void OnDisable()
     {
         highlighted.Clear ();

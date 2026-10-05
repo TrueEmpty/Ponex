@@ -14,6 +14,7 @@ public class PortraitClicked : MonoBehaviour
     public Outline outline;
 
     Text readyText;
+    CpuDifficultyButton cpuLevelButton;
 
     void Start()
     {
@@ -28,42 +29,27 @@ public class PortraitClicked : MonoBehaviour
         if (ready != null)
             readyText = ready.GetComponent<Text>();
 
-        EnsureInfoText();
+        // Remove leftover "Change Skin" label from older sessions / prefab children
+        Transform holder = transform.childCount > 0 ? transform.GetChild(0) : null;
+        if (holder != null)
+        {
+            Transform changeSkin = holder.Find("Change Skin");
+            if (changeSkin != null)
+                Destroy(changeSkin.gameObject);
+        }
+        infoText = null;
+
+        EnsureCpuLevelButton();
     }
 
-    void EnsureInfoText()
+    void EnsureCpuLevelButton()
     {
-        if (infoText != null)
+        if (cpuLevelButton != null)
             return;
 
-        Transform holder = transform.GetChild(0);
-        Transform existing = holder.Find("Change Skin");
-        if (existing != null)
-        {
-            infoText = existing.GetComponent<Text>();
-            return;
-        }
-
-        GameObject go = new GameObject("Change Skin", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-        go.transform.SetParent(holder, false);
-
-        RectTransform rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = new Vector2(3f, 42f);
-        rt.sizeDelta = new Vector2(179f, 28f);
-
-        infoText = go.GetComponent<Text>();
-        infoText.font = playerText != null ? playerText.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (infoText.font == null)
-            infoText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        infoText.fontSize = 14;
-        infoText.alignment = TextAnchor.MiddleCenter;
-        infoText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        infoText.verticalOverflow = VerticalWrapMode.Overflow;
-        infoText.raycastTarget = false;
-        infoText.text = "Change Skin";
+        Transform holder = transform.childCount > 0 ? transform.GetChild(0) : null;
+        Font font = playerText != null ? playerText.font : null;
+        cpuLevelButton = CpuDifficultyButton.Ensure(holder, attachedIndex, font);
     }
 
     void Update()
@@ -84,14 +70,73 @@ public class PortraitClicked : MonoBehaviour
     {
         Color skin = PlayerSkin.GetColor(p, db);
 
+        if (p.wantRandomCharacter || db.RemembersRandomCharacter(p.index))
+        {
+            if (!p.wantRandomCharacter)
+                p.SetRandomCharacterPending();
+
+            if (image != null)
+            {
+                image.texture = null;
+                image.color = new Color(0.4f, 0.4f, 0.4f, 1f);
+            }
+
+            if (p.computer)
+            {
+                playerText.text = "CPU" + (p.index + 1);
+                playerText.color = Color.gray;
+            }
+            else
+            {
+                playerText.text = (p.nickName == "" || p.nickName == null) ? "P" + (p.index + 1) : p.nickName;
+                playerText.color = skin;
+            }
+
+            if (outline != null)
+                outline.effectColor = skin;
+
+            RefreshCpuLevelButton(p);
+
+            // Random pick still shows a big "?" on the portrait
+            EnsureRandomMark();
+            if (infoText != null)
+            {
+                infoText.gameObject.SetActive(true);
+                infoText.text = "?";
+                infoText.color = new Color(0.85f, 0.85f, 0.85f, 1f);
+                infoText.fontSize = 48;
+                RectTransform rt = infoText.rectTransform;
+                rt.anchoredPosition = Vector2.zero;
+                rt.sizeDelta = new Vector2(120f, 120f);
+            }
+
+            if (ready != null)
+            {
+                ready.SetActive(p.characterSelected);
+                if (readyText != null && p.characterSelected)
+                    readyText.color = skin;
+            }
+            return;
+        }
+
         int cC = db.characters.FindIndex(x => x.name == p.name);
         if (cC < 0 || cC >= db.characters.Count)
         {
             db.ApplyRememberedOrRandomCharacter(p);
+            if (p.wantRandomCharacter)
+            {
+                LoadPortrait(p);
+                return;
+            }
             cC = db.characters.FindIndex(x => x.name == p.name);
         }
 
-        image.texture = p.portrait;
+        if (image != null)
+        {
+            image.texture = p.portrait;
+            image.color = Color.white;
+        }
+
         if (p.computer)
         {
             playerText.text = "CPU" + (p.index + 1);
@@ -106,12 +151,10 @@ public class PortraitClicked : MonoBehaviour
         if (outline != null)
             outline.effectColor = skin;
 
+        RefreshCpuLevelButton(p);
+
         if (infoText != null)
-        {
-            infoText.gameObject.SetActive(true);
-            infoText.text = "Change Skin";
-            infoText.color = skin;
-        }
+            infoText.gameObject.SetActive(false);
 
         if (ready != null)
         {
@@ -121,13 +164,57 @@ public class PortraitClicked : MonoBehaviour
         }
     }
 
+    void EnsureRandomMark()
+    {
+        if (infoText != null)
+            return;
+
+        Transform holder = transform.GetChild(0);
+        GameObject go = new GameObject("Random Mark", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+        go.transform.SetParent(holder, false);
+
+        RectTransform rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = Vector2.zero;
+        rt.sizeDelta = new Vector2(120f, 120f);
+
+        infoText = go.GetComponent<Text>();
+        infoText.font = playerText != null ? playerText.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if (infoText.font == null)
+            infoText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        infoText.alignment = TextAnchor.MiddleCenter;
+        infoText.horizontalOverflow = HorizontalWrapMode.Overflow;
+        infoText.verticalOverflow = VerticalWrapMode.Overflow;
+        infoText.raycastTarget = false;
+    }
+
+    void RefreshCpuLevelButton(Player p)
+    {
+        EnsureCpuLevelButton();
+        if (cpuLevelButton == null)
+            return;
+
+        cpuLevelButton.attachedIndex = attachedIndex;
+
+        // Keep CPU name near center; level text sits further right on its own
+        if (playerText != null)
+        {
+            RectTransform nameRt = playerText.rectTransform;
+            nameRt.anchoredPosition = new Vector2(-3.001831f, 101.3f);
+        }
+
+        cpuLevelButton.Refresh();
+    }
+
     public void OnClick(int player)
     {
         if (player < 0 || player >= db.players.Count)
             return;
 
         Player p = db.players.Find(x => x.index == attachedIndex);
-        if (p == null)
+        if (p == null || p.wantRandomCharacter)
             return;
 
         // Owning player (or anyone clicking a CPU portrait) cycles skin
@@ -151,7 +238,7 @@ public class PortraitClicked : MonoBehaviour
 
     public void OnLongClick(int player)
     {
-        if (player < 0 || player >= db.players.Count)
+        if (db == null || db.players == null)
             return;
 
         Player p = db.players.Find(x => x.index == attachedIndex);
@@ -160,13 +247,15 @@ public class PortraitClicked : MonoBehaviour
 
         if (p.computer)
         {
-            db.players.RemoveAll(x => x.index == attachedIndex);
+            if (!db.IsPastCharacterSelect() && db.players.Count > db.minPlayers)
+                db.players.RemoveAll(x => x.index == attachedIndex);
+            return;
         }
-        else if (!p.computer)
-        {
-            db.controllers.RemoveAll(x => x.index == attachedIndex);
-            p.computer = true;
-            p.cpuDifficulty = ComputerAI.CpuDifficulty.Training;
-        }
+
+        // Only the owning human (or whoever is driving this slot) can disconnect it
+        if (player != attachedIndex)
+            return;
+
+        db.DisconnectPlayer(attachedIndex);
     }
 }

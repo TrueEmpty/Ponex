@@ -118,7 +118,18 @@ public class CharacterSelect : MonoBehaviour
 
     public void AddComputer()
     {
+        if (db == null)
+            return;
+
+        // Multiplayer lobbies allow up to 8 (VS or Team)
+        if (db.gametype == Gametype.Vs || db.gametype == Gametype.Coop)
+            db.maxPlayers = 8;
+
+        if (db.players != null && db.players.Count >= db.maxPlayers)
+            return;
+
         db.PlayerAdd(null);
+        EnforceTeamModeForPlayerCount();
     }
 
     public void RemovePlayer()
@@ -142,6 +153,23 @@ public class CharacterSelect : MonoBehaviour
 
                 db.players.Remove(p);
             }
+
+            EnforceTeamModeForPlayerCount();
+        }
+    }
+
+    /// <summary>5+ players must use Team Mode (skips only when under 5 and VS).</summary>
+    public void EnforceTeamModeForPlayerCount()
+    {
+        if (db == null || db.players == null)
+            return;
+
+        if (db.players.Count >= TeamModeToggle.ForceTeamAtPlayerCount)
+        {
+            db.teamSelect = true;
+            db.positionSelect = true;
+            if (db.gametype == Gametype.Vs)
+                db.gametype = Gametype.Coop;
         }
     }
 
@@ -151,24 +179,38 @@ public class CharacterSelect : MonoBehaviour
 
         if(p != null)
         {
-            // Don't lock in until a real prefab is bound (portrait alone isn't enough)
-            if (p.character == null || p.character.prefabs == null)
+            if (p.wantRandomCharacter)
             {
-                Characters ch = db.characters.Find(x => x != null && x.name == p.name);
-                if (ch == null)
-                    ch = db.RandomCharacter();
-                if (ch != null)
-                    p.SetUpCharacter(ch);
-            }
+                if (db.RandomCharacter() == null)
+                {
+                    Debug.LogWarning($"Player {p.index} confirmed Random but no active characters exist.");
+                    return;
+                }
 
-            if (p.character == null || p.character.prefabs == null)
+                db.RememberSelectedCharacter(p.index, Database.RandomCharacterSentinel);
+                p.characterSelected = true;
+            }
+            else
             {
-                Debug.LogWarning($"Player {p.index} confirmed without a character prefab — ignoring confirm.");
-                return;
-            }
+                // Don't lock in until a real prefab is bound (portrait alone isn't enough)
+                if (p.character == null || p.character.prefabs == null)
+                {
+                    Characters ch = db.characters.Find(x => x != null && x.name == p.name);
+                    if (ch == null)
+                        ch = db.RandomCharacter();
+                    if (ch != null)
+                        p.SetUpCharacter(ch);
+                }
 
-            db.RememberSelectedCharacter(p.index, p.name);
-            p.characterSelected = true;
+                if (p.character == null || p.character.prefabs == null)
+                {
+                    Debug.LogWarning($"Player {p.index} confirmed without a character prefab — ignoring confirm.");
+                    return;
+                }
+
+                db.RememberSelectedCharacter(p.index, p.name);
+                p.characterSelected = true;
+            }
 
             //Check if all charactersAreSelected
             if (!db.players.Exists(x => !x.characterSelected))
@@ -176,5 +218,22 @@ public class CharacterSelect : MonoBehaviour
                 db.CharactersPicked("characters");
             }
         }
+    }
+
+    /// <summary>Undo ready so the player can change their character pick.</summary>
+    public void PlayerUnconfirm(int player)
+    {
+        if (db == null || db.players == null)
+            return;
+
+        Player p = db.players.Find(x => x.index == player);
+        if (p == null || !p.characterSelected)
+            return;
+
+        p.characterSelected = false;
+        p.gridLock = false;
+
+        if (p.pso != null)
+            p.pso.cpuControl = -1;
     }
 }

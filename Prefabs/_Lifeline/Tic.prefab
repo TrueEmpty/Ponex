@@ -157,7 +157,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5464540073308092962}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80767fea41518d447a5ebd54f99f6f1c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59c2184b60ffff8449d893b3ef565007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   tagHit: Ball
@@ -173,7 +173,6 @@ GameObject:
   - component: {fileID: 5464540073599567350}
   - component: {fileID: 6615831054480173514}
   - component: {fileID: 5464540073599567348}
-  - component: {fileID: 5464540073599567353}
   - component: {fileID: 5464540073599567349}
   - component: {fileID: 5464540073599567354}
   - component: {fileID: 5464540073599567355}
@@ -211,7 +210,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5464540073599567351}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ffd10a85a34b2c644b7d893e72627fba, type: 3}
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &5464540073599567348
@@ -227,18 +226,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
---- !u!114 &5464540073599567353
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5464540073599567351}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27d466af8649a7a41b988b24c08fb4a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &5464540073599567349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,7 +235,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5464540073599567351}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd4a15d1710366c458c14f47483f772b, type: 3}
+  m_Script: {fileID: 11500000, guid: 7faed8e303fd689408e816197cc4ce12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &5464540073599567354
@@ -260,7 +247,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5464540073599567351}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80767fea41518d447a5ebd54f99f6f1c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59c2184b60ffff8449d893b3ef565007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   tagHit: Ball
@@ -274,7 +261,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5464540073599567351}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e56ca38aff9ebb41b132dc0eb5d70fd, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   hideInstead: 0
@@ -416,7 +403,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5464540073809995869}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80767fea41518d447a5ebd54f99f6f1c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59c2184b60ffff8449d893b3ef565007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   tagHit: Ball
@@ -578,7 +565,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5464540073974426659}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80767fea41518d447a5ebd54f99f6f1c, type: 3}
+  m_Script: {fileID: 11500000, guid: 59c2184b60ffff8449d893b3ef565007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   tagHit: Ball

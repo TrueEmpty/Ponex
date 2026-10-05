@@ -392,12 +392,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minPlayers: 2
-  maxPlayers: 4
+  maxPlayers: 8
   state: Character Select
   levelSelect: 1
-  positionSelect: 1
-  teamSelect: 1
+  positionSelect: 0
+  teamSelect: 0
   ballSelect: 1
+  gametype: 3
 --- !u!222 &8007743247702962942
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2100,7 +2101,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Co-op
+  m_Text: Quit Game
 --- !u!1 &8007743248996471175
 GameObject:
   m_ObjectHideFlags: 0
@@ -2165,7 +2166,7 @@ GameObject:
   - component: {fileID: 8007743249027865926}
   - component: {fileID: 8007743249027865931}
   m_Layer: 5
-  m_Name: Co-op
+  m_Name: Quit Game
   m_TagString: Selection
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2199,7 +2200,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8007743249027865924}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8db37bc8d1177b84097b526d280102f0, type: 3}
   m_Name: 
@@ -2213,7 +2214,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8007743249027865924}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8db37bc8d1177b84097b526d280102f0, type: 3}
   m_Name: 
@@ -2253,16 +2254,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8007743249027865924}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad72de03ca9a08044acf39a163048a38, type: 3}
+  m_Script: {fileID: 11500000, guid: c8f3a1e92d4b6a7e1f0c5d8b3a9e2471, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  minPlayers: 2
-  maxPlayers: 8
-  state: Character Select
-  levelSelect: 1
-  positionSelect: 1
-  teamSelect: 1
-  ballSelect: 1
+  m_EditorClassIdentifier: Assembly-CSharp::QuitGameButton
 --- !u!222 &8007743249027865930
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2284,7 +2278,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.85, g: 0.12, b: 0.12, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2322,10 +2316,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.43529412, g: 0.9607843, b: 0.972549, a: 1}
-    m_HighlightedColor: {r: 0.9254902, g: 0.99215686, b: 0.7529412, a: 1}
-    m_PressedColor: {r: 0.19607843, g: 0.5294118, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.8113208, g: 0.11098258, b: 0.80681753, a: 1}
+    m_NormalColor: {r: 0.85, g: 0.12, b: 0.12, a: 1}
+    m_HighlightedColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+    m_PressedColor: {r: 0.55, g: 0.05, b: 0.05, a: 1}
+    m_SelectedColor: {r: 0.9, g: 0.2, b: 0.2, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -2370,7 +2364,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_EffectColor: {r: 0.09411764, g: 0.33829278, b: 0.94509804, a: 1}
+  m_EffectColor: {r: 0.45, g: 0.02, b: 0.02, a: 1}
   m_EffectDistance: {x: 4.24, y: 3.93}
   m_UseGraphicAlpha: 1
 --- !u!1 &8007743249169128099

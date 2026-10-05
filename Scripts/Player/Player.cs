@@ -51,10 +51,13 @@ public class Player
     public bool computer = false;
 
     /// <summary>
-    /// Match CPU difficulty. Training uses the learned profile as-is (for practice).
-    /// Easy–Expert bands are ready for a future CPU level select UI.
+    /// Match CPU difficulty. Easy–Impossible for lobby play.
+    /// Training is authoring-only (not offered in the CPU level cycle).
     /// </summary>
-    public ComputerAI.CpuDifficulty cpuDifficulty = ComputerAI.CpuDifficulty.Training;
+    public ComputerAI.CpuDifficulty cpuDifficulty = ComputerAI.CpuDifficulty.Easy;
+
+    /// <summary>Style variant index within the difficulty (0..ComputerAI.VariantsPerLevel-1).</summary>
+    public int cpuVariant = 0;
 
     public PlayerSelectorObj pso = null;
 
@@ -63,6 +66,8 @@ public class Player
 
     #region Selections
     public bool characterSelected = false;
+    /// <summary>Roster "?" pick — concrete character is rolled in StartGame and again each rematch.</summary>
+    public bool wantRandomCharacter = false;
     public float lastGridUpdate = 0;
     public bool gridLock = false;
     public string state = "";
@@ -136,9 +141,27 @@ public class Player
         active = p.active;
         computer = p.computer;
         cpuDifficulty = p.cpuDifficulty;
+        cpuVariant = p.cpuVariant;
+        wantRandomCharacter = p.wantRandomCharacter;
+        characterSelected = p.characterSelected;
 
         spawnedPlayer = p.spawnedPlayer;
         spawnedLifeline = p.spawnedLifeline;
+    }
+
+    /// <summary>Lobby placeholder for random roster pick (portrait shows "?" until StartGame).</summary>
+    public void SetRandomCharacterPending()
+    {
+        wantRandomCharacter = true;
+        name = "";
+        portrait = null;
+        icon = null;
+        character = new ObjectInfo();
+        lifeline = new ObjectInfo();
+        selector = null;
+        playerInfo = null;
+        superName = "";
+        superDescription = "";
     }
 
     public void SetUpCharacter(Characters p)
@@ -274,6 +297,7 @@ public class Player
     // Same-frame dedupe so multi-collider lifelines (e.g. Garmen hub+body) don't multi-hit
     int lastGoalDamageFrame = -1;
     int lastGoalDamageBallId = 0;
+    float lastGoalDamageTime = -999f;
 
     /// <summary>Apply HP change. Positive = damage (records damage taken as actual HP lost). Returns HP lost.</summary>
     public int Damage(int amount)
@@ -300,19 +324,31 @@ public class Player
         return 0;
     }
 
-    /// <summary>Goal/ball damage with per-ball per-frame dedupe. Returns actual HP lost.</summary>
+    /// <summary>Goal/ball damage with per-ball dedupe. Returns actual HP lost.</summary>
     public int ApplyGoalDamage(int amount, int ballInstanceId)
     {
         if (amount <= 0)
             return 0;
 
+        // Yuotay: one HP per catch/hit, never stack vamp / weapon-up / re-collision
+        bool yuotay = !string.IsNullOrEmpty(name)
+            && name.Equals("Yuotay", System.StringComparison.OrdinalIgnoreCase);
+        if (yuotay)
+            amount = 1;
+
+        // Same ball already counted this frame or during the hold/re-contact window
         if (ballInstanceId != 0
-            && lastGoalDamageFrame == Time.frameCount
-            && lastGoalDamageBallId == ballInstanceId)
+            && lastGoalDamageBallId == ballInstanceId
+            && (lastGoalDamageFrame == Time.frameCount || Time.time - lastGoalDamageTime < 0.5f))
+            return 0;
+
+        // Yuotay mit can re-trigger OnCollisionEnter while the ball is stuck — block bursts
+        if (yuotay && Time.time - lastGoalDamageTime < 0.35f)
             return 0;
 
         lastGoalDamageFrame = Time.frameCount;
         lastGoalDamageBallId = ballInstanceId;
+        lastGoalDamageTime = Time.time;
         return Damage(amount);
     }
 

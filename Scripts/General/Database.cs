@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -67,6 +68,8 @@ public class Database : MonoBehaviour
     public bool winnerScreen = false;
     public GridControl mmOp;
     public bool gameStart = false;
+    /// <summary>True while AI Training session is driving matches (Training scene / panel).</summary>
+    public bool aiTrainingSession = false;
     #endregion
 
     #region Sounds
@@ -75,6 +78,7 @@ public class Database : MonoBehaviour
     #endregion
 
     const string SelectedCharacterPref = "Ponex.SelectedCharacter.";
+    public const string RandomCharacterSentinel = "__RANDOM__";
 
     private void Awake()
     {
@@ -97,6 +101,82 @@ public class Database : MonoBehaviour
         ComputerAI.EnsureLoaded();
         if (characters == null || characters.Count == 0)
             LoadCharactersFromAssets();
+
+        // Remove leftover Leave / Go CPU control if a prior session created it
+        if (playerSelectors != null)
+        {
+            Transform leave = playerSelectors.Find("Leave");
+            if (leave != null)
+                Destroy(leave.gameObject);
+        }
+
+        BackButtonClick.EnsureAll();
+        TrainingManager.EnsureExists();
+    }
+
+    /// <summary>
+    /// True once the lobby has left Character Select (Field/Team/Playing/etc.).
+    /// Main Menu and Character Select are not "past".
+    /// </summary>
+    public bool IsPastCharacterSelect()
+    {
+        if (gameStart || startingGame || winnerScreen)
+            return true;
+
+        if (mm == null)
+            mm = MenuManager.instance;
+        if (mm == null)
+            return false;
+
+        MenuClass open = mm.GetOpenMenu(true);
+        if (open == null || string.IsNullOrEmpty(open.title))
+            return false;
+
+        string title = open.title.Trim();
+        if (title.Equals("Character Select", StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (title.Equals("Main Menu", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Unlinks a human controller + selector. Removes the player in Character Select / Main Menu
+    /// (when above minPlayers); otherwise converts them to a CPU.
+    /// </summary>
+    public bool DisconnectPlayer(int playerIndex)
+    {
+        Player p = players != null ? players.Find(x => x.index == playerIndex) : null;
+        if (p == null || p.computer)
+            return false;
+
+        ControllerLink link = p.cLink;
+        p.cLink = null;
+
+        if (p.pso != null)
+        {
+            Destroy(p.pso.gameObject);
+            p.pso = null;
+        }
+
+        controllers.RemoveAll(x => x == null || x == link || x.index == playerIndex);
+        if (link != null)
+            Destroy(link.gameObject);
+
+        bool removeSlot = !IsPastCharacterSelect() && players.Count > minPlayers;
+        if (removeSlot)
+        {
+            players.Remove(p);
+            if (cS == null)
+                cS = CharacterSelect.instance;
+            cS?.EnforceTeamModeForPlayerCount();
+            return true;
+        }
+
+        p.computer = true;
+        p.cpuDifficulty = ComputerAI.CpuDifficulty.Easy;
+        return true;
     }
 
     void LoadCharactersFromAssets()
@@ -140,13 +220,20 @@ public class Database : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    public bool RemembersRandomCharacter(int playerIndex)
+    {
+        if (playerIndex < 0)
+            return false;
+        return PlayerPrefs.GetString(SelectedCharacterPref + playerIndex, "") == RandomCharacterSentinel;
+    }
+
     public Characters GetRememberedCharacter(int playerIndex)
     {
         if (playerIndex < 0 || characters == null)
             return null;
 
         string saved = PlayerPrefs.GetString(SelectedCharacterPref + playerIndex, "");
-        if (string.IsNullOrEmpty(saved))
+        if (string.IsNullOrEmpty(saved) || saved == RandomCharacterSentinel)
             return null;
 
         return characters.Find(x =>
@@ -162,6 +249,12 @@ public class Database : MonoBehaviour
         if (p == null)
             return;
 
+        if (p.wantRandomCharacter || RemembersRandomCharacter(p.index))
+        {
+            p.SetRandomCharacterPending();
+            return;
+        }
+
         Characters remembered = GetRememberedCharacter(p.index);
         if (remembered != null)
             p.SetUpCharacter(remembered);
@@ -169,6 +262,40 @@ public class Database : MonoBehaviour
             p.SetUpCharacter(RandomCharacter());
 
         PlayerSkin.AssignUniqueForCharacter(p, this);
+    }
+
+    public int RandomActiveFieldIndex()
+    {
+        if (fields == null || fields.Count == 0)
+            return -1;
+
+        List<int> active = new List<int>();
+        for (int i = 0; i < fields.Count; i++)
+        {
+            if (fields[i] != null && fields[i].active)
+                active.Add(i);
+        }
+
+        if (active.Count == 0)
+        {
+            for (int i = 0; i < fields.Count; i++)
+            {
+                if (fields[i] != null)
+                    active.Add(i);
+            }
+        }
+
+        if (active.Count == 0)
+            return -1;
+
+        return active[UnityEngine.Random.Range(0, active.Count)];
+    }
+
+    public int RandomBallIndex()
+    {
+        if (balls == null || balls.Count == 0)
+            return -1;
+        return UnityEngine.Random.Range(0, balls.Count);
     }
 
     // Update is called once per frame
@@ -210,6 +337,10 @@ public class Database : MonoBehaviour
 
                 computerMode = true;
             }
+            else if (players.Count >= maxPlayers)
+            {
+                return -1;
+            }
 
             players.Add(new Player());
 
@@ -218,10 +349,9 @@ public class Database : MonoBehaviour
 
             p.computer = computerMode;
             p.cLink = cL;
-            // Default Training so practice sessions grow the shared learned profile;
-            // future CPU level UI can call ComputerAI.SetDifficulty(...)
+            // Lobby CPUs default to Easy. Training is authoring-only (not in the level cycle).
             if (computerMode)
-                p.cpuDifficulty = ComputerAI.CpuDifficulty.Training;
+                p.cpuDifficulty = ComputerAI.CpuDifficulty.Easy;
 
             int index = -1;
             for (int i = 0; i < 8; i++)
@@ -311,6 +441,15 @@ public class Database : MonoBehaviour
             {
                 controllers.Add(cL);
             }
+
+            // 5+ players always require Team Mode
+            if (players.Count >= TeamModeToggle.ForceTeamAtPlayerCount)
+            {
+                teamSelect = true;
+                positionSelect = true;
+                if (gametype == Gametype.Vs)
+                    gametype = Gametype.Coop;
+            }
         }
 
         return result;
@@ -383,14 +522,10 @@ public class Database : MonoBehaviour
             int sB = selectedBall;
 
             if (selectedBall < 0 || selectedBall >= balls.Count)
-            {
-                sB = Random.Range(0, balls.Count);
-            }
+                sB = RandomBallIndex();
 
-            if (selectedBall == -1)
-            {
-                selectedBall = sB;
-            }
+            if (sB < 0 || sB >= balls.Count)
+                return;
 
             Ball ball = balls[sB];
 
@@ -472,6 +607,100 @@ public class Database : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Hard-stop an in-progress or ending match (training abort / cleanup).
+    /// Does not open Main Menu.
+    /// </summary>
+    public void AbortCurrentMatch()
+    {
+        gameStart = false;
+        someoneWon = false;
+        startingGame = false;
+        winnerScreen = false;
+        Time.timeScale = 1f;
+
+        ClearAfterTheGame[] toClear = FindObjectsByType<ClearAfterTheGame>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = toClear.Length - 1; i >= 0; i--)
+        {
+            if (toClear[i] != null)
+                Destroy(toClear[i].gameObject);
+        }
+
+        if (showWinner != null && showWinner.childCount > 0)
+        {
+            for (int i = showWinner.childCount - 1; i >= 0; i--)
+                Destroy(showWinner.GetChild(i).gameObject);
+        }
+
+        if (players != null)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                Player p = players[i];
+                if (p == null)
+                    continue;
+                p.spawnedPlayer = null;
+                p.spawnedLifeline = null;
+                p.won = false;
+                p.characterSelected = false;
+                p.state = "";
+                p.winScrollTarget = null;
+            }
+        }
+
+        if (mm != null && mm.openMenu != null)
+        {
+            // Drop Playing / Winners overlays if present
+            mm.RemoveMenu("Winners");
+            mm.RemoveMenu("Playing");
+        }
+    }
+
+    /// <summary>Reset match flags + player combat state without choosing a win-menu action.</summary>
+    public void ResetPlayersForNewMatch()
+    {
+        gameStart = false;
+        someoneWon = false;
+        startingGame = false;
+        winnerScreen = false;
+        Time.timeScale = 1f;
+
+        if (showWinner != null && showWinner.childCount > 0)
+        {
+            for (int i = showWinner.childCount - 1; i >= 0; i--)
+                Destroy(showWinner.GetChild(i).gameObject);
+        }
+
+        if (players == null)
+            return;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            Player p = players[i];
+            if (p == null)
+                continue;
+
+            p.characterSelected = false;
+            p.lastGridUpdate = 0;
+            p.gridLock = false;
+            p.state = "";
+            p.winScrollTarget = null;
+            p.won = false;
+            p.damageDealt = 0;
+            p.damageTaken = 0;
+            p.ballHits = 0;
+            p.longestBallOwnership = 0;
+            p.highestSingleDamgeDealt = 0;
+            p.highestSingleDamageTaken = 0;
+            p.ultsUsed = 0;
+            p.numberOfDashes = 0;
+            p.afterDeathHits = 0;
+            p.afterDeathDamage = 0;
+            p.spawnedPlayer = null;
+            p.spawnedLifeline = null;
+        }
+    }
+
     IEnumerator SomeoneWon()
     {
         Time.timeScale = .3f;
@@ -494,46 +723,59 @@ public class Database : MonoBehaviour
         }
         yield return null;
 
-        //Open Winners menu
-        if (mm != null)
-        {
-            mm.OpenMenu("Winners");
-        }
-        yield return null;
+        // Training auto-run: skip winners UI (TrainingManager continues the session)
+        bool trainingAuto = aiTrainingSession
+            && TrainingManager.instance != null
+            && TrainingManager.instance.ShouldAutoContinue();
 
-        EnsureWinnersButtonsClickable();
-
-        if (mmOp != null)
+        if (!trainingAuto)
         {
-            for (int i = 0; i < players.Count; i++)
+            //Open Winners menu
+            if (mm != null)
             {
-                mmOp.AddPlayer(i);
+                mm.OpenMenu("Winners");
+            }
+            yield return null;
+
+            EnsureWinnersButtonsClickable();
+
+            if (mmOp != null)
+            {
+                for (int i = 0; i < players.Count; i++)
+                {
+                    mmOp.AddPlayer(i);
+                }
+            }
+
+            //Add Win Box to Winner Menu
+            if (players.Count > 0 && wonBox != null && showWinner != null)
+            {
+                for (int i = 0; i < players.Count; i++)
+                {
+                    GameObject wB = Instantiate(wonBox, showWinner);
+                    RectTransform rt = wB.transform as RectTransform;
+                    if (rt != null)
+                    {
+                        rt.localScale = Vector3.one;
+                        rt.localRotation = Quaternion.identity;
+                    }
+
+                    GameResultBreakdown grb = wB.GetComponent<GameResultBreakdown>();
+                    if (grb != null)
+                    {
+                        grb.playerIndex = i;
+                    }
+
+                    // Free cursor + menu buttons; scroll only after clicking a stats card
+                    players[i].state = "Winners";
+                    players[i].winScrollTarget = null;
+                }
             }
         }
-
-        //Add Win Box to Winner Menu
-        if (players.Count > 0 && wonBox != null && showWinner != null)
+        else
         {
-            for (int i = 0; i < players.Count; i++)
-            {
-                GameObject wB = Instantiate(wonBox, showWinner);
-                RectTransform rt = wB.transform as RectTransform;
-                if (rt != null)
-                {
-                    rt.localScale = Vector3.one;
-                    rt.localRotation = Quaternion.identity;
-                }
-
-                GameResultBreakdown grb = wB.GetComponent<GameResultBreakdown>();
-                if (grb != null)
-                {
-                    grb.playerIndex = i;
-                }
-
-                // Free cursor + menu buttons; scroll only after clicking a stats card
-                players[i].state = "Winners";
-                players[i].winScrollTarget = null;
-            }
+            // Keep winnerScreen true briefly so TrainingManager.Update can see the end
+            yield return null;
         }
 
         someoneWon = false;
@@ -611,12 +853,16 @@ public class Database : MonoBehaviour
             p.spawnedPlayer = null;
             p.spawnedLifeline = null;
 
-            //Reset Character info with main Char (restores health / skills)
-            Characters character = characters.Find(x => x.name == p.name);
-
-            if (character != null)
+            // Keep random picks deferred; otherwise restore roster bind for rematch / menus
+            if (p.wantRandomCharacter || RemembersRandomCharacter(p.index))
             {
-                p.SetUpCharacter(character);
+                p.SetRandomCharacterPending();
+            }
+            else
+            {
+                Characters character = characters.Find(x => x.name == p.name);
+                if (character != null)
+                    p.SetUpCharacter(character);
             }
         }
 
@@ -657,7 +903,7 @@ public class Database : MonoBehaviour
         if (avaliableChar == null || avaliableChar.Count == 0)
             return null;
 
-        return new Characters(avaliableChar[Random.Range(0, avaliableChar.Count)]);
+        return new Characters(avaliableChar[UnityEngine.Random.Range(0, avaliableChar.Count)]);
     }
 
     public bool InSetup()
@@ -783,8 +1029,12 @@ public class Database : MonoBehaviour
             int sF = selectedField;
 
             if (selectedField < 0 || selectedField >= fields.Count)
+                sF = RandomActiveFieldIndex();
+
+            if (sF < 0 || sF >= fields.Count)
             {
-                sF = Random.Range(0, fields.Count);
+                Debug.LogError("StartGame: no field available to spawn.");
+                yield break;
             }
 
             Field field = fields[sF];
@@ -821,12 +1071,18 @@ public class Database : MonoBehaviour
                 p.afterDeathHits = 0;
                 p.afterDeathDamage = 0;
 
-                // Always re-bind from the character roster by name before spawn.
-                // Portraits/UI can show the right fighter while Player.character was never
-                // copied (or was wiped on rematch / domain reload) — that caused the NRE.
+                // Always re-bind from the character roster before spawn.
+                // Random stays flagged so rematch re-rolls a new fighter each match.
                 Characters rosterChar = null;
-                if (!string.IsNullOrEmpty(p.name))
+                if (p.wantRandomCharacter || RemembersRandomCharacter(p.index))
+                {
+                    p.wantRandomCharacter = true;
+                    rosterChar = RandomCharacter();
+                }
+                else if (!string.IsNullOrEmpty(p.name))
+                {
                     rosterChar = characters.Find(x => x != null && x.name == p.name);
+                }
 
                 if (rosterChar == null || rosterChar.character == null || rosterChar.character.prefabs == null)
                     rosterChar = RandomCharacter();
@@ -839,6 +1095,10 @@ public class Database : MonoBehaviour
                     Debug.LogError($"StartGame: Player index={p.index} name='{p.name}' has no character prefab after roster bind. Skipping spawn.");
                     continue;
                 }
+
+                // Assign difficulty style variant for this match (re-rolls each StartGame / rematch)
+                if (p.computer)
+                    ComputerAI.AssignMatchBrain(p);
 
                 switch(p.facing)
                 {
@@ -922,16 +1182,16 @@ public class Database : MonoBehaviour
             #endregion
 
             #region Add Ball
+            // selectedBall == -1 means Random — keep it so rematch re-rolls
             int sB = selectedBall;
 
             if (selectedBall < 0 || selectedBall >= balls.Count)
-            {
-                sB = Random.Range(0, balls.Count);
-            }
+                sB = RandomBallIndex();
 
-            if(selectedBall == -1)
+            if (sB < 0 || sB >= balls.Count)
             {
-                selectedBall = sB;
+                Debug.LogError("StartGame: no ball available to spawn.");
+                yield break;
             }
 
             Ball ball = balls[sB];

@@ -235,6 +235,7 @@ MonoBehaviour:
   day: 0
   dayCycle: 20
   spinSpeed: 50
+  phaseLock: 0
   cycle: 0
   moving: 0
   leavePoint: {x: 0, y: -1, z: -4.5}

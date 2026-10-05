@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum CelarusPhaseLock
+{
+    Cycle = 0,
+    ForceSun = 1,
+    ForceMoon = 2,
+}
+
 public class Celarus : MonoBehaviour
 {
     Rigidbody rb;
@@ -13,8 +20,14 @@ public class Celarus : MonoBehaviour
     public bool day = false;
     public float dayCycle = 20;
     public float spinSpeed = 50;
+
+    [Tooltip("Cycle = normal day/night. ForceSun / ForceMoon = Sunshine / Moonlight Celarus.")]
+    public CelarusPhaseLock phaseLock = CelarusPhaseLock.Cycle;
+
     [SerializeField]
-    float cycle = 0;   
+    float cycle = 0;
+
+    bool phaseLockApplied;
 
     DamageOnTagHit sunHit;
     PullObjectIn sunGravity;
@@ -87,28 +100,8 @@ public class Celarus : MonoBehaviour
     bool pendingSpin;
     bool pendingSlam;
 
-    #region AI
-    bool thinking = false;
-    public float thinkTime = .5f;
-
     [SerializeField]
     Thought thought = Thought.Nothing;
-
-    //Starting Chance Weight
-    public float chanceToDoNothing = 50; //Do Nothing
-    public float chanceToMove = 100; //Move Left
-    public float chanceToBump = 0; //Move Bump
-    public float chanceToSuper = 0; //Move Super
-
-    enum Thought
-    {
-        Nothing,
-        MoveLeft,
-        MoveRight,
-        MoveUp,
-        MoveDown
-    }
-    #endregion
 
     // Start is called before the first frame update
     void Start()
@@ -138,9 +131,11 @@ public class Celarus : MonoBehaviour
         {
             if (spinPoint != null && sunHit != null && sunGravity != null && moonHit != null && moonGravity != null)
             {
+                if (!phaseLockApplied)
+                    ApplyPhaseLock();
+
                 if (pg.player.computer)
                 {
-                    thinking = false;
                     ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, null, 1.5f);
                     if (d.wantBump) thought = Thought.MoveUp;
                     else if (d.wantSuper) thought = Thought.MoveDown;
@@ -228,210 +223,6 @@ public class Celarus : MonoBehaviour
             return false;
         ControllerButtons b = cL["Interact"];
         return b != null && b.wasPressedThisFrame;
-    }
-
-    IEnumerator AI()
-    {
-        //Inital Info
-        Facing f = pg.player.facing;
-        string thoughtString = "";
-
-        //Decisions
-        float dNull = chanceToDoNothing; //Do Nothing
-        float dML = chanceToMove; //Move Left
-        float dMR = chanceToMove; //Move Right
-        float dMB = chanceToBump; //Move Bump
-        float dMS = chanceToSuper; //Move Super
-
-        //Get Ball Hit locations that Will are set to hit the wall behind him
-        GameObject[] allBalls = GameObject.FindGameObjectsWithTag("Ball");
-        List<Vector3> importantCollisions = new List<Vector3>();
-        Vector3 curPos = transform.position;
-
-        if (allBalls.Length > 0)
-        {
-            for (int i = 0; i < allBalls.Length; i++)
-            {
-                BallInfo bI = allBalls[i].GetComponent<BallInfo>();
-
-                if (bI != null)
-                {
-                    int fcpc = bI.futureColisionPoints.Count;
-
-                    if (fcpc > 0)
-                    {
-                        for (int c = 0; c < fcpc; c++)
-                        {
-                            Vector3 cp = bI.futureColisionPoints[c];
-
-                            switch (f)
-                            {
-                                case Facing.Up:
-                                    if (cp.y <= curPos.y)
-                                    {
-                                        importantCollisions.Add(cp);
-                                    }
-                                    break;
-                                case Facing.Down:
-                                    if (cp.y >= curPos.y)
-                                    {
-                                        importantCollisions.Add(cp);
-                                    }
-                                    break;
-                                case Facing.Left:
-                                    if (cp.x >= curPos.x)
-                                    {
-                                        importantCollisions.Add(cp);
-                                    }
-                                    break;
-                                case Facing.Right:
-                                    if (cp.x <= curPos.x)
-                                    {
-                                        importantCollisions.Add(cp);
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        //Go through important collisions and use that to help determine the next action
-        if (importantCollisions.Count > 0)
-        {
-            float iCo = importantCollisions.Count;
-
-            for (int c = 0; c < iCo; c++)
-            {
-                Vector3 v3 = importantCollisions[c];
-                float disRight = 0;
-
-                switch (f)
-                {
-                    case Facing.Up:
-                        disRight = v3.x - curPos.x;
-                        break;
-                    case Facing.Down:
-                        disRight = v3.x - curPos.x;
-                        disRight *= -1;
-                        break;
-                    case Facing.Left:
-                        disRight = v3.y - curPos.y;
-                        break;
-                    case Facing.Right:
-                        disRight = v3.y - curPos.y;
-                        disRight *= -1;
-                        break;
-                }
-
-                if (Mathf.Abs(disRight) <= 1) //In line with Collision
-                {
-                    disRight = 0;
-                    dNull += 10;
-
-                    if (pg.player.bump.Enough())
-                    {
-                        dMB += 5 / iCo;
-                    }
-
-                    if (pg.player.super.Enough())
-                    {
-                        dMS += 5 / iCo;
-                    }
-                }
-
-                dMR -= disRight;
-                dML += disRight;
-
-                if (Mathf.Abs(disRight) >= 3) //At least 2 lengths away
-                {
-                    if (pg.player.super.Enough())
-                    {
-                        dMS += 10 / iCo;
-                    }
-                }
-            }
-        }
-
-        thoughtString += "Ball Count: " + allBalls.Length + "/" + importantCollisions.Count + "\n";
-
-        //Choose an action
-        if (dNull < 0)
-        {
-            dNull = 0;
-        }
-
-        if (dMR < 0)
-        {
-            dMR = 0;
-        }
-
-        if (dML < 0)
-        {
-            dML = 0;
-        }
-
-        if (dMB < 0)
-        {
-            dMB = 0;
-        }
-
-        if (dMS < 0)
-        {
-            dMS = 0;
-        }
-
-        float rNull = dNull;
-        float rMR = dNull + dMR;
-        float rML = rMR + dML;
-        float rMB = rML + dMB;
-        float rMS = rMB + dMS;
-
-        float rN = Random.Range(0f, rMS);
-
-        if (rN <= rNull)
-        {
-            thought = Thought.Nothing;
-            thoughtString += "Choice: Do Nothing";
-        }
-        else if (rN <= rMR)
-        {
-            thought = Thought.MoveRight;
-            thoughtString += "Choice: Move Right";
-        }
-        else if (rN <= rML)
-        {
-            thought = Thought.MoveLeft;
-            thoughtString += "Choice: Move Left";
-        }
-        else if (rN <= rMB)
-        {
-            thought = Thought.MoveUp;
-            thoughtString += "Choice: Bump";
-        }
-        else if (rN <= rMS)
-        {
-            thought = Thought.MoveDown;
-            thoughtString += "Choice: Super";
-        }
-
-        thoughtString += "\n";
-        thoughtString += "Random Number: " + rN + "\n";
-        thoughtString += "Nothing: " + rNull + "\n";
-        thoughtString += "Move Right: " + rMR + "\n";
-        thoughtString += "Move Left: " + rML + "\n";
-        thoughtString += "Use Bump: " + rMB + "\n";
-        thoughtString += "Use Super: " + rMS;
-
-        //Debug.Log(thoughtString);
-        yield return null;
-
-        //Wait until thinking again
-        yield return new WaitForSeconds(thinkTime);
-
-        thinking = false;
-        yield return null;
     }
 
     void CelarusMove()
@@ -940,7 +731,11 @@ public class Celarus : MonoBehaviour
 
     void UpdateDayAndNight()
     {
-        if(!moving)
+        // Sunshine / Moonlight variants stay in one phase
+        if (phaseLock != CelarusPhaseLock.Cycle)
+            return;
+
+        if (!moving)
         {
             if (cycle >= dayCycle)
             {
@@ -951,6 +746,64 @@ public class Celarus : MonoBehaviour
 
             cycle += Time.deltaTime;
         }
+    }
+
+    /// <summary>
+    /// Locks day/night for Sunshine (sun flares only) / Moonlight (moon skate only).
+    /// </summary>
+    void ApplyPhaseLock()
+    {
+        phaseLockApplied = true;
+
+        if (phaseLock == CelarusPhaseLock.Cycle)
+            return;
+
+        moving = false;
+        cycle = 0f;
+
+        if (phaseLock == CelarusPhaseLock.ForceSun)
+        {
+            day = true;
+            if (spinPoint != null)
+                spinPoint.localRotation = Quaternion.Euler(0f, 0f, 180f);
+            ParkStarForSun();
+        }
+        else
+        {
+            day = false;
+            if (spinPoint != null)
+                spinPoint.localRotation = Quaternion.Euler(0f, 0f, 0f);
+            PlaceStarOnMoonSurface();
+        }
+
+        PlanetsUpdate();
+    }
+
+    void ParkStarForSun()
+    {
+        if (moonGravity == null)
+            return;
+
+        float playZ = moonGravity.transform.position.z;
+        Vector3 park = moonGravity.transform.position;
+        park.x += leavePoint.x;
+        park.y += leavePoint.y;
+        park.z = playZ;
+
+        transform.position = park;
+        if (rb != null)
+        {
+            rb.position = park;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        onMoon = false;
+        slamming = false;
+        launchGrace = 0f;
+        pendingSpin = false;
+        pendingSlam = false;
+        spinLeft = 0f;
     }
 
     IEnumerator SwapCycle()

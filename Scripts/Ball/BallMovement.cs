@@ -146,6 +146,8 @@ public class BallMovement : MonoBehaviour
     private void OnCollisionExit(Collision collision)
     {
         PlayerGrab pG = collision.gameObject.GetComponent<PlayerGrab>();
+        if (pG == null)
+            pG = collision.gameObject.GetComponentInParent<PlayerGrab>();
         string tag = collision.transform.tag;
         float speed = rb.linearVelocity.magnitude;
 
@@ -163,8 +165,7 @@ public class BallMovement : MonoBehaviour
                 break;
 
             case "Lifeline":
-                SetSpeedPreservingDirection(speed * Mathf.Max(1f, bI.ball.speedIncrease * 2f));
-
+                // Mit catch/throw owns speed — don't double-boost stuck balls
                 if (pG != null && pG.IsLinked())
                 {
                     Player p = db.players[pG.playerIndex];
@@ -176,6 +177,18 @@ public class BallMovement : MonoBehaviour
                 break;
 
             case "Paddle":
+                // Yuotay bat already applied directed hit force on Enter — keep that velocity
+                if (collision.gameObject.GetComponentInParent<Yuotay>() != null)
+                {
+                    if (pG != null && pG.IsLinked())
+                    {
+                        Player p = db.players[pG.playerIndex];
+                        p.RecordBallHit();
+                        ComputerAI.OnPaddleHitBall(p);
+                    }
+                    break;
+                }
+
                 // Bumps: raise speed toward 2x max ball speed (never slow the ball)
                 {
                     float bumpCap = bI.ball.BumpSpeedCap;

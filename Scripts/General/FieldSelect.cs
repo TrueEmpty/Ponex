@@ -161,12 +161,37 @@ public class FieldSelect : MonoBehaviour
 
         int total = db.fields.Count;
         int countPerPage = Mathf.Max(1, perPage);
-        maxpage = Mathf.Max(0, Mathf.FloorToInt((total - 1) / (float)countPerPage));
+        // Page 0: Random (?) + (perPage - 1) fields. Later pages: perPage fields each.
+        int page0Fields = Mathf.Max(1, countPerPage - 1);
+        int remaining = Mathf.Max(0, total - page0Fields);
+        maxpage = remaining <= 0 ? 0 : 1 + Mathf.Max(0, Mathf.FloorToInt((remaining - 1) / (float)countPerPage));
         if (page > maxpage) page = maxpage;
         if (page < 0) page = 0;
 
-        int start = page * countPerPage;
-        int end = Mathf.Min(start + countPerPage, total);
+        if (page == 0)
+        {
+            GameObject randomGo = Instantiate(fieldGrab_pf, grabHolder);
+            randomGo.name = "Field Grab (Random)";
+            FieldGrab randomGrab = randomGo.GetComponent<FieldGrab>();
+            if (randomGrab != null)
+            {
+                randomGrab.BindRandom();
+                fieldGrabs.Add(randomGrab);
+            }
+        }
+
+        int start;
+        int end;
+        if (page == 0)
+        {
+            start = 0;
+            end = Mathf.Min(page0Fields, total);
+        }
+        else
+        {
+            start = page0Fields + (page - 1) * countPerPage;
+            end = Mathf.Min(start + countPerPage, total);
+        }
 
         for (int i = start; i < end; i++)
         {
@@ -212,11 +237,20 @@ public class FieldSelect : MonoBehaviour
         if (db.selectedField < 0 || db.selectedField >= db.fields.Count)
         {
             if (portrait != null)
-                portrait.color = new Color(1f, 1f, 1f, 0.35f);
+            {
+                portrait.texture = null;
+                portrait.color = new Color(0.4f, 0.4f, 0.4f, 1f);
+            }
             if (portraitName != null)
-                portraitName.text = "Random";
+            {
+                portraitName.text = "?";
+                portraitName.color = new Color(0.85f, 0.85f, 0.85f, 1f);
+            }
             if (portraitInfo != null)
-                portraitInfo.text = "";
+            {
+                portraitInfo.text = "Random Level";
+                portraitInfo.color = new Color(0.75f, 0.75f, 0.75f, 1f);
+            }
             return;
         }
 

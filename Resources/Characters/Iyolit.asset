@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c2e9a1b4d8f46c3a5e0b9d2f1c83470, type: 3}
+  m_Name: Iyolit
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  rosterOrder: 10
+  characterName: Iyolit
+  maxHealth: 10
+  movementSpeed: 5
+  pushBack: 50
+  ignoreFacing: 0
+  bump:
+    amount: 1
+    max: 1
+    cost: 1
+    speed: 0.5
+    readyPercent: 0
+  super:
+    amount: 0
+    max: 20
+    cost: 10
+    speed: 5
+    readyPercent: 0
+  dash:
+    amount: 2
+    max: 2
+    cost: 1
+    speed: 3
+    readyPercent: 0
+  character:
+    prefabs: {fileID: 5428918326384442891, guid: 571377ee1075df249b9aa913f6272fda, type: 3}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+  lifeline:
+    prefabs: {fileID: 3126589687538523086, guid: 3e24329efed755e47af2b9148f3228b3, type: 3}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+  selector: {fileID: 0}
+  playerInfo: {fileID: 0}
+  superName: 
+  superDescription: 
+  portraitColor: {r: 1, g: 0.85, b: 0.4, a: 1}
+  portrait: {fileID: 0}
+  icon: {fileID: 0}
+  active: 0

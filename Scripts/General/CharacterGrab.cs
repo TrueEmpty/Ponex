@@ -11,6 +11,7 @@ public class CharacterGrab : MonoBehaviour
     Outline outline;
     RawImage icon;
     Text nameText;
+    ButtonInteraction bi;
 
     bool setup = false;
     static readonly Color RandomGray = new Color(0.4f, 0.4f, 0.4f, 1f);
@@ -51,6 +52,7 @@ public class CharacterGrab : MonoBehaviour
         outline = GetComponent<Outline>();
         icon = transform.GetChild(0).GetComponent<RawImage>();
         nameText = transform.GetChild(1).GetComponent<Text>();
+        bi = GetComponent<ButtonInteraction>();
     }
 
     void UpdateLook()
@@ -97,6 +99,13 @@ public class CharacterGrab : MonoBehaviour
         }
         nameText.text = ch.name;
         nameText.color = Color.white;
+
+        if (bi != null)
+        {
+            if (ch.active) bi.Activate();
+            else bi.Deactivate();
+        }
+
         setup = true;
     }
 
@@ -107,7 +116,13 @@ public class CharacterGrab : MonoBehaviour
 
         if (isRandom)
         {
-            outline.effectColor = new Color(0.55f, 0.55f, 0.55f, 1f);
+            Player randomHolder = db.players != null
+                ? db.players.Find(x => x != null && x.wantRandomCharacter)
+                : null;
+            if (randomHolder != null)
+                outline.effectColor = PlayerSkin.GetColor(randomHolder, db);
+            else
+                outline.effectColor = new Color(0.55f, 0.55f, 0.55f, 1f);
             return;
         }
 
@@ -115,7 +130,7 @@ public class CharacterGrab : MonoBehaviour
             return;
 
         Player holder = db.players != null
-            ? db.players.Find(x => x != null && x.name == ch.name)
+            ? db.players.Find(x => x != null && !x.wantRandomCharacter && x.name == ch.name)
             : null;
 
         if (holder != null)
@@ -130,23 +145,33 @@ public class CharacterGrab : MonoBehaviour
         if (p == null)
             return;
 
-        Characters pick = ch;
         if (isRandom)
         {
-            pick = db.RandomCharacter();
-            if (pick == null)
+            if (db.RandomCharacter() == null)
             {
                 Debug.LogWarning("Random character pick failed — no active characters.");
                 return;
             }
-            Debug.Log("Setting up Player: " + player + " With random character: " + pick.name);
-        }
-        else
-        {
-            Debug.Log("Setting up Player: " + player + " With character: " + pick.name);
+
+            p.SetRandomCharacterPending();
+            if (p.pso != null)
+            {
+                PlayerColors pc = PlayerSkin.GetPlayerColors(p, db);
+                if (pc != null)
+                    p.pso.SetCircleColor(pc);
+            }
+            db.RememberSelectedCharacter(p.index, Database.RandomCharacterSentinel);
+            Debug.Log("Player " + player + " selected Random character (rolls at match start).");
+            return;
         }
 
-        p.SetUpCharacter(pick);
+        if (ch == null || !ch.active)
+            return;
+
+        p.wantRandomCharacter = false;
+        Debug.Log("Setting up Player: " + player + " With character: " + ch.name);
+
+        p.SetUpCharacter(ch);
         PlayerSkin.AssignUniqueForCharacter(p, db);
         if (p.pso != null)
         {
@@ -154,7 +179,6 @@ public class CharacterGrab : MonoBehaviour
             if (pc != null)
                 p.pso.SetCircleColor(pc);
         }
-        if (db != null)
-            db.RememberSelectedCharacter(p.index, pick.name);
+        db.RememberSelectedCharacter(p.index, ch.name);
     }
 }

@@ -10,6 +10,12 @@ public class DamageOnTagHit : MonoBehaviour
     public string tagHit = "Ball";
     public int damageIncrease = 0;
 
+    [Tooltip("If true, still apply goal damage when the ball is already owned by this player (e.g. mit catch).")]
+    public bool damageEvenIfOwnBall = false;
+
+    [Tooltip("If > 0, clamp damage dealt by this collider to this value (Yuotay mit = 1).")]
+    public int maxDamagePerHit = 0;
+
     void Start()
     {
         pg = GetComponent<PlayerGrab>();
@@ -28,11 +34,14 @@ public class DamageOnTagHit : MonoBehaviour
         BallInfo tbI = collision.gameObject.GetComponent<BallInfo>();
         bool pass = true;
 
+        bool ownBall = false;
         if (tpG != null && tpG.IsLinked())
         {
             if (tpG.playerIndex == pg.playerIndex)
             {
-                pass = false;
+                ownBall = true;
+                if (!damageEvenIfOwnBall)
+                    pass = false;
             }
             else if (db != null && db.players != null
                 && tpG.playerIndex >= 0 && tpG.playerIndex < db.players.Count
@@ -40,7 +49,7 @@ public class DamageOnTagHit : MonoBehaviour
             {
                 Player tp = db.players[tpG.playerIndex];
                 Player yp = db.players[pg.playerIndex];
-                if (tp != null && yp != null && tp.team == yp.team)
+                if (tp != null && yp != null && tp.team == yp.team && !damageEvenIfOwnBall)
                     pass = false;
             }
         }
@@ -53,6 +62,8 @@ public class DamageOnTagHit : MonoBehaviour
             baseDamage = tbI.ball.damage;
 
         int dealt = baseDamage + damageIncrease;
+        if (maxDamagePerHit > 0)
+            dealt = Mathf.Min(dealt, maxDamagePerHit);
         if (dealt <= 0)
             return;
 
@@ -60,7 +71,7 @@ public class DamageOnTagHit : MonoBehaviour
         int lost = pg.player.ApplyGoalDamage(dealt, collision.gameObject.GetInstanceID());
 
         // Credit ball owner for the HP actually removed — keeps Dealt/Taken in sync
-        if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null)
+        if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null && !ownBall)
         {
             tpG.player.RecordDamageDealt(lost);
 

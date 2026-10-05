@@ -17,28 +17,8 @@ public class Gaurd : MonoBehaviour
     public List<Pawn> pawns = new List<Pawn>();
     bool savedByPawns = false;
 
-    #region AI
-    bool thinking = false;
-    public float thinkTime = .5f;
-
     [SerializeField]
     Thought thought = Thought.Nothing;
-
-    //Starting Chance Weight
-    public float chanceToDoNothing = 50; //Do Nothing
-    public float chanceToMove = 100; //Move Left
-    public float chanceToBump = 0; //Move Bump
-    public float chanceToSuper = 0; //Move Super
-
-    enum Thought
-    {
-        Nothing,
-        MoveLeft,
-        MoveRight,
-        MoveUp,
-        MoveDown
-    }
-    #endregion
 
     // Start is called before the first frame update
     void Start()
@@ -68,11 +48,6 @@ public class Gaurd : MonoBehaviour
                     if (p.currentHealth <= 1)
                         p.currentHealth = 0;
                     savedByPawns = false;
-                }
-                else if (p.computer)
-                {
-                    thinking = false;
-                    // Gaurd movement is pawn-based; brain still learns from match outcomes
                 }
             }
         }

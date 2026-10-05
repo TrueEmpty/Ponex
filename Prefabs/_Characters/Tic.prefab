@@ -531,7 +531,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7228200059807893180}
-  - component: {fileID: 1689023626203134859}
   - component: {fileID: -7810288894241468943}
   - component: {fileID: 5914598984665035949}
   - component: {fileID: 5914598984665035948}
@@ -564,64 +563,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1689023626203134859
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5914598984665035951}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cc287fc5e2d5ca48ba1ba054eb2cdd1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  player:
-    player:
-      name: 
-      currentHealth: 10
-      maxHealth: 10
-      movementSpeed: 50
-      bumpSpeed: 50
-      bumpReadyPercent: 1
-      superAmount: 0
-      superMax: 20
-      superCost: 10
-      superReadyPercent: 1
-      dashAmount: 2
-      dashCooldown: 3
-      dashMax: 2
-      dashReadyPercent: 1
-      character:
-        prefabs: {fileID: 0}
-        positionOffset: {x: 0, y: 0, z: 0}
-        rotationOffset: {x: 0, y: 0, z: 0}
-      lifeline:
-        prefabs: {fileID: 0}
-        positionOffset: {x: 0, y: 0, z: 0}
-        rotationOffset: {x: 0, y: 0, z: 0}
-      selector: {fileID: 0}
-      superName: 
-      superDescription: 
-      portraitColor: {r: 0, g: 1, b: 1, a: 1}
-      portrait: {fileID: 0}
-      icon: {fileID: 0}
-      active: 0
-      computer: 0
-    nickName: 
-    team: 0
-    position: 1
-    keys:
-      left: []
-      right: []
-      bump: []
-      super: []
-      dirShown: Up
-      dirDesc: Up
-    canMove: []
-    canBump: []
-    canSuper: []
-    selection: 0
 --- !u!114 &-7810288894241468943
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -631,7 +572,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5914598984665035951}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ffd10a85a34b2c644b7d893e72627fba, type: 3}
+  m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &5914598984665035949
@@ -656,7 +597,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5914598984665035951}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd4a15d1710366c458c14f47483f772b, type: 3}
+  m_Script: {fileID: 11500000, guid: 7faed8e303fd689408e816197cc4ce12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &5914598984665035953
@@ -715,7 +656,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5914598984665035951}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e56ca38aff9ebb41b132dc0eb5d70fd, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ded1badffb04714daaaaeed32713155, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   hideInstead: 1
