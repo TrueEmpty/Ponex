@@ -166,6 +166,7 @@ public class PortraitClicked : MonoBehaviour
         {
             db.controllers.RemoveAll(x => x.index == attachedIndex);
             p.computer = true;
+            p.cpuDifficulty = ComputerAI.CpuDifficulty.Training;
         }
     }
 }

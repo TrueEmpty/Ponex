@@ -42,7 +42,15 @@ public class CharacterSelect : MonoBehaviour
     {
         if(!setup)
         {
-            //Character Grabs
+            //Character Grabs — random (?) first, then roster
+            GameObject randomGo = Instantiate(characterGrab_pf, characterGrabHolder);
+            CharacterGrab randomGrab = randomGo.GetComponent<CharacterGrab>();
+            randomGrab.isRandom = true;
+            randomGrab.ch = null;
+            randomGo.name = "Character Grab (Random)";
+            randomGo.transform.SetAsFirstSibling();
+            characterGrabs.Add(randomGrab);
+
             for (int i = 0; i < db.characters.Count; i++)
             {
                 Characters c = db.characters[i];

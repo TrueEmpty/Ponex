@@ -50,6 +50,12 @@ public class Player
     public bool active = false;
     public bool computer = false;
 
+    /// <summary>
+    /// Match CPU difficulty. Training uses the learned profile as-is (for practice).
+    /// Easy–Expert bands are ready for a future CPU level select UI.
+    /// </summary>
+    public ComputerAI.CpuDifficulty cpuDifficulty = ComputerAI.CpuDifficulty.Training;
+
     public PlayerSelectorObj pso = null;
 
     public GameObject spawnedPlayer;
@@ -129,6 +135,7 @@ public class Player
 
         active = p.active;
         computer = p.computer;
+        cpuDifficulty = p.cpuDifficulty;
 
         spawnedPlayer = p.spawnedPlayer;
         spawnedLifeline = p.spawnedLifeline;

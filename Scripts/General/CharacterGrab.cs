@@ -5,6 +5,7 @@ public class CharacterGrab : MonoBehaviour
 {
     Database db;
     public Characters ch;
+    public bool isRandom = false;
 
     Image background;
     Outline outline;
@@ -12,23 +13,29 @@ public class CharacterGrab : MonoBehaviour
     Text nameText;
 
     bool setup = false;
+    static readonly Color RandomGray = new Color(0.4f, 0.4f, 0.4f, 1f);
+    static readonly Color RandomMark = new Color(0.72f, 0.72f, 0.72f, 1f);
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         db = Database.instance;
         Setup();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if(ch != null)
+        if (isRandom)
         {
-            if(!setup)
-            {
+            if (!setup)
                 UpdateLook();
-            }
+            UpdateSelection();
+            return;
+        }
+
+        if (ch != null)
+        {
+            if (!setup)
+                UpdateLook();
 
             UpdateSelection();
         }
@@ -48,17 +55,63 @@ public class CharacterGrab : MonoBehaviour
 
     void UpdateLook()
     {
+        if (isRandom)
+        {
+            background.color = RandomGray;
+            if (outline != null)
+                outline.effectColor = new Color(0.55f, 0.55f, 0.55f, 1f);
+
+            if (icon != null)
+            {
+                icon.texture = null;
+                icon.enabled = false;
+            }
+
+            if (nameText != null)
+            {
+                nameText.text = "?";
+                nameText.color = RandomMark;
+                nameText.alignment = TextAnchor.MiddleCenter;
+                nameText.resizeTextForBestFit = true;
+                nameText.resizeTextMinSize = 20;
+                nameText.resizeTextMaxSize = 72;
+
+                RectTransform rt = nameText.rectTransform;
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                rt.pivot = new Vector2(0.5f, 0.5f);
+            }
+
+            setup = true;
+            return;
+        }
+
         background.color = ch.portraitColor;
-        icon.texture = ch.icon;
-        icon.color = (ch.active) ? Color.white : Color.black;
+        if (icon != null)
+        {
+            icon.enabled = true;
+            icon.texture = ch.icon;
+            icon.color = ch.active ? Color.white : Color.black;
+        }
         nameText.text = ch.name;
+        nameText.color = Color.white;
         setup = true;
     }
 
-    //Will update outline based on who has it selected
     void UpdateSelection()
     {
-        if (db == null || outline == null || ch == null)
+        if (db == null || outline == null)
+            return;
+
+        if (isRandom)
+        {
+            outline.effectColor = new Color(0.55f, 0.55f, 0.55f, 1f);
+            return;
+        }
+
+        if (ch == null)
             return;
 
         Player holder = db.players != null
@@ -73,22 +126,35 @@ public class CharacterGrab : MonoBehaviour
 
     public void OnClick(int player)
     {
-        Debug.Log("Setting up Player: " + player + " With character: " + ch.name);
         Player p = db.players.Find(x => x.index == player);
+        if (p == null)
+            return;
 
-        if(p != null)
+        Characters pick = ch;
+        if (isRandom)
         {
-            p.SetUpCharacter(ch);
-            // Duplicate picks get a free distinct skin automatically
-            PlayerSkin.AssignUniqueForCharacter(p, db);
-            if (p.pso != null)
+            pick = db.RandomCharacter();
+            if (pick == null)
             {
-                PlayerColors pc = PlayerSkin.GetPlayerColors(p, db);
-                if (pc != null)
-                    p.pso.SetCircleColor(pc);
+                Debug.LogWarning("Random character pick failed — no active characters.");
+                return;
             }
-            if (db != null)
-                db.RememberSelectedCharacter(p.index, ch.name);
+            Debug.Log("Setting up Player: " + player + " With random character: " + pick.name);
         }
+        else
+        {
+            Debug.Log("Setting up Player: " + player + " With character: " + pick.name);
+        }
+
+        p.SetUpCharacter(pick);
+        PlayerSkin.AssignUniqueForCharacter(p, db);
+        if (p.pso != null)
+        {
+            PlayerColors pc = PlayerSkin.GetPlayerColors(p, db);
+            if (pc != null)
+                p.pso.SetCircleColor(pc);
+        }
+        if (db != null)
+            db.RememberSelectedCharacter(p.index, pick.name);
     }
 }

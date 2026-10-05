@@ -22,8 +22,13 @@ public class NariMove : MonoBehaviour
     public float dashDuration = 3f;
     public Color dashParticleColor = new Color(0.25f, 1f, 0.4f, 1f);
 
+    [Header("AI")]
+    public float aiArriveDistance = 0.35f;
+    public float aiDashMinDistance = 3.25f;
+
     float dashTimer = 0f;
     bool dashing = false;
+    bool aiWantDash = false;
     readonly List<ParticleSystem> dashParticles = new List<ParticleSystem>();
     readonly HashSet<Transform> particleOwners = new HashSet<Transform>();
 
@@ -92,15 +97,14 @@ public class NariMove : MonoBehaviour
         if (d == null || d.max <= 0f || d.cost <= 0f || dashing)
             return;
 
-        bool wantDash = pg.inp.tf_dashLeft || pg.inp.tf_dashRight;
-        if (pg.player.computer)
-        {
-            ComputerAI.Decision ai = ComputerAI.GetLastDecision(pg.playerIndex);
-            wantDash = ai.wantDash;
-        }
+        bool wantDash = pg.player.computer
+            ? aiWantDash
+            : (pg.inp.tf_dashLeft || pg.inp.tf_dashRight);
 
         if (wantDash && d.amount >= d.cost)
             StartDash(d);
+
+        aiWantDash = false;
     }
 
     void StartDash(Skill d)
@@ -124,38 +128,10 @@ public class NariMove : MonoBehaviour
 
     void OnMove()
     {
-        if (pg.inp.right)
-        {
-            if (!WallInDirection(Vector3.right))
-            {
-                transform.rotation = Quaternion.Euler(0, 0, 90);
-                moveDir = Vector3.right;
-            }
-        }
-        else if (pg.inp.left)
-        {
-            if (!WallInDirection(Vector3.left))
-            {
-                transform.rotation = Quaternion.Euler(0, 0, 270);
-                moveDir = Vector3.left;
-            }
-        }
-        else if (pg.inp.up)
-        {
-            if (!WallInDirection(Vector3.up))
-            {
-                transform.rotation = Quaternion.Euler(0, 0, 180);
-                moveDir = Vector3.up;
-            }
-        }
-        else if (pg.inp.down)
-        {
-            if (!WallInDirection(Vector3.down))
-            {
-                transform.rotation = Quaternion.Euler(0, 0, 0);
-                moveDir = Vector3.down;
-            }
-        }
+        if (pg.player.computer)
+            ApplyComputerMove();
+        else
+            ApplyHumanMove();
 
         if (trueSpeed <= 0f)
             trueSpeed = TargetSpeed;
@@ -168,10 +144,64 @@ public class NariMove : MonoBehaviour
         {
             rb.linearVelocity *= -1;
             moveDir *= -1;
-            Vector3 nRot = transform.rotation.eulerAngles;
-            nRot += new Vector3(0, 0, 180);
-            transform.rotation = Quaternion.Euler(nRot);
+            ApplyFacing(moveDir);
         }
+    }
+
+    void ApplyHumanMove()
+    {
+        if (pg.inp.right)
+            TrySetMoveDir(Vector3.right);
+        else if (pg.inp.left)
+            TrySetMoveDir(Vector3.left);
+        else if (pg.inp.up)
+            TrySetMoveDir(Vector3.up);
+        else if (pg.inp.down)
+            TrySetMoveDir(Vector3.down);
+    }
+
+    void ApplyComputerMove()
+    {
+        // Shared free-roam brain — same profiles / difficulty / learning as paddle AIs
+        ComputerAI.FreeRoamDecision d = ComputerAI.EvaluateFreeRoam(
+            transform,
+            pg.player,
+            moveDir,
+            aiArriveDistance,
+            aiDashMinDistance,
+            WallInDirection);
+
+        TrySetMoveDir(d.moveDir);
+        if (!dashing)
+            aiWantDash = d.wantDash;
+    }
+
+    bool TrySetMoveDir(Vector3 dir)
+    {
+        if (dir.sqrMagnitude < 0.01f || WallInDirection(dir))
+            return false;
+
+        moveDir = dir.normalized;
+        // Snap to exact cardinals used by facing
+        if (Mathf.Abs(moveDir.x) > Mathf.Abs(moveDir.y))
+            moveDir = moveDir.x >= 0f ? Vector3.right : Vector3.left;
+        else
+            moveDir = moveDir.y >= 0f ? Vector3.up : Vector3.down;
+
+        ApplyFacing(moveDir);
+        return true;
+    }
+
+    void ApplyFacing(Vector3 dir)
+    {
+        if (dir == Vector3.right)
+            transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+        else if (dir == Vector3.left)
+            transform.rotation = Quaternion.Euler(0f, 0f, 270f);
+        else if (dir == Vector3.up)
+            transform.rotation = Quaternion.Euler(0f, 0f, 180f);
+        else if (dir == Vector3.down)
+            transform.rotation = Quaternion.Euler(0f, 0f, 0f);
     }
 
     bool WallInDirection(Vector3 mD)

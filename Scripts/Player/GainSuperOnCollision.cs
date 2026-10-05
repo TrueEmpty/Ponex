@@ -21,5 +21,9 @@ public class GainSuperOnCollision : MonoBehaviour
         // Only fill the meter — never activate supers.
         // (readyPercent is Drive-on for Garmen; setting it here auto-cast Drive.)
         pG.player.super.Gain(amount);
+
+        // Free-roam / body hits (Nari) count as paddle contacts for AI learning
+        if (pG.player.computer)
+            ComputerAI.OnPaddleHitBall(pG.player);
     }
 }

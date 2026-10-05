@@ -218,6 +218,10 @@ public class Database : MonoBehaviour
 
             p.computer = computerMode;
             p.cLink = cL;
+            // Default Training so practice sessions grow the shared learned profile;
+            // future CPU level UI can call ComputerAI.SetDifficulty(...)
+            if (computerMode)
+                p.cpuDifficulty = ComputerAI.CpuDifficulty.Training;
 
             int index = -1;
             for (int i = 0; i < 8; i++)
