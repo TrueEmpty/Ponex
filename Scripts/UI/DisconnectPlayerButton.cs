@@ -73,6 +73,7 @@ public class DisconnectPlayerButton : MonoBehaviour
         DisconnectPlayerButton btn = go.AddComponent<DisconnectPlayerButton>();
         btn.label = text;
         SelectorClickable.Ensure(go, 170f);
+        go.transform.SetAsLastSibling();
     }
 
     void Awake()

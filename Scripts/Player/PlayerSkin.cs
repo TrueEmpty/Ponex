@@ -1,8 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Resolves per-player skin colors (for duplicate character picks) and lightly tints
-/// character / lifeline / projectile renderers — textures stay; only color/emission are nudged.
+/// Resolves per-player skin colors and applies them to character / lifeline / projectile renderers.
+/// - Authored textures: soft tint (detail stays readable)
+/// - Flat / untextured (Nari, Test, Trigger, …): full color overwrite
+/// - Multi-flat parts (Master Pong, Garmen, …): harmonious multi-tone scheme from the skin
 /// </summary>
 public static class PlayerSkin
 {
@@ -10,11 +13,24 @@ public static class PlayerSkin
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
     static readonly int TintColorId = Shader.PropertyToID("_TintColor");
+    static readonly int MainTexId = Shader.PropertyToID("_MainTex");
+    static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
-    /// <summary>How strongly the skin hue multiplies albedo (0 = original, 1 = full skin multiply).</summary>
-    const float AlbedoTintStrength = 0.45f;
-    /// <summary>How strongly existing emission is hue-shifted (never replaces emission maps).</summary>
-    const float EmissionTintStrength = 0.40f;
+    /// <summary>How strongly textured materials multiply albedo by skin.</summary>
+    const float TexturedAlbedoTint = 0.45f;
+    /// <summary>How strongly textured emission is hue-shifted.</summary>
+    const float TexturedEmissionTint = 0.40f;
+    const float ParticleTintStrength = 0.55f;
+
+    struct MatSlot
+    {
+        public Renderer renderer;
+        public int matIndex;
+        public Material material;
+        public bool textured;
+        public float luminance;
+        public Color sourceColor;
+    }
 
     /// <summary>Usable skin slots (skips trailing white CPU cursor color when present).</summary>
     public static int UsableColorCount(Database db)
@@ -93,7 +109,6 @@ public static class PlayerSkin
     {
         if (string.IsNullOrEmpty(name))
             return false;
-        // Main + phase-locked variants
         return name == "Celarus"
             || name == "Sunshine Celarus"
             || name == "Moonlight Celarus";
@@ -167,7 +182,6 @@ public static class PlayerSkin
                 return;
             }
         }
-        // Every skin taken by same-character clones — keep current
     }
 
     /// <summary>
@@ -189,7 +203,6 @@ public static class PlayerSkin
 
         bool[] taken = GetTakenSkins(p, db, usable);
 
-        // Keep current if already unique
         int current = EffectiveSkinIndex(p, db);
         if (!taken[current])
         {
@@ -213,7 +226,6 @@ public static class PlayerSkin
             }
         }
 
-        // Overflow: more clones than colors — leave as-is
         p.skinColorIndex = current;
     }
 
@@ -222,29 +234,33 @@ public static class PlayerSkin
         if (root == null || p == null)
             return;
 
-        Apply(root, GetColor(p, db));
+        Apply(root, GetColor(p, db), p.name);
+    }
+
+    public static void Apply(GameObject root, Color skin)
+    {
+        Apply(root, skin, null);
     }
 
     /// <summary>
-    /// Soft color tint only — albedo/emission maps and textures are left on the material.
-    /// Uses MaterialPropertyBlock so shared materials are never replaced.
+    /// Apply skin. Flat materials fully overwrite; multi-flat parts get a matching scheme;
+    /// textured materials keep a soft tint so maps stay visible.
     /// </summary>
-    public static void Apply(GameObject root, Color skin)
+    public static void Apply(GameObject root, Color skin, string characterName)
     {
         if (root == null)
             return;
 
+        bool forceFull = ForcesFullOverwrite(characterName);
+
         Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        List<MatSlot> slots = new List<MatSlot>(16);
+        Dictionary<int, float> uniqueFlatLum = new Dictionary<int, float>();
 
         for (int r = 0; r < renderers.Length; r++)
         {
             Renderer ren = renderers[r];
-            if (ren == null)
-                continue;
-
-            // Particle meshes tinted via ParticleSystem.startColor below
-            if (ren is ParticleSystemRenderer)
+            if (ren == null || ren is ParticleSystemRenderer)
                 continue;
 
             Material[] mats = ren.sharedMaterials;
@@ -257,43 +273,231 @@ public static class PlayerSkin
                 if (mat == null)
                     continue;
 
-                ren.GetPropertyBlock(block, m);
+                bool textured = !forceFull && HasAuthoredTexture(mat);
+                Color src = ReadAlbedo(mat);
+                float lum = Luminance(src);
 
-                // Albedo tint multiplies with _MainTex / base maps — textures stay visible
-                if (mat.HasProperty(BaseColorId))
+                slots.Add(new MatSlot
                 {
-                    Color src = mat.GetColor(BaseColorId);
-                    block.SetColor(BaseColorId, MultiplyTint(src, skin, AlbedoTintStrength));
-                }
+                    renderer = ren,
+                    matIndex = m,
+                    material = mat,
+                    textured = textured,
+                    luminance = lum,
+                    sourceColor = src
+                });
 
-                if (mat.HasProperty(ColorId))
+                if (!textured)
                 {
-                    Color src = mat.GetColor(ColorId);
-                    block.SetColor(ColorId, MultiplyTint(src, skin, AlbedoTintStrength));
+                    int id = mat.GetInstanceID();
+                    if (!uniqueFlatLum.ContainsKey(id))
+                        uniqueFlatLum[id] = lum;
                 }
-
-                if (mat.HasProperty(TintColorId))
-                {
-                    Color src = mat.GetColor(TintColorId);
-                    block.SetColor(TintColorId, MultiplyTint(src, skin, AlbedoTintStrength));
-                }
-
-                // Only nudge existing emission — never paint solid skin over emission maps
-                if (mat.HasProperty(EmissionId))
-                {
-                    Color srcEmit = mat.GetColor(EmissionId);
-                    if (srcEmit.maxColorComponent > 0.001f)
-                    {
-                        Color tinted = MultiplyTint(srcEmit, skin, EmissionTintStrength);
-                        block.SetColor(EmissionId, tinted);
-                    }
-                }
-
-                ren.SetPropertyBlock(block, m);
             }
         }
 
-        // Soft particle tint (keeps gradient structure when using startColor)
+        // Build a dark→light scheme for distinct flat materials (Master Pong gray/white, etc.)
+        List<int> flatIds = new List<int>(uniqueFlatLum.Keys);
+        flatIds.Sort((a, b) => uniqueFlatLum[a].CompareTo(uniqueFlatLum[b]));
+        Color[] scheme = BuildColorScheme(skin, Mathf.Max(1, flatIds.Count));
+        Dictionary<int, Color> flatColorByMat = new Dictionary<int, Color>(flatIds.Count);
+        for (int i = 0; i < flatIds.Count; i++)
+            flatColorByMat[flatIds[i]] = scheme[Mathf.Min(i, scheme.Length - 1)];
+
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            MatSlot slot = slots[i];
+            Renderer ren = slot.renderer;
+            Material mat = slot.material;
+            ren.GetPropertyBlock(block, slot.matIndex);
+
+            if (slot.textured)
+            {
+                ApplySoftTint(block, mat, skin, slot.sourceColor);
+            }
+            else
+            {
+                Color target = skin;
+                if (flatColorByMat.TryGetValue(mat.GetInstanceID(), out Color schemeColor))
+                    target = schemeColor;
+                // Preserve authored alpha (transparency on Iyolit-like flats, etc.)
+                target.a = slot.sourceColor.a;
+                ApplyFullOverwrite(block, mat, target, slot.sourceColor);
+            }
+
+            ren.SetPropertyBlock(block, slot.matIndex);
+        }
+
+        bool fullParticles = forceFull || uniqueFlatLum.Count > 0 && CountTextured(slots) == 0;
+        ApplyParticlesAndTrails(root, skin, fullParticles);
+    }
+
+    static int CountTextured(List<MatSlot> slots)
+    {
+        int n = 0;
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i].textured)
+                n++;
+        }
+        return n;
+    }
+
+    static bool ForcesFullOverwrite(string characterName)
+    {
+        if (string.IsNullOrEmpty(characterName))
+            return false;
+        // Known untextured single-color characters — always full overwrite
+        return characterName.Equals("Nari", System.StringComparison.OrdinalIgnoreCase)
+            || characterName.Equals("Test", System.StringComparison.OrdinalIgnoreCase)
+            || characterName.Equals("Trigger", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// True when the material has a real albedo map (not null / not Unity's tiny default white).
+    /// </summary>
+    public static bool HasAuthoredTexture(Material mat)
+    {
+        if (mat == null)
+            return false;
+
+        Texture tex = null;
+        if (mat.HasProperty(BaseMapId))
+            tex = mat.GetTexture(BaseMapId);
+        if (tex == null && mat.HasProperty(MainTexId))
+            tex = mat.GetTexture(MainTexId);
+        if (tex == null)
+            return false;
+
+        // Built-in / placeholder whites are not authored character textures
+        string n = tex.name;
+        if (string.IsNullOrEmpty(n))
+            return false;
+        if (n.StartsWith("Default", System.StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (n.IndexOf("white", System.StringComparison.OrdinalIgnoreCase) >= 0 && tex.width <= 8 && tex.height <= 8)
+            return false;
+        // Tiny placeholder maps don't count as surface detail
+        if (tex.width <= 2 && tex.height <= 2)
+            return false;
+
+        return true;
+    }
+
+    static Color ReadAlbedo(Material mat)
+    {
+        if (mat.HasProperty(BaseColorId))
+            return mat.GetColor(BaseColorId);
+        if (mat.HasProperty(ColorId))
+            return mat.GetColor(ColorId);
+        if (mat.HasProperty(TintColorId))
+            return mat.GetColor(TintColorId);
+        return Color.white;
+    }
+
+    static float Luminance(Color c)
+    {
+        return c.r * 0.2126f + c.g * 0.7152f + c.b * 0.0722f;
+    }
+
+    /// <summary>
+    /// Dark → light tones that stay in the skin's hue family (for multi-part flat meshes).
+    /// </summary>
+    static Color[] BuildColorScheme(Color skin, int count)
+    {
+        count = Mathf.Max(1, count);
+        Color[] colors = new Color[count];
+        Color.RGBToHSV(skin, out float h, out float s, out float v);
+
+        if (count == 1)
+        {
+            colors[0] = skin;
+            return colors;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            float t = (float)i / (count - 1);
+            // Dark accent → primary skin → light highlight
+            float nv = Mathf.Lerp(Mathf.Clamp01(v * 0.28f + 0.04f), Mathf.Clamp01(Mathf.Lerp(v, 1f, 0.55f)), t);
+            float ns = Mathf.Lerp(Mathf.Clamp01(s * 1.05f), Mathf.Clamp01(s * 0.45f), t);
+            // Tiny analogous drift so multi-parts don't look painted one solid
+            float nh = h + (t - 0.5f) * 0.035f;
+            if (nh < 0f) nh += 1f;
+            if (nh > 1f) nh -= 1f;
+
+            Color c = Color.HSVToRGB(nh, ns, nv);
+            // Keep mid slots close to the exact player skin
+            if (count >= 2)
+            {
+                float mid = (count - 1) * 0.5f;
+                float midBlend = 1f - Mathf.Clamp01(Mathf.Abs(i - mid) / Mathf.Max(0.5f, mid));
+                c = Color.Lerp(c, skin, midBlend * 0.65f);
+            }
+            c.a = skin.a;
+            colors[i] = c;
+        }
+
+        // Ensure one slot is exactly the player skin (closest mid)
+        int midIdx = count / 2;
+        colors[midIdx] = skin;
+        return colors;
+    }
+
+    static void ApplySoftTint(MaterialPropertyBlock block, Material mat, Color skin, Color src)
+    {
+        if (mat.HasProperty(BaseColorId))
+            block.SetColor(BaseColorId, MultiplyTint(src, skin, TexturedAlbedoTint));
+        if (mat.HasProperty(ColorId))
+        {
+            Color c = mat.HasProperty(BaseColorId) ? mat.GetColor(ColorId) : src;
+            block.SetColor(ColorId, MultiplyTint(c, skin, TexturedAlbedoTint));
+        }
+        if (mat.HasProperty(TintColorId))
+        {
+            Color c = mat.GetColor(TintColorId);
+            block.SetColor(TintColorId, MultiplyTint(c, skin, TexturedAlbedoTint));
+        }
+        if (mat.HasProperty(EmissionId))
+        {
+            Color srcEmit = mat.GetColor(EmissionId);
+            if (srcEmit.maxColorComponent > 0.001f)
+                block.SetColor(EmissionId, MultiplyTint(srcEmit, skin, TexturedEmissionTint));
+        }
+    }
+
+    static void ApplyFullOverwrite(MaterialPropertyBlock block, Material mat, Color target, Color src)
+    {
+        if (mat.HasProperty(BaseColorId))
+            block.SetColor(BaseColorId, target);
+        if (mat.HasProperty(ColorId))
+            block.SetColor(ColorId, target);
+        if (mat.HasProperty(TintColorId))
+        {
+            Color tint = target;
+            // Keep additive particle-style tint alpha from source when present
+            if (mat.HasProperty(TintColorId))
+                tint.a = Mathf.Clamp01(src.a > 0.001f ? src.a : target.a);
+            block.SetColor(TintColorId, tint);
+        }
+        if (mat.HasProperty(EmissionId))
+        {
+            Color srcEmit = mat.GetColor(EmissionId);
+            if (srcEmit.maxColorComponent > 0.001f)
+            {
+                Color emit = target * srcEmit.maxColorComponent;
+                emit.a = srcEmit.a;
+                block.SetColor(EmissionId, emit);
+            }
+        }
+    }
+
+    static void ApplyParticlesAndTrails(GameObject root, Color skin, bool fullOverwrite)
+    {
+        float strength = fullOverwrite ? 1f : ParticleTintStrength;
+
         ParticleSystem[] particles = root.GetComponentsInChildren<ParticleSystem>(true);
         for (int i = 0; i < particles.Length; i++)
         {
@@ -305,15 +509,25 @@ public static class PlayerSkin
             ParticleSystem.MinMaxGradient g = main.startColor;
             if (g.mode == ParticleSystemGradientMode.Color)
             {
-                main.startColor = MultiplyTint(g.color, skin, 0.55f);
+                main.startColor = fullOverwrite
+                    ? WithAlpha(skin, g.color.a)
+                    : MultiplyTint(g.color, skin, strength);
             }
             else if (g.mode == ParticleSystemGradientMode.TwoColors)
             {
-                main.startColor = new ParticleSystem.MinMaxGradient(
-                    MultiplyTint(g.colorMin, skin, 0.55f),
-                    MultiplyTint(g.colorMax, skin, 0.55f));
+                if (fullOverwrite)
+                {
+                    Color a = WithAlpha(skin, g.colorMin.a);
+                    Color b = WithAlpha(Color.Lerp(skin, Color.white, 0.35f), g.colorMax.a);
+                    main.startColor = new ParticleSystem.MinMaxGradient(a, b);
+                }
+                else
+                {
+                    main.startColor = new ParticleSystem.MinMaxGradient(
+                        MultiplyTint(g.colorMin, skin, strength),
+                        MultiplyTint(g.colorMax, skin, strength));
+                }
             }
-            // Gradient modes left alone so authored particle textures/gradients stay
         }
 
         TrailRenderer[] trails = root.GetComponentsInChildren<TrailRenderer>(true);
@@ -322,10 +536,16 @@ public static class PlayerSkin
             TrailRenderer tr = trails[i];
             if (tr == null)
                 continue;
-            Color start = MultiplyTint(tr.startColor, skin, 0.5f);
-            Color end = MultiplyTint(tr.endColor, skin, 0.5f);
-            tr.startColor = start;
-            tr.endColor = end;
+            if (fullOverwrite)
+            {
+                tr.startColor = WithAlpha(skin, tr.startColor.a);
+                tr.endColor = WithAlpha(Color.Lerp(skin, Color.clear, 0.5f), tr.endColor.a);
+            }
+            else
+            {
+                tr.startColor = MultiplyTint(tr.startColor, skin, 0.5f);
+                tr.endColor = MultiplyTint(tr.endColor, skin, 0.5f);
+            }
         }
 
         LineRenderer[] lines = root.GetComponentsInChildren<LineRenderer>(true);
@@ -334,9 +554,23 @@ public static class PlayerSkin
             LineRenderer lr = lines[i];
             if (lr == null)
                 continue;
-            lr.startColor = MultiplyTint(lr.startColor, skin, 0.5f);
-            lr.endColor = MultiplyTint(lr.endColor, skin, 0.5f);
+            if (fullOverwrite)
+            {
+                lr.startColor = WithAlpha(skin, lr.startColor.a);
+                lr.endColor = WithAlpha(skin, lr.endColor.a);
+            }
+            else
+            {
+                lr.startColor = MultiplyTint(lr.startColor, skin, 0.5f);
+                lr.endColor = MultiplyTint(lr.endColor, skin, 0.5f);
+            }
         }
+    }
+
+    static Color WithAlpha(Color c, float a)
+    {
+        c.a = a;
+        return c;
     }
 
     /// <summary>

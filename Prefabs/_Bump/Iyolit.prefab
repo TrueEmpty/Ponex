@@ -82,7 +82,7 @@ MonoBehaviour:
   tagHit:
   - Ball
   - Wall
-  delay: 0.1
+  delay: 0.02
   selfDestroy: 1
 --- !u!114 &6946724109734766759
 MonoBehaviour:

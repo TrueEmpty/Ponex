@@ -23,6 +23,8 @@ public class Database : MonoBehaviour
     public int selectedField = 0;
     public int selectedBall = -1;
     int fieldSize = 0;
+    /// <summary>Current match playfield width (field.size + 10). 0 before a match starts.</summary>
+    public float FieldPlaySize => fieldSize;
 
     public GameObject outofBounds;
     public GameObject background;
@@ -102,13 +104,8 @@ public class Database : MonoBehaviour
         if (characters == null || characters.Count == 0)
             LoadCharactersFromAssets();
 
-        // Remove leftover Leave / Go CPU control if a prior session created it
-        if (playerSelectors != null)
-        {
-            Transform leave = playerSelectors.Find("Leave");
-            if (leave != null)
-                Destroy(leave.gameObject);
-        }
+        // In-game unlink control: long-press Leave / Go CPU (bottom-left with cursors)
+        DisconnectPlayerButton.EnsureExists(playerSelectors);
 
         BackButtonClick.EnsureAll();
         TrainingManager.EnsureExists();
@@ -1140,6 +1137,8 @@ public class Database : MonoBehaviour
                 {
                     p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
                     PlaceLifelineOnWall(p.spawnedLifeline, p.facing, p.spawnedPlayer.transform.position, fRot, p.lifeline);
+                    // Trigger's multi-capsule barrier: keep test-zone spacing, spread with larger walls
+                    SpreadTriggerLifelineParts(p.spawnedLifeline, p);
                     PlayerGrab lifePG = p.spawnedLifeline.GetComponent<PlayerGrab>();
 
                     if (lifePG != null)
@@ -1242,6 +1241,91 @@ public class Database : MonoBehaviour
 
         startingGame = false;
         yield return null;
+    }
+
+    /// <summary>
+    /// Trigger lifeline is several Capsules at fixed local X (±1.4 / ±2.8). That spacing fits the
+    /// default test zone (fieldSize ≈ 20). On larger playfields, scale lateral spacing by wall span
+    /// so the barrier stays even and more spread out relative to the left/right walls.
+    /// </summary>
+    void SpreadTriggerLifelineParts(GameObject lifeline, Player p)
+    {
+        if (lifeline == null || p == null || p.character == null)
+            return;
+        bool isTrigger =
+            (!string.IsNullOrEmpty(p.name) &&
+             p.name.Equals("Trigger", StringComparison.OrdinalIgnoreCase))
+            || lifeline.name.StartsWith("Trigger", StringComparison.OrdinalIgnoreCase);
+        if (!isTrigger)
+            return;
+
+        Transform root = lifeline.transform;
+        if (root.childCount < 2)
+            return;
+
+        List<Transform> parts = new List<Transform>(root.childCount);
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform c = root.GetChild(i);
+            if (c != null)
+                parts.Add(c);
+        }
+        if (parts.Count < 2)
+            return;
+
+        parts.Sort((a, b) => a.localPosition.x.CompareTo(b.localPosition.x));
+
+        // Measure wall span along the lifeline's right axis
+        Vector3 origin = root.position + root.up * 0.5f;
+        float leftDist = RayDistanceToWall(origin, -root.right);
+        float rightDist = RayDistanceToWall(origin, root.right);
+        float wallSpan = (leftDist > 0.01f && rightDist > 0.01f)
+            ? leftDist + rightDist
+            : Mathf.Max(8f, fieldSize);
+
+        // Prefab tuned for fieldSize ≈ 20 (size 10 test zone)
+        const float referenceSpan = 20f;
+        float scale = Mathf.Clamp(wallSpan / referenceSpan, 0.55f, 4f);
+
+        // Scale existing even spacing; keep relative layout
+        for (int i = 0; i < parts.Count; i++)
+        {
+            Vector3 lp = parts[i].localPosition;
+            lp.x *= scale;
+            parts[i].localPosition = lp;
+        }
+
+        // Soft clamp: if outer parts would sit past the walls, re-fit evenly inside margins
+        float outer = Mathf.Abs(parts[parts.Count - 1].localPosition.x);
+        float halfSpan = wallSpan * 0.5f;
+        float partHalf = Mathf.Max(0.25f, Mathf.Abs(parts[0].localScale.x) * 0.55f);
+        float maxOuter = Mathf.Max(0.5f, halfSpan - partHalf * 1.25f);
+        if (outer > maxOuter + 0.01f && outer > 0.01f)
+        {
+            float fit = maxOuter / outer;
+            for (int i = 0; i < parts.Count; i++)
+            {
+                Vector3 lp = parts[i].localPosition;
+                lp.x *= fit;
+                parts[i].localPosition = lp;
+            }
+        }
+    }
+
+    float RayDistanceToWall(Vector3 origin, Vector3 dir)
+    {
+        RaycastHit[] hits = Physics.RaycastAll(origin, dir, Mathf.Max(fieldSize * 2f, 100f), ~0, QueryTriggerInteraction.Ignore);
+        if (hits == null || hits.Length == 0)
+            return -1f;
+
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        for (int i = 0; i < hits.Length; i++)
+        {
+            string tag = hits[i].transform != null ? hits[i].transform.tag : null;
+            if (tag == "Wall" || tag == "Walls" || tag == "Obstacle")
+                return hits[i].distance;
+        }
+        return -1f;
     }
 
     /// <summary>

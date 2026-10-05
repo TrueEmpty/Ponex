@@ -51,4 +51,4 @@ MonoBehaviour:
   portraitColor: {r: 0.6, g: 0.75, b: 1, a: 1}
   portrait: {fileID: 0}
   icon: {fileID: 0}
-  active: 0
+  active: 1

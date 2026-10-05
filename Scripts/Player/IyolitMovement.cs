@@ -27,6 +27,22 @@ public class IyolitMovement : MonoBehaviour
     {
         pG = GetComponent<PlayerGrab>();
         db = Database.instance;
+        SetupFlameVisuals();
+    }
+
+    void SetupFlameVisuals()
+    {
+        // Root = ember/aura body particles; child flame blob sits on the wick
+        IyolitFlameFx.Ensure(gameObject, IyolitFlameFx.Style.BodyAura);
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child == null)
+                continue;
+            if (child.GetComponent<ParticleSystem>() != null)
+                IyolitFlameFx.Ensure(child.gameObject, IyolitFlameFx.Style.BodyCore);
+        }
     }
 
     // Update is called once per frame
@@ -70,7 +86,8 @@ public class IyolitMovement : MonoBehaviour
 
                         if (moving)
                         {
-                            percentDis += pG.player.movementSpeed * Time.deltaTime;
+                            // Half speed between candles
+                            percentDis += pG.player.movementSpeed * 0.5f * Time.deltaTime;
                             percentFC = 1 - (Mathf.Abs(.5f - percentDis) * 2);
 
                             if (percentDis < 1)
@@ -89,23 +106,24 @@ public class IyolitMovement : MonoBehaviour
 
                     if (currentPosition == lastPosition && !moving)
                     {
+                        // Lane inputs are reversed vs candle index order — swap so stick matches on-screen move
                         if (pG.inp.tf_right)
-                        {
-                            currentPosition++;
-
-                            if (currentPosition >= positions.Count)
-                            {
-                                currentPosition = positions.Count - 1;
-                            }
-                        }
-
-                        if (pG.inp.tf_left)
                         {
                             currentPosition--;
 
                             if (currentPosition < 0)
                             {
                                 currentPosition = 0;
+                            }
+                        }
+
+                        if (pG.inp.tf_left)
+                        {
+                            currentPosition++;
+
+                            if (currentPosition >= positions.Count)
+                            {
+                                currentPosition = positions.Count - 1;
                             }
                         }
 
