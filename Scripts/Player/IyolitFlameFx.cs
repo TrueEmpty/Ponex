@@ -270,16 +270,16 @@ public class IyolitFlameFx : MonoBehaviour
                 break;
 
             case Style.BumpEmber:
-                // Small round embers (same look as FlameEmbers child) with a touch of flame color
-                main.gravityModifier = -0.4f;
+                // Short round ember sparks — plenty of them, not long streaks
+                main.gravityModifier = -0.12f;
                 tex = texEmber != null ? texEmber : (texC != null ? texC : texA);
-                main.duration = 0.6f;
-                main.startLifetime = new ParticleSystem.MinMaxCurve(0.18f, 0.35f);
-                main.startSpeed = new ParticleSystem.MinMaxCurve(0.2f, 0.8f);
-                main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.12f);
-                main.maxParticles = 28;
-                c0 = new Color(1f, 0.75f, 0.25f, 1f);
-                c1 = new Color(1f, 0.3f, 0.05f, 0.9f);
+                main.duration = 0.35f;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(0.08f, 0.18f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0.02f, 0.18f);
+                main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.085f);
+                main.maxParticles = 48;
+                c0 = new Color(1f, 0.85f, 0.35f, 1f);
+                c1 = new Color(1f, 0.35f, 0.05f, 0.9f);
                 break;
 
             default: // BodyAura
@@ -300,7 +300,7 @@ public class IyolitFlameFx : MonoBehaviour
         var emission = ps.emission;
         emission.enabled = true;
         if (layer == Style.BumpEmber)
-            emission.rateOverTime = 16f;
+            emission.rateOverTime = 32f;
         else if (layer == Style.BodyAura)
             emission.rateOverTime = 28f;
         else if (layer == Style.Candle)
@@ -311,8 +311,10 @@ public class IyolitFlameFx : MonoBehaviour
         var shape = ps.shape;
         shape.enabled = true;
         shape.shapeType = ParticleSystemShapeType.Cone;
-        shape.angle = layer == Style.BodyAura ? 25f : (layer == Style.BumpEmber ? 22f : 12f);
-        shape.radius = layer == Style.BodyAura ? 0.15f : (layer == Style.BumpEmber ? 0.06f : 0.05f);
+        shape.angle = layer == Style.BodyAura ? 25f : (layer == Style.BumpEmber ? 12f : 12f);
+        shape.radius = layer == Style.BodyAura ? 0.15f : (layer == Style.BumpEmber ? 0.035f : 0.05f);
+        if (layer == Style.BumpEmber)
+            shape.shapeType = ParticleSystemShapeType.Sphere;
         shape.rotation = new Vector3(-90f, 0f, 0f);
 
         var colorOverLife = ps.colorOverLifetime;
@@ -336,27 +338,33 @@ public class IyolitFlameFx : MonoBehaviour
 
         var sizeOverLife = ps.sizeOverLifetime;
         sizeOverLife.enabled = true;
-        AnimationCurve sizeCurve = new AnimationCurve(
-            new Keyframe(0f, 0.45f),
-            new Keyframe(0.2f, 1f),
-            new Keyframe(0.7f, 0.75f),
-            new Keyframe(1f, 0.05f));
+        AnimationCurve sizeCurve = layer == Style.BumpEmber
+            ? new AnimationCurve(
+                new Keyframe(0f, 0.85f),
+                new Keyframe(0.2f, 1f),
+                new Keyframe(0.55f, 0.55f),
+                new Keyframe(1f, 0f))
+            : new AnimationCurve(
+                new Keyframe(0f, 0.45f),
+                new Keyframe(0.2f, 1f),
+                new Keyframe(0.7f, 0.75f),
+                new Keyframe(1f, 0.05f));
         sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, sizeCurve);
 
         var velocity = ps.velocityOverLifetime;
         velocity.enabled = true;
         velocity.space = ParticleSystemSimulationSpace.Local;
         velocity.x = 0f;
-        velocity.y = layer == Style.Candle ? 1.4f : (layer == Style.BumpEmber ? 0.5f : 0.85f);
+        velocity.y = layer == Style.Candle ? 1.4f : (layer == Style.BumpEmber ? 0.25f : 0.85f);
         velocity.z = 0f;
         velocity.orbitalX = 0f;
         velocity.orbitalY = 0f;
         velocity.orbitalZ = 0f;
-        velocity.speedModifier = 0.15f;
+        velocity.speedModifier = layer == Style.BumpEmber ? 0.05f : 0.15f;
 
         var noise = ps.noise;
         noise.enabled = true;
-        noise.strength = layer == Style.BodyAura ? 0.35f : 0.22f;
+        noise.strength = layer == Style.BumpEmber ? 0.12f : (layer == Style.BodyAura ? 0.35f : 0.22f);
         noise.frequency = 0.9f;
         noise.scrollSpeed = 0.45f;
         noise.damping = true;
@@ -368,8 +376,11 @@ public class IyolitFlameFx : MonoBehaviour
             renderer.alignment = ParticleSystemRenderSpace.View;
             renderer.sortMode = ParticleSystemSortMode.OldestInFront;
             renderer.minParticleSize = 0.01f;
+            renderer.lengthScale = 1f;
+            renderer.velocityScale = 0f;
+            renderer.cameraVelocityScale = 0f;
             if (layer == Style.BumpEmber)
-                renderer.maxParticleSize = 0.2f;
+                renderer.maxParticleSize = 0.18f;
             else if (layer == Style.BodyAura)
                 renderer.maxParticleSize = 0.35f;
             else
@@ -410,26 +421,27 @@ public class IyolitFlameFx : MonoBehaviour
         var main = ps.main;
         main.playOnAwake = true;
         main.loop = true;
-        main.duration = 1f;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.4f, 0.9f);
-        main.startSpeed = new ParticleSystem.MinMaxCurve(0.5f, 1.8f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.12f);
+        main.duration = 0.4f;
+        // Short-lived round sparks — denser, not long flame streaks
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.1f, 0.22f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(0.08f, 0.3f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.08f);
         main.startColor = new ParticleSystem.MinMaxGradient(
             new Color(1f, 0.95f, 0.5f, 1f),
             new Color(1f, 0.4f, 0.05f, 0.85f));
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.gravityModifier = -0.4f;
-        main.maxParticles = 40;
+        main.gravityModifier = -0.15f;
+        main.maxParticles = 56;
+        main.startRotation = 0f;
 
         var emission = ps.emission;
-        emission.rateOverTime = parentStyle == Style.Candle ? 18f : 12f;
+        emission.rateOverTime = parentStyle == Style.Candle ? 22f : 16f;
 
         var shape = ps.shape;
         shape.enabled = true;
-        shape.shapeType = ParticleSystemShapeType.Cone;
-        shape.angle = 28f;
-        shape.radius = 0.08f;
-        shape.rotation = new Vector3(-90f, 0f, 0f);
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius = 0.06f;
+        shape.radiusThickness = 1f;
 
         var colorOverLife = ps.colorOverLifetime;
         colorOverLife.enabled = true;
@@ -445,21 +457,52 @@ public class IyolitFlameFx : MonoBehaviour
             {
                 new GradientAlphaKey(0f, 0f),
                 new GradientAlphaKey(1f, 0.1f),
+                new GradientAlphaKey(0.6f, 0.45f),
                 new GradientAlphaKey(0f, 1f)
             });
         colorOverLife.color = g;
+
+        var sizeOverLife = ps.sizeOverLifetime;
+        sizeOverLife.enabled = true;
+        sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
+            new Keyframe(0f, 0.9f),
+            new Keyframe(0.25f, 1f),
+            new Keyframe(0.7f, 0.4f),
+            new Keyframe(1f, 0f)));
+
+        var velocity = ps.velocityOverLifetime;
+        velocity.enabled = true;
+        velocity.space = ParticleSystemSimulationSpace.Local;
+        velocity.x = 0f;
+        velocity.y = 0.2f;
+        velocity.z = 0f;
+        velocity.orbitalX = 0f;
+        velocity.orbitalY = 0f;
+        velocity.orbitalZ = 0f;
+        velocity.speedModifier = 0.03f;
+
+        var noise = ps.noise;
+        noise.enabled = true;
+        noise.strength = 0.12f;
+        noise.frequency = 0.7f;
+        noise.scrollSpeed = 0.3f;
+        noise.damping = true;
 
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
         if (renderer != null)
         {
             renderer.renderMode = ParticleSystemRenderMode.Billboard;
+            renderer.alignment = ParticleSystemRenderSpace.View;
+            renderer.lengthScale = 1f;
+            renderer.velocityScale = 0f;
+            renderer.cameraVelocityScale = 0f;
             Material mat = MakeMat(texEmber != null ? texEmber : texC);
             if (mat != null)
             {
                 renderer.sharedMaterial = mat;
                 renderer.material = mat;
             }
-            renderer.maxParticleSize = 0.2f;
+            renderer.maxParticleSize = 0.16f;
         }
 
         ps.Play(true);

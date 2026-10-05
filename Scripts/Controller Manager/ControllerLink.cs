@@ -18,6 +18,24 @@ public class ControllerLink : MonoBehaviour
     public List<ControllerButtons> buttons = new List<ControllerButtons>();
     public float ready = .5f;
 
+    /// <summary>Hold Select / Backspace / Delete this long to unlink the controller.</summary>
+    public float leaveHoldSeconds = 1.25f;
+    float leaveHold;
+    bool leaveFired;
+
+    /// <summary>0–1 progress while holding Leave (for selector unfill visual).</summary>
+    public float LeaveHoldProgress
+    {
+        get
+        {
+            if (leaveFired)
+                return 1f;
+            if (leaveHoldSeconds <= 0.0001f)
+                return 0f;
+            return Mathf.Clamp01(leaveHold / leaveHoldSeconds);
+        }
+    }
+
     public ControllerButtons this[string buttonName]
     {
         get
@@ -268,7 +286,43 @@ public class ControllerLink : MonoBehaviour
                         break;
                 }
             }
+
+            UpdateLeaveHold();
         }
+    }
+
+    /// <summary>
+    /// Hold Leave (Select / Backspace / Delete) to drop this controller.
+    /// Main Menu: removes the player. Character Select: removes if above minPlayers, else CPU.
+    /// Past Character Select / in match: converts the slot to CPU.
+    /// </summary>
+    void UpdateLeaveHold()
+    {
+        if (db == null)
+            db = Database.instance;
+        if (db == null || index < 0)
+            return;
+
+        ControllerButtons leave = this["Leave"];
+        bool held = leave != null && leave.isPressed;
+
+        if (!held)
+        {
+            leaveHold = 0f;
+            leaveFired = false;
+            return;
+        }
+
+        if (leaveFired)
+            return;
+
+        leaveHold += Time.unscaledDeltaTime;
+        if (leaveHold < leaveHoldSeconds)
+            return;
+
+        leaveFired = true;
+        leaveHold = 0f;
+        db.DisconnectPlayer(index);
     }
 }
 

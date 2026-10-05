@@ -1,0 +1,8 @@
+ship_verts=839
+ship_faces=573
+ship_size=(1.9199999570846558, 0.8999999761581421, 1.7499999403953552)
+ship_fbx_bytes=51836
+ship_meshes=[('Jack_Ship', 839, 573, ['HullWood', 'HullDark', 'StripeCream', 'StripeOrange', 'DeckWood', 'MastWood', 'CabinWood', 'AccentBlack', 'RopeTan', 'SailCream', 'FlagBlack'])]
+ship_empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03']
+mats=['AccentBlack', 'CabinWood', 'DeckWood', 'FlagBlack', 'HullDark', 'HullWood', 'MastWood', 'RopeTan', 'SailCream', 'StripeCream', 'StripeOrange']
+ok=True

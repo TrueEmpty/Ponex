@@ -49,6 +49,16 @@ public class PlayerSelectorObj : MonoBehaviour
 
         ucd = GetComponent<UniversalCollisionDetector>();
         text = transform.GetChild(1).GetComponent<Text>();
+
+        // Main cursor image unfills radially while holding Leave (disconnect)
+        if (circle != null)
+        {
+            circle.type = Image.Type.Filled;
+            circle.fillMethod = Image.FillMethod.Radial360;
+            circle.fillOrigin = (int)Image.Origin360.Top;
+            circle.fillClockwise = true;
+            circle.fillAmount = 1f;
+        }
     }
 
     void Update()
@@ -59,6 +69,7 @@ public class PlayerSelectorObj : MonoBehaviour
             if (IsWinScrolling())
             {
                 ShowOverlay();
+                UpdateLeaveUnfill();
                 ControllingUI();
                 return;
             }
@@ -67,6 +78,7 @@ public class PlayerSelectorObj : MonoBehaviour
             HandleActions();
             HandleCharacterSelectShortcuts();
             ShowOverlay();
+            UpdateLeaveUnfill();
             ControllingUI();
             CPUSelections();
         }
@@ -358,6 +370,18 @@ public class PlayerSelectorObj : MonoBehaviour
                 fill = 0f;
             clickimg.fillAmount = Mathf.Clamp01(fill);
         }
+    }
+
+    /// <summary>
+    /// Main selector image (not the click-hold child) drains while holding Leave / disconnect.
+    /// </summary>
+    void UpdateLeaveUnfill()
+    {
+        if (circle == null || cLink == null)
+            return;
+
+        float progress = cLink.LeaveHoldProgress;
+        circle.fillAmount = Mathf.Clamp01(1f - progress);
     }
 
     void CPUSelections()

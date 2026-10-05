@@ -1,0 +1,40 @@
+
+=== STATS ===
+MOTHERSHIP {'verts': 776, 'faces': 556, 'size': (2.6449999809265137, 0.9700927138328552, 1.1131999790668488), 'fbx': '/workspace/ponex-playmodels/fleet-commander/export/FC_Mothership.fbx', 'empties': ['Bridge', 'HangarBay', 'Spawn_Fast', 'Spawn_Heavy', 'Spawn_Shield']}
+FAST {'verts': 336, 'faces': 254, 'size': (0.91839998960495, 0.6248399615287781, 0.18040000647306442), 'fbx': '/workspace/ponex-playmodels/fleet-commander/export/FC_Fast.fbx', 'empties': ['HitPoint']}
+HEAVY {'verts': 522, 'faces': 370, 'size': (0.963299959897995, 0.5616000294685364, 0.3041999936103821), 'fbx': '/workspace/ponex-playmodels/fleet-commander/export/FC_Heavy.fbx', 'empties': ['GunPoint', 'HitPoint']}
+SHIELD {'verts': 930, 'faces': 860, 'size': (0.6700000166893005, 0.699999988079071, 0.6899999976158142), 'fbx': '/workspace/ponex-playmodels/fleet-commander/export/FC_Shield.fbx', 'empties': ['HitPoint', 'ShieldCore']}
+FBX mothership bytes=44156 ok=True empties=['Bridge', 'HangarBay', 'Spawn_Fast', 'Spawn_Heavy', 'Spawn_Shield']
+FBX fast bytes=31436 ok=True empties=['HitPoint']
+FBX heavy bytes=37068 ok=True empties=['GunPoint', 'HitPoint']
+FBX shield bytes=54156 ok=True empties=['HitPoint', 'ShieldCore']
+ALL_OK= True
+Wrote /workspace/ponex-playmodels/fleet-commander/scripts/_last_stats.txt
+PREVIEW_FILES:
+  /workspace/ponex-playmodels/fleet-commander/preview/fast.png 424771
+  /workspace/ponex-playmodels/fleet-commander/preview/fast_34.png 424771
+  /workspace/ponex-playmodels/fleet-commander/preview/fast_back.png 424776
+  /workspace/ponex-playmodels/fleet-commander/preview/fast_front.png 423793
+  /workspace/ponex-playmodels/fleet-commander/preview/fast_side.png 408260
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy.png 500423
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy_34.png 500423
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy_back.png 481723
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy_front.png 480587
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy_side.png 467380
+  /workspace/ponex-playmodels/fleet-commander/preview/hero.png 1070297
+  /workspace/ponex-playmodels/fleet-commander/preview/kit_board.png 1041325
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership.png 530720
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_34.png 530720
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_back.png 497041
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_front.png 500829
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_side.png 475315
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_turntable.gif 784064
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_turntable.mp4 47192
+  /workspace/ponex-playmodels/fleet-commander/preview/shield.png 788626
+  /workspace/ponex-playmodels/fleet-commander/preview/shield_34.png 788626
+  /workspace/ponex-playmodels/fleet-commander/preview/shield_back.png 669542
+  /workspace/ponex-playmodels/fleet-commander/preview/shield_front.png 668775
+  /workspace/ponex-playmodels/fleet-commander/preview/shield_side.png 865348
+
+Blender quit
+EXIT:0

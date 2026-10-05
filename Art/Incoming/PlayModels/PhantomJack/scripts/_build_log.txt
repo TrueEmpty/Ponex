@@ -1,0 +1,769 @@
+could not get a list of mounted file-systems
+Writing to /workspace/ponex-playmodels/phantom-jack/export/Phantom_Raft.obj
+Blender 4.3.2 (hash 32f5fdce0a0a built 2024-12-17 01:31:14)
+OBJ export of 'Phantom_Raft.obj' took 0.43 ms
+Fra:1 Mem:58.68M (Peak 58.68M) | Time:00:01.54 | Rendering 1 / 64 samples
+Fra:1 Mem:58.68M (Peak 58.68M) | Time:00:06.31 | Rendering 25 / 64 samples
+Fra:1 Mem:58.68M (Peak 58.68M) | Time:00:11.32 | Rendering 50 / 64 samples
+Fra:1 Mem:58.68M (Peak 58.68M) | Time:00:14.12 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/raft_front.png'
+Time: 00:14.25 (Saving: 00:00.11)
+
+Fra:1 Mem:58.67M (Peak 58.67M) | Time:00:00.79 | Rendering 1 / 64 samples
+Fra:1 Mem:58.67M (Peak 58.67M) | Time:00:05.55 | Rendering 25 / 64 samples
+Fra:1 Mem:58.67M (Peak 58.67M) | Time:00:10.56 | Rendering 50 / 64 samples
+Fra:1 Mem:58.67M (Peak 58.67M) | Time:00:13.31 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/raft_34.png'
+Time: 00:13.37 (Saving: 00:00.05)
+
+Fra:1 Mem:58.67M (Peak 58.67M) | Time:00:00.76 | Rendering 1 / 64 samples
+Fra:1 Mem:58.67M (Peak 58.67M) | Time:00:05.48 | Rendering 25 / 64 samples
+Fra:1 Mem:58.67M (Peak 58.67M) | Time:00:10.26 | Rendering 50 / 64 samples
+Fra:1 Mem:58.67M (Peak 58.67M) | Time:00:13.02 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/raft_side.png'
+Time: 00:13.10 (Saving: 00:00.05)
+
+Fra:1 Mem:58.68M (Peak 58.68M) | Time:00:00.80 | Rendering 1 / 64 samples
+Fra:1 Mem:58.68M (Peak 58.68M) | Time:00:05.57 | Rendering 25 / 64 samples
+Fra:1 Mem:58.68M (Peak 58.68M) | Time:00:10.68 | Rendering 50 / 64 samples
+Fra:1 Mem:58.68M (Peak 58.68M) | Time:00:13.46 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/raft_back.png'
+Time: 00:13.52 (Saving: 00:00.05)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.79 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.61 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.56 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:08.15 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_000.png'
+Time: 00:08.17 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.81 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.64 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.57 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:08.14 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_001.png'
+Time: 00:08.16 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.76 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.59 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.63 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:08.21 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_002.png'
+Time: 00:08.23 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.80 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.79 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.70 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:08.32 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_003.png'
+Time: 00:08.34 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.70 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.47 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.36 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.97 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_004.png'
+Time: 00:07.99 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.69 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.47 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.31 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.87 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_005.png'
+Time: 00:07.90 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.68 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.48 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.38 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.96 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_006.png'
+Time: 00:07.98 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.69 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.54 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.44 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:08.03 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_007.png'
+Time: 00:08.06 (Saving: 00:00.02)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.66 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.46 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.32 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.94 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_008.png'
+Time: 00:07.97 (Saving: 00:00.02)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.66 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.42 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.28 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.99 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_009.png'
+Time: 00:08.01 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.61 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.33 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.20 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.81 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_010.png'
+Time: 00:07.83 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.73 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.50 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.39 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.94 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_011.png'
+Time: 00:07.96 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.78 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.54 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.42 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.96 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_012.png'
+Time: 00:07.98 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.79 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.56 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.38 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.96 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_013.png'
+Time: 00:07.98 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.82 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.53 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.43 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.99 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_014.png'
+Time: 00:08.01 (Saving: 00:00.02)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.69 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.52 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.31 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.89 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_015.png'
+Time: 00:07.91 (Saving: 00:00.02)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.64 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:02.89 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:05.02 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.73 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_016.png'
+Time: 00:06.76 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.78 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.97 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.06 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:08.92 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_017.png'
+Time: 00:08.94 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.75 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.72 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.56 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:08.19 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_018.png'
+Time: 00:08.22 (Saving: 00:00.01)
+
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:00.70 | Rendering 1 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:03.49 | Rendering 25 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:06.36 | Rendering 50 / 64 samples
+Fra:1 Mem:51.35M (Peak 51.35M) | Time:00:07.91 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_raft/frame_019.png'
+Time: 00:07.93 (Saving: 00:00.01)
+
+Fra:1 Mem:64.92M (Peak 64.92M) | Time:00:00.97 | Rendering 1 / 64 samples
+Fra:1 Mem:64.92M (Peak 64.92M) | Time:00:07.55 | Rendering 25 / 64 samples
+Fra:1 Mem:64.92M (Peak 64.92M) | Time:00:14.33 | Rendering 50 / 64 samples
+Fra:1 Mem:64.92M (Peak 64.92M) | Time:00:18.17 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/raft_hero.png'
+Time: 00:18.31 (Saving: 00:00.10)
+
+Writing to /workspace/ponex-playmodels/phantom-jack/export/Phantom_LittleBoat.obj
+OBJ export of 'Phantom_LittleBoat.obj' took 0.30 ms
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:00.74 | Rendering 1 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:04.61 | Rendering 25 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:08.60 | Rendering 50 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:10.86 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/littleboat_front.png'
+Time: 00:10.93 (Saving: 00:00.05)
+
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:00.78 | Rendering 1 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:04.44 | Rendering 25 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:08.56 | Rendering 50 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:10.85 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/littleboat_34.png'
+Time: 00:10.91 (Saving: 00:00.04)
+
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:00.82 | Rendering 1 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:04.21 | Rendering 25 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:07.72 | Rendering 50 / 64 samples
+Fra:1 Mem:58.42M (Peak 58.42M) | Time:00:09.87 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/littleboat_side.png'
+Time: 00:09.94 (Saving: 00:00.05)
+
+Fra:1 Mem:58.43M (Peak 58.43M) | Time:00:00.80 | Rendering 1 / 64 samples
+Fra:1 Mem:58.43M (Peak 58.43M) | Time:00:04.99 | Rendering 25 / 64 samples
+Fra:1 Mem:58.43M (Peak 58.43M) | Time:00:09.16 | Rendering 50 / 64 samples
+Fra:1 Mem:58.43M (Peak 58.43M) | Time:00:11.48 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/littleboat_back.png'
+Time: 00:11.55 (Saving: 00:00.05)
+
+Writing to /workspace/ponex-playmodels/phantom-jack/export/Phantom_Sailboat.obj
+OBJ export of 'Phantom_Sailboat.obj' took 0.57 ms
+Fra:1 Mem:58.91M (Peak 58.91M) | Time:00:00.86 | Rendering 1 / 64 samples
+Fra:1 Mem:58.91M (Peak 58.91M) | Time:00:05.40 | Rendering 25 / 64 samples
+Fra:1 Mem:58.91M (Peak 58.91M) | Time:00:10.08 | Rendering 50 / 64 samples
+Fra:1 Mem:58.91M (Peak 58.91M) | Time:00:12.85 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/sailboat_front.png'
+Time: 00:12.93 (Saving: 00:00.06)
+
+Fra:1 Mem:58.90M (Peak 58.90M) | Time:00:00.84 | Rendering 1 / 64 samples
+Fra:1 Mem:58.90M (Peak 58.90M) | Time:00:05.63 | Rendering 25 / 64 samples
+Fra:1 Mem:58.90M (Peak 58.90M) | Time:00:10.89 | Rendering 50 / 64 samples
+Fra:1 Mem:58.90M (Peak 58.90M) | Time:00:13.94 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/sailboat_34.png'
+Time: 00:14.02 (Saving: 00:00.06)
+
+Fra:1 Mem:58.90M (Peak 58.90M) | Time:00:00.84 | Rendering 1 / 64 samples
+Fra:1 Mem:58.90M (Peak 58.90M) | Time:00:05.76 | Rendering 25 / 64 samples
+Fra:1 Mem:58.90M (Peak 58.90M) | Time:00:11.08 | Rendering 50 / 64 samples
+Fra:1 Mem:58.90M (Peak 58.90M) | Time:00:13.94 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/sailboat_side.png'
+Time: 00:14.03 (Saving: 00:00.07)
+
+Fra:1 Mem:58.91M (Peak 58.91M) | Time:00:00.93 | Rendering 1 / 64 samples
+Fra:1 Mem:58.91M (Peak 58.91M) | Time:00:06.39 | Rendering 25 / 64 samples
+Fra:1 Mem:58.91M (Peak 58.91M) | Time:00:12.05 | Rendering 50 / 64 samples
+Fra:1 Mem:58.91M (Peak 58.91M) | Time:00:15.08 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/sailboat_back.png'
+Time: 00:15.16 (Saving: 00:00.06)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.87 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.84 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:07.54 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:09.56 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_000.png'
+Time: 00:09.58 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.80 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.46 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:08.27 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:10.29 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_001.png'
+Time: 00:10.32 (Saving: 00:00.02)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.87 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.52 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:07.95 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:09.83 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_002.png'
+Time: 00:09.85 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.81 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.16 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:07.49 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:09.35 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_003.png'
+Time: 00:09.37 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.74 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.79 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:06.57 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:08.32 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_004.png'
+Time: 00:08.34 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.74 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.43 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:06.38 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:08.08 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_005.png'
+Time: 00:08.11 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.69 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.31 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.90 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:05.83 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_006.png'
+Time: 00:05.85 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.51 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.15 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.91 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.84 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_007.png'
+Time: 00:04.86 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.19 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.85 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.78 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_008.png'
+Time: 00:04.80 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.55 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.20 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.90 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.85 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_009.png'
+Time: 00:04.87 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.54 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.26 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.01 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.93 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_010.png'
+Time: 00:04.95 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.54 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.18 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.89 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.81 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_011.png'
+Time: 00:04.83 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.55 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.18 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.95 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:05.11 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_012.png'
+Time: 00:05.13 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.64 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.60 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.62 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:05.47 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_013.png'
+Time: 00:05.48 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.54 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.01 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.66 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.56 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_014.png'
+Time: 00:04.58 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.53 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:01.95 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.47 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.37 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_015.png'
+Time: 00:04.39 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.56 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.13 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.66 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.59 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_016.png'
+Time: 00:04.61 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.59 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.11 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.66 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.52 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_017.png'
+Time: 00:04.54 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.54 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.22 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.91 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.85 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_018.png'
+Time: 00:04.87 (Saving: 00:00.01)
+
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:00.50 | Rendering 1 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:02.14 | Rendering 25 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:03.98 | Rendering 50 / 64 samples
+Fra:1 Mem:51.58M (Peak 51.58M) | Time:00:04.93 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_sailboat/frame_019.png'
+Time: 00:04.95 (Saving: 00:00.01)
+
+Writing to /workspace/ponex-playmodels/phantom-jack/export/Phantom_Warship.obj
+OBJ export of 'Phantom_Warship.obj' took 0.58 ms
+Fra:1 Mem:59.12M (Peak 59.12M) | Time:00:00.76 | Rendering 1 / 64 samples
+Fra:1 Mem:59.12M (Peak 59.12M) | Time:00:03.89 | Rendering 25 / 64 samples
+Fra:1 Mem:59.12M (Peak 59.12M) | Time:00:07.24 | Rendering 50 / 64 samples
+Fra:1 Mem:59.12M (Peak 59.12M) | Time:00:09.22 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/warship_front.png'
+Time: 00:09.28 (Saving: 00:00.05)
+
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:00.69 | Rendering 1 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:04.05 | Rendering 25 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:07.32 | Rendering 50 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:09.20 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/warship_34.png'
+Time: 00:09.26 (Saving: 00:00.05)
+
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:00.61 | Rendering 1 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:03.24 | Rendering 25 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:06.00 | Rendering 50 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:07.57 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/warship_side.png'
+Time: 00:07.63 (Saving: 00:00.04)
+
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:00.64 | Rendering 1 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:03.88 | Rendering 25 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:07.16 | Rendering 50 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:09.08 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/warship_back.png'
+Time: 00:09.15 (Saving: 00:00.05)
+
+Writing to /workspace/ponex-playmodels/phantom-jack/export/Phantom_Carrier.obj
+OBJ export of 'Phantom_Carrier.obj' took 0.45 ms
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:00.64 | Rendering 1 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:03.65 | Rendering 25 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:06.79 | Rendering 50 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:08.63 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/carrier_front.png'
+Time: 00:08.70 (Saving: 00:00.05)
+
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:00.64 | Rendering 1 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:03.44 | Rendering 25 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:06.54 | Rendering 50 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:08.28 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/carrier_34.png'
+Time: 00:08.34 (Saving: 00:00.04)
+
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:00.61 | Rendering 1 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:02.98 | Rendering 25 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:05.46 | Rendering 50 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:06.82 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/carrier_side.png'
+Time: 00:06.88 (Saving: 00:00.04)
+
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:00.63 | Rendering 1 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:03.72 | Rendering 25 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:06.80 | Rendering 50 / 64 samples
+Fra:1 Mem:58.98M (Peak 58.98M) | Time:00:08.61 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/carrier_back.png'
+Time: 00:08.68 (Saving: 00:00.04)
+
+Writing to /workspace/ponex-playmodels/phantom-jack/export/Phantom_Fleet.obj
+OBJ export of 'Phantom_Fleet.obj' took 0.58 ms
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:00.63 | Rendering 1 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:03.71 | Rendering 25 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:06.97 | Rendering 50 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:08.83 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/fleet_front.png'
+Time: 00:08.90 (Saving: 00:00.05)
+
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:00.65 | Rendering 1 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:03.67 | Rendering 25 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:06.86 | Rendering 50 / 64 samples
+Fra:1 Mem:59.13M (Peak 59.13M) | Time:00:08.54 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/fleet_34.png'
+Time: 00:08.61 (Saving: 00:00.05)
+
+Fra:1 Mem:59.14M (Peak 59.14M) | Time:00:00.66 | Rendering 1 / 64 samples
+Fra:1 Mem:59.14M (Peak 59.14M) | Time:00:03.14 | Rendering 25 / 64 samples
+Fra:1 Mem:59.14M (Peak 59.14M) | Time:00:05.77 | Rendering 50 / 64 samples
+Fra:1 Mem:59.14M (Peak 59.14M) | Time:00:07.17 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/fleet_side.png'
+Time: 00:07.23 (Saving: 00:00.04)
+
+Fra:1 Mem:59.14M (Peak 59.14M) | Time:00:00.65 | Rendering 1 / 64 samples
+Fra:1 Mem:59.14M (Peak 59.14M) | Time:00:03.79 | Rendering 25 / 64 samples
+Fra:1 Mem:59.14M (Peak 59.14M) | Time:00:07.13 | Rendering 50 / 64 samples
+Fra:1 Mem:59.14M (Peak 59.14M) | Time:00:08.92 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/fleet_back.png'
+Time: 00:08.99 (Saving: 00:00.04)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.29 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.99 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.98 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_000.png'
+Time: 00:05.00 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.55 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.24 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.92 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.92 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_001.png'
+Time: 00:04.94 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.62 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.31 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.04 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:05.01 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_002.png'
+Time: 00:05.03 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.69 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.36 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.09 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:05.07 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_003.png'
+Time: 00:05.09 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.56 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.12 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.72 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.62 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_004.png'
+Time: 00:04.63 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.12 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.71 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.62 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_005.png'
+Time: 00:04.64 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.56 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.14 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.75 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.66 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_006.png'
+Time: 00:04.68 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.13 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.86 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.79 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_007.png'
+Time: 00:04.81 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.30 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.14 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:05.10 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_008.png'
+Time: 00:05.12 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.38 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.17 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:05.13 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_009.png'
+Time: 00:05.15 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.22 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.93 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.95 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_010.png'
+Time: 00:04.97 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.26 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.03 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.99 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_011.png'
+Time: 00:05.01 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.26 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.11 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:05.09 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_012.png'
+Time: 00:05.11 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.61 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.28 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.07 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:05.05 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_013.png'
+Time: 00:05.07 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.26 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.89 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.80 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_014.png'
+Time: 00:04.82 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.54 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.10 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.70 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.59 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_015.png'
+Time: 00:04.61 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.56 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.11 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.73 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.63 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_016.png'
+Time: 00:04.65 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.59 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.14 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:03.90 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.87 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_017.png'
+Time: 00:04.89 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.43 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.21 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:05.16 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_018.png'
+Time: 00:05.18 (Saving: 00:00.01)
+
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:00.59 | Rendering 1 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:02.27 | Rendering 25 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:04.01 | Rendering 50 / 64 samples
+Fra:1 Mem:51.82M (Peak 51.82M) | Time:00:05.06 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/_tt_fleet/frame_019.png'
+Time: 00:05.08 (Saving: 00:00.01)
+
+Fra:1 Mem:65.38M (Peak 65.38M) | Time:00:00.85 | Rendering 1 / 64 samples
+Fra:1 Mem:65.38M (Peak 65.38M) | Time:00:05.03 | Rendering 25 / 64 samples
+Fra:1 Mem:65.38M (Peak 65.38M) | Time:00:09.32 | Rendering 50 / 64 samples
+Fra:1 Mem:65.38M (Peak 65.38M) | Time:00:11.70 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/hero.png'
+Time: 00:11.80 (Saving: 00:00.08)
+
+Fra:1 Mem:81.00M (Peak 81.00M) | Time:00:00.66 | Rendering 1 / 64 samples
+Fra:1 Mem:81.00M (Peak 81.00M) | Time:00:03.33 | Rendering 25 / 64 samples
+Fra:1 Mem:81.00M (Peak 81.00M) | Time:00:06.22 | Rendering 50 / 64 samples
+Fra:1 Mem:81.00M (Peak 81.00M) | Time:00:07.86 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/phantom-jack/preview/kit_board.png'
+Time: 00:08.07 (Saving: 00:00.17)
+
+
+======== STAGE 1: Phantom_Raft ========
+Phantom_Raft size=(1.059999942779541, 0.7699999809265137, 0.7860845029354095) verts=228 faces=150
+
+FBX export starting... '/workspace/ponex-playmodels/phantom-jack/export/Phantom_Raft.fbx'
+export finished in 0.0078 sec.
+FBX -> /workspace/ponex-playmodels/phantom-jack/export/Phantom_Raft.fbx (27628 bytes)
+PREVIEW [front] -> /workspace/ponex-playmodels/phantom-jack/preview/raft_front.png
+PREVIEW [34] -> /workspace/ponex-playmodels/phantom-jack/preview/raft_34.png
+PREVIEW [side] -> /workspace/ponex-playmodels/phantom-jack/preview/raft_side.png
+PREVIEW [back] -> /workspace/ponex-playmodels/phantom-jack/preview/raft_back.png
+PREVIEW [hero] -> /workspace/ponex-playmodels/phantom-jack/preview/raft_hero.png
+
+======== STAGE 2: Phantom_LittleBoat ========
+Phantom_LittleBoat size=(1.4699999690055847, 0.4300000071525574, 0.41600000858306885) verts=101 faces=83
+
+FBX export starting... '/workspace/ponex-playmodels/phantom-jack/export/Phantom_LittleBoat.fbx'
+export finished in 0.0146 sec.
+FBX -> /workspace/ponex-playmodels/phantom-jack/export/Phantom_LittleBoat.fbx (23404 bytes)
+PREVIEW [front] -> /workspace/ponex-playmodels/phantom-jack/preview/littleboat_front.png
+PREVIEW [34] -> /workspace/ponex-playmodels/phantom-jack/preview/littleboat_34.png
+PREVIEW [side] -> /workspace/ponex-playmodels/phantom-jack/preview/littleboat_side.png
+PREVIEW [back] -> /workspace/ponex-playmodels/phantom-jack/preview/littleboat_back.png
+
+======== STAGE 3: Phantom_Sailboat ========
+Phantom_Sailboat size=(1.6549999713897705, 0.800000011920929, 1.5701999962329865) verts=233 faces=181
+
+FBX export starting... '/workspace/ponex-playmodels/phantom-jack/export/Phantom_Sailboat.fbx'
+export finished in 0.0047 sec.
+FBX -> /workspace/ponex-playmodels/phantom-jack/export/Phantom_Sailboat.fbx (32764 bytes)
+PREVIEW [front] -> /workspace/ponex-playmodels/phantom-jack/preview/sailboat_front.png
+PREVIEW [34] -> /workspace/ponex-playmodels/phantom-jack/preview/sailboat_34.png
+PREVIEW [side] -> /workspace/ponex-playmodels/phantom-jack/preview/sailboat_side.png
+PREVIEW [back] -> /workspace/ponex-playmodels/phantom-jack/preview/sailboat_back.png
+
+======== STAGE 4: Phantom_Warship ========
+Phantom_Warship size=(1.9899998903274536, 0.8500000238418579, 1.824399933218956) verts=373 faces=263
+
+FBX export starting... '/workspace/ponex-playmodels/phantom-jack/export/Phantom_Warship.fbx'
+export finished in 0.0055 sec.
+FBX -> /workspace/ponex-playmodels/phantom-jack/export/Phantom_Warship.fbx (38716 bytes)
+PREVIEW [front] -> /workspace/ponex-playmodels/phantom-jack/preview/warship_front.png
+PREVIEW [34] -> /workspace/ponex-playmodels/phantom-jack/preview/warship_34.png
+PREVIEW [side] -> /workspace/ponex-playmodels/phantom-jack/preview/warship_side.png
+PREVIEW [back] -> /workspace/ponex-playmodels/phantom-jack/preview/warship_back.png
+
+======== STAGE 5: Phantom_Carrier ========
+Phantom_Carrier size=(2.274999976158142, 0.7950000166893005, 1.3549999296665192) verts=233 faces=173
+
+FBX export starting... '/workspace/ponex-playmodels/phantom-jack/export/Phantom_Carrier.fbx'
+export finished in 0.0055 sec.
+FBX -> /workspace/ponex-playmodels/phantom-jack/export/Phantom_Carrier.fbx (34028 bytes)
+PREVIEW [front] -> /workspace/ponex-playmodels/phantom-jack/preview/carrier_front.png
+PREVIEW [34] -> /workspace/ponex-playmodels/phantom-jack/preview/carrier_34.png
+PREVIEW [side] -> /workspace/ponex-playmodels/phantom-jack/preview/carrier_side.png
+PREVIEW [back] -> /workspace/ponex-playmodels/phantom-jack/preview/carrier_back.png
+
+======== STAGE 6: Phantom_Fleet ========
+Phantom_Fleet size=(2.5049999952316284, 1.2200000286102295, 1.449999988079071) verts=373 faces=263
+
+FBX export starting... '/workspace/ponex-playmodels/phantom-jack/export/Phantom_Fleet.fbx'
+export finished in 0.0055 sec.
+FBX -> /workspace/ponex-playmodels/phantom-jack/export/Phantom_Fleet.fbx (39068 bytes)
+PREVIEW [front] -> /workspace/ponex-playmodels/phantom-jack/preview/fleet_front.png
+PREVIEW [34] -> /workspace/ponex-playmodels/phantom-jack/preview/fleet_34.png
+PREVIEW [side] -> /workspace/ponex-playmodels/phantom-jack/preview/fleet_side.png
+PREVIEW [back] -> /workspace/ponex-playmodels/phantom-jack/preview/fleet_back.png
+PREVIEW [hero] -> /workspace/ponex-playmodels/phantom-jack/preview/hero.png
+
+======== KIT BOARD ========
+Phantom_Raft size=(1.059999942779541, 0.7699999809265137, 0.7860845029354095) verts=228 faces=150
+Phantom_LittleBoat size=(1.4699999690055847, 0.4300000071525574, 0.41600000858306885) verts=101 faces=83
+Phantom_Sailboat size=(1.6549999713897705, 0.800000011920929, 1.5701999962329865) verts=233 faces=181
+Phantom_Warship size=(1.9899998903274536, 0.8500000238418579, 1.824399933218956) verts=373 faces=263
+Phantom_Carrier size=(2.274999976158142, 0.7950000166893005, 1.3549999296665192) verts=233 faces=173
+Phantom_Fleet size=(2.5049999952316284, 1.2200000286102295, 1.449999988079071) verts=373 faces=263
+PREVIEW [hero] -> /workspace/ponex-playmodels/phantom-jack/preview/kit_board.png
+
+======== BLEND ========
+Phantom_Raft size=(1.059999942779541, 0.7699999809265137, 0.7860845029354095) verts=228 faces=150
+Phantom_LittleBoat size=(1.4699999690055847, 0.4300000071525574, 0.41600000858306885) verts=101 faces=83
+Phantom_Sailboat size=(1.6549999713897705, 0.800000011920929, 1.5701999962329865) verts=233 faces=181
+Phantom_Warship size=(1.9899998903274536, 0.8500000238418579, 1.824399933218956) verts=373 faces=263
+Phantom_Carrier size=(2.274999976158142, 0.7950000166893005, 1.3549999296665192) verts=233 faces=173
+Phantom_Fleet size=(2.5049999952316284, 1.2200000286102295, 1.449999988079071) verts=373 faces=263
+Info: Saved "PhantomJackPlay.blend"
+Saved /workspace/ponex-playmodels/phantom-jack/blend/PhantomJackPlay.blend
+LIVE FEED -> /workspace/ponex-forest-kit/live/latest.png
+
+=== VALIDATION ===
+FBX version: 7400
+VALIDATE Phantom_Raft.fbx: bytes=27628 meshes=[('Phantom_Raft', 228, 150, ['GhostWood', 'GhostDeck', 'GhostDark', 'GhostHull', 'CyanGlow', 'GhostSail', 'PaleGlow'])] empties=['AnchorPoint'] ok=True
+FBX version: 7400
+VALIDATE Phantom_LittleBoat.fbx: bytes=23404 meshes=[('Phantom_LittleBoat', 101, 83, ['GhostHull', 'GhostDark', 'GhostDeck', 'GhostWood', 'CyanGlow'])] empties=['AnchorPoint'] ok=True
+FBX version: 7400
+VALIDATE Phantom_Sailboat.fbx: bytes=32764 meshes=[('Phantom_Sailboat', 233, 181, ['GhostHull', 'GhostDark', 'GhostDeck', 'CyanGlow', 'GhostWood', 'RopeGhost', 'GhostSail', 'PaleGlow', 'GhostMetal'])] empties=['AnchorPoint', 'Cannon_01'] ok=True
+FBX version: 7400
+VALIDATE Phantom_Warship.fbx: bytes=38716 meshes=[('Phantom_Warship', 373, 263, ['GhostHull', 'GhostDark', 'GhostDeck', 'CyanGlow', 'GhostWood', 'RopeGhost', 'GhostSail', 'GhostMetal', 'Blackish', 'PaleGlow'])] empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03'] ok=True
+FBX version: 7400
+VALIDATE Phantom_Carrier.fbx: bytes=34028 meshes=[('Phantom_Carrier', 233, 173, ['GhostHull', 'GhostDark', 'GhostDeck', 'CyanGlow', 'PaleGlow', 'GhostWood', 'GhostMetal', 'Blackish'])] empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03', 'HangarPoint', 'Plane_01', 'Plane_02', 'Plane_03'] ok=True
+FBX version: 7400
+VALIDATE Phantom_Fleet.fbx: bytes=39068 meshes=[('Phantom_Fleet', 373, 263, ['GhostHull', 'GhostDark', 'GhostDeck', 'CyanGlow', 'PaleGlow', 'GhostWood', 'GhostMetal', 'Blackish'])] empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03', 'HangarPoint', 'Plane_01', 'Plane_02', 'Plane_03', 'Plane_04', 'SentryPoint'] ok=True
+Wrote /workspace/ponex-playmodels/phantom-jack/scripts/_last_stats.txt
+ALL_OK= True
+STAGES_SHIPPED= ['Phantom_Raft', 'Phantom_LittleBoat', 'Phantom_Sailboat', 'Phantom_Warship', 'Phantom_Carrier', 'Phantom_Fleet']
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/carrier.png 479911
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/carrier_34.png 479911
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/carrier_back.png 459667
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/carrier_front.png 441105
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/carrier_side.png 426717
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/fleet.png 492566
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/fleet_34.png 492566
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/fleet_back.png 465780
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/fleet_front.png 449971
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/fleet_side.png 435745
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/fleet_turntable.gif 688171
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/fleet_turntable.mp4 49811
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/hero.png 955973
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/kit_board.png 1999132
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/littleboat.png 380780
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/littleboat_34.png 380780
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/littleboat_back.png 383238
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/littleboat_front.png 374132
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/littleboat_side.png 349462
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/raft.png 495921
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/raft_34.png 495921
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/raft_back.png 452004
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/raft_front.png 454119
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/raft_hero.png 961978
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/raft_side.png 483937
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/raft_turntable.gif 694194
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/raft_turntable.mp4 53191
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/sailboat.png 525736
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/sailboat_34.png 525736
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/sailboat_back.png 499363
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/sailboat_front.png 484043
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/sailboat_side.png 498135
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/sailboat_turntable.gif 702341
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/sailboat_turntable.mp4 43286
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/warship.png 545770
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/warship_34.png 545770
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/warship_back.png 538893
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/warship_front.png 521405
+PREVIEW /workspace/ponex-playmodels/phantom-jack/preview/warship_side.png 460405
+
+Blender quit

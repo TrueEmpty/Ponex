@@ -104,8 +104,19 @@ public class Database : MonoBehaviour
         if (characters == null || characters.Count == 0)
             LoadCharactersFromAssets();
 
-        // In-game unlink control: long-press Leave / Go CPU (bottom-left with cursors)
-        DisconnectPlayerButton.EnsureExists(playerSelectors);
+        // Remove leftover Leave UI button — disconnect is a hold input (Select / Backspace), not UI
+        if (playerSelectors != null)
+        {
+            Transform leave = playerSelectors.Find("Leave");
+            if (leave != null)
+                Destroy(leave.gameObject);
+            if (playerSelectors.parent != null)
+            {
+                Transform leave2 = playerSelectors.parent.Find("Leave");
+                if (leave2 != null)
+                    Destroy(leave2.gameObject);
+            }
+        }
 
         BackButtonClick.EnsureAll();
         TrainingManager.EnsureExists();
@@ -139,8 +150,10 @@ public class Database : MonoBehaviour
     }
 
     /// <summary>
-    /// Unlinks a human controller + selector. Removes the player in Character Select / Main Menu
-    /// (when above minPlayers); otherwise converts them to a CPU.
+    /// Unlinks a human controller + selector.
+    /// Main Menu: always removes the player (never converts to CPU).
+    /// Character Select: removes when above minPlayers, otherwise converts to CPU.
+    /// Past Character Select / in match: converts to CPU.
     /// </summary>
     public bool DisconnectPlayer(int playerIndex)
     {
@@ -161,7 +174,8 @@ public class Database : MonoBehaviour
         if (link != null)
             Destroy(link.gameObject);
 
-        bool removeSlot = !IsPastCharacterSelect() && players.Count > minPlayers;
+        bool onMainMenu = IsMainMenu();
+        bool removeSlot = onMainMenu || (!IsPastCharacterSelect() && players.Count > minPlayers);
         if (removeSlot)
         {
             players.Remove(p);
@@ -174,6 +188,23 @@ public class Database : MonoBehaviour
         p.computer = true;
         p.cpuDifficulty = ComputerAI.CpuDifficulty.Easy;
         return true;
+    }
+
+    public bool IsMainMenu()
+    {
+        if (gameStart || startingGame || winnerScreen)
+            return false;
+
+        if (mm == null)
+            mm = MenuManager.instance;
+        if (mm == null)
+            return false;
+
+        MenuClass open = mm.GetOpenMenu(true);
+        if (open == null || string.IsNullOrEmpty(open.title))
+            return false;
+
+        return open.title.Trim().Equals("Main Menu", StringComparison.OrdinalIgnoreCase);
     }
 
     void LoadCharactersFromAssets()
@@ -323,6 +354,16 @@ public class Database : MonoBehaviour
         int result = -1;
         bool computerMode = false;
 
+        // Human rejoining after Leave: take over an unbound CPU instead of spawning a duplicate
+        if (cL != null && players != null)
+        {
+            Player reclaim = FindReclaimableCpuSlot();
+            if (reclaim != null)
+            {
+                return BindControllerToExistingPlayer(reclaim, cL);
+            }
+        }
+
         if (players.Count < 8)
         {
             if(cL == null)
@@ -421,20 +462,11 @@ public class Database : MonoBehaviour
                 }
             }
 
-            GameObject go = Instantiate(playerSelectorGobj, playerSelectors);
-
-            PlayerSelectorObj pso = go.GetComponent<PlayerSelectorObj>();
-            pso.cLink = cL;
-            if (p.skinColorIndex < 0)
-                p.skinColorIndex = index;
-            PlayerColors startColor = PlayerSkin.GetPlayerColors(p, this);
-            pso.SetCircleColor(startColor != null ? startColor : playerColors[Mathf.Clamp(pc, 0, playerColors.Count - 1)]);
-            pso.pI = index;
-            p.pso = pso;
+            AttachSelector(p, cL);
 
             result = index;
 
-            if(!controllers.Contains(cL))
+            if (cL != null && !controllers.Contains(cL))
             {
                 controllers.Add(cL);
             }
@@ -450,6 +482,70 @@ public class Database : MonoBehaviour
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// CPU slot left behind by Leave (or lobby fill) that a reconnecting human can take over.
+    /// Prefers lowest index so the "last player" who DC'd reclaim their own seat.
+    /// </summary>
+    Player FindReclaimableCpuSlot()
+    {
+        Player best = null;
+        for (int i = 0; i < players.Count; i++)
+        {
+            Player p = players[i];
+            if (p == null || !p.computer || p.cLink != null)
+                continue;
+            if (best == null || p.index < best.index)
+                best = p;
+        }
+        return best;
+    }
+
+    int BindControllerToExistingPlayer(Player p, ControllerLink cL)
+    {
+        if (p == null || cL == null)
+            return -1;
+
+        p.computer = false;
+        p.cLink = cL;
+        cL.index = p.index;
+
+        if (p.pso != null)
+        {
+            Destroy(p.pso.gameObject);
+            p.pso = null;
+        }
+
+        AttachSelector(p, cL);
+
+        if (!controllers.Contains(cL))
+            controllers.Add(cL);
+
+        return p.index;
+    }
+
+    void AttachSelector(Player p, ControllerLink cL)
+    {
+        if (p == null || playerSelectorGobj == null || playerSelectors == null)
+            return;
+
+        // CPU fillers don't get a cursor
+        if (cL == null)
+            return;
+
+        GameObject go = Instantiate(playerSelectorGobj, playerSelectors);
+
+        PlayerSelectorObj pso = go.GetComponent<PlayerSelectorObj>();
+        pso.cLink = cL;
+        if (p.skinColorIndex < 0)
+            p.skinColorIndex = p.index;
+        PlayerColors startColor = PlayerSkin.GetPlayerColors(p, this);
+        pso.SetCircleColor(startColor != null
+            ? startColor
+            : playerColors[Mathf.Clamp(p.index, 0, playerColors.Count - 1)]);
+        pso.pI = p.index;
+        p.pso = pso;
     }
 
     public void UpdateCharSelect()

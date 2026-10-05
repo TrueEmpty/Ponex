@@ -1,0 +1,13 @@
+[Phantom_Raft] stage=1 verts=228 faces=150 size=(1.059999942779541, 0.7699999809265137, 0.7860845029354095) empties=['AnchorPoint'] fbx_bytes=27628
+[Phantom_LittleBoat] stage=2 verts=101 faces=83 size=(1.4699999690055847, 0.4300000071525574, 0.41600000858306885) empties=['AnchorPoint'] fbx_bytes=23404
+[Phantom_Sailboat] stage=3 verts=233 faces=181 size=(1.6549999713897705, 0.800000011920929, 1.5701999962329865) empties=['AnchorPoint', 'Cannon_01'] fbx_bytes=32764
+[Phantom_Warship] stage=4 verts=373 faces=263 size=(1.9899998903274536, 0.8500000238418579, 1.824399933218956) empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03'] fbx_bytes=38716
+[Phantom_Carrier] stage=5 verts=233 faces=173 size=(2.274999976158142, 0.7950000166893005, 1.3549999296665192) empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03', 'HangarPoint', 'Plane_01', 'Plane_02', 'Plane_03'] fbx_bytes=34028
+[Phantom_Fleet] stage=6 verts=373 faces=263 size=(2.5049999952316284, 1.2200000286102295, 1.449999988079071) empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03', 'HangarPoint', 'Plane_01', 'Plane_02', 'Plane_03', 'Plane_04', 'SentryPoint'] fbx_bytes=39068
+all_ok=True
+Phantom_Raft: ok=True bytes=27628 meshes=[('Phantom_Raft', 228, 150, ['GhostWood', 'GhostDeck', 'GhostDark', 'GhostHull', 'CyanGlow', 'GhostSail', 'PaleGlow'])] empties=['AnchorPoint']
+Phantom_LittleBoat: ok=True bytes=23404 meshes=[('Phantom_LittleBoat', 101, 83, ['GhostHull', 'GhostDark', 'GhostDeck', 'GhostWood', 'CyanGlow'])] empties=['AnchorPoint']
+Phantom_Sailboat: ok=True bytes=32764 meshes=[('Phantom_Sailboat', 233, 181, ['GhostHull', 'GhostDark', 'GhostDeck', 'CyanGlow', 'GhostWood', 'RopeGhost', 'GhostSail', 'PaleGlow', 'GhostMetal'])] empties=['AnchorPoint', 'Cannon_01']
+Phantom_Warship: ok=True bytes=38716 meshes=[('Phantom_Warship', 373, 263, ['GhostHull', 'GhostDark', 'GhostDeck', 'CyanGlow', 'GhostWood', 'RopeGhost', 'GhostSail', 'GhostMetal', 'Blackish', 'PaleGlow'])] empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03']
+Phantom_Carrier: ok=True bytes=34028 meshes=[('Phantom_Carrier', 233, 173, ['GhostHull', 'GhostDark', 'GhostDeck', 'CyanGlow', 'PaleGlow', 'GhostWood', 'GhostMetal', 'Blackish'])] empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03', 'HangarPoint', 'Plane_01', 'Plane_02', 'Plane_03']
+Phantom_Fleet: ok=True bytes=39068 meshes=[('Phantom_Fleet', 373, 263, ['GhostHull', 'GhostDark', 'GhostDeck', 'CyanGlow', 'PaleGlow', 'GhostWood', 'GhostMetal', 'Blackish'])] empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03', 'HangarPoint', 'Plane_01', 'Plane_02', 'Plane_03', 'Plane_04', 'SentryPoint']

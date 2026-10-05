@@ -14734,7 +14734,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4add511ec39efb3419230d6b4c67d740, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cooldown: 0.1
+  cooldown: 0.06
   maxSpawns: -1
   spawnObj: {fileID: 6946724109734766805, guid: 064bd5ff5508df74190dee4624eea85b,
     type: 3}

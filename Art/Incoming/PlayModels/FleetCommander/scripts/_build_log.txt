@@ -1,0 +1,413 @@
+could not get a list of mounted file-systems
+Writing to /workspace/ponex-playmodels/fleet-commander/export/FC_Mothership.obj
+Blender 4.3.2 (hash 32f5fdce0a0a built 2024-12-17 01:31:14)
+OBJ export of 'FC_Mothership.obj' took 0.80 ms
+Fra:1 Mem:62.08M (Peak 62.08M) | Time:00:01.73 | Rendering 1 / 64 samples
+Fra:1 Mem:62.08M (Peak 62.08M) | Time:00:06.10 | Rendering 25 / 64 samples
+Fra:1 Mem:62.08M (Peak 62.08M) | Time:00:11.41 | Rendering 50 / 64 samples
+Fra:1 Mem:62.08M (Peak 62.08M) | Time:00:14.30 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/mothership_front.png'
+Time: 00:14.47 (Saving: 00:00.14)
+
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:00.90 | Rendering 1 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:05.54 | Rendering 25 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:09.65 | Rendering 50 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:12.69 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/mothership_34.png'
+Time: 00:12.78 (Saving: 00:00.06)
+
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:00.92 | Rendering 1 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:05.47 | Rendering 25 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:10.07 | Rendering 50 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:12.77 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/mothership_side.png'
+Time: 00:12.87 (Saving: 00:00.06)
+
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:00.73 | Rendering 1 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:03.98 | Rendering 25 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:07.19 | Rendering 50 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:08.99 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/mothership_back.png'
+Time: 00:09.06 (Saving: 00:00.05)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.31 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.14 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.15 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_000.png'
+Time: 00:05.18 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.61 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.34 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.12 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.27 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_001.png'
+Time: 00:05.30 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.98 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.16 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.45 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:09.27 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_002.png'
+Time: 00:09.30 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.82 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.09 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.21 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:09.08 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_003.png'
+Time: 00:09.12 (Saving: 00:00.03)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.82 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.94 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.12 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.94 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_004.png'
+Time: 00:08.97 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.87 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.84 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.04 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.90 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_005.png'
+Time: 00:08.94 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.78 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.77 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.68 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.39 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_006.png'
+Time: 00:08.44 (Saving: 00:00.04)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.85 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.90 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.18 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:09.01 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_007.png'
+Time: 00:09.04 (Saving: 00:00.03)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.67 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.58 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.52 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.15 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_008.png'
+Time: 00:08.19 (Saving: 00:00.03)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.72 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.52 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.48 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.08 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_009.png'
+Time: 00:08.12 (Saving: 00:00.03)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.74 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.59 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.71 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.34 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_010.png'
+Time: 00:08.37 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.88 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.86 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.88 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.46 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_011.png'
+Time: 00:08.49 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.80 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.63 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.60 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.11 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_012.png'
+Time: 00:08.14 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.76 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.52 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.52 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.10 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_013.png'
+Time: 00:08.13 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.66 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.47 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.45 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.08 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_014.png'
+Time: 00:08.11 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.67 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.47 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.43 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.01 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_015.png'
+Time: 00:08.05 (Saving: 00:00.03)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.69 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.42 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.30 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.84 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_016.png'
+Time: 00:07.87 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.68 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.33 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.10 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.61 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_017.png'
+Time: 00:07.64 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.78 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.39 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.17 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.67 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_018.png'
+Time: 00:07.69 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.80 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.42 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.26 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.81 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_019.png'
+Time: 00:07.85 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.70 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.43 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.27 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:07.91 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_020.png'
+Time: 00:07.94 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.71 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.45 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.42 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.05 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_021.png'
+Time: 00:08.09 (Saving: 00:00.03)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.83 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.57 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.52 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.10 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_022.png'
+Time: 00:08.13 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.80 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.64 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:06.62 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:08.19 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/_tt_mothership/frame_023.png'
+Time: 00:08.24 (Saving: 00:00.04)
+
+Fra:1 Mem:65.74M (Peak 65.74M) | Time:00:04.14 | Rendering 1 / 64 samples
+Fra:1 Mem:65.74M (Peak 65.74M) | Time:00:09.51 | Rendering 25 / 64 samples
+Fra:1 Mem:65.74M (Peak 65.74M) | Time:00:15.05 | Rendering 50 / 64 samples
+Fra:1 Mem:65.74M (Peak 65.74M) | Time:00:18.20 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/hero.png'
+Time: 00:18.32 (Saving: 00:00.10)
+
+Writing to /workspace/ponex-playmodels/fleet-commander/export/FC_Fast.obj
+OBJ export of 'FC_Fast.obj' took 0.68 ms
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:00.71 | Rendering 1 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:04.51 | Rendering 25 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:08.45 | Rendering 50 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:10.68 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/fast_front.png'
+Time: 00:10.77 (Saving: 00:00.07)
+
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:00.72 | Rendering 1 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:04.41 | Rendering 25 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:08.91 | Rendering 50 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:11.39 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/fast_34.png'
+Time: 00:11.51 (Saving: 00:00.08)
+
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:00.80 | Rendering 1 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:04.72 | Rendering 25 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:08.75 | Rendering 50 / 64 samples
+Fra:1 Mem:61.58M (Peak 61.58M) | Time:00:10.75 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/fast_side.png'
+Time: 00:10.82 (Saving: 00:00.06)
+
+Fra:1 Mem:61.55M (Peak 61.55M) | Time:00:00.92 | Rendering 1 / 64 samples
+Fra:1 Mem:61.55M (Peak 61.55M) | Time:00:04.80 | Rendering 25 / 64 samples
+Fra:1 Mem:61.55M (Peak 61.55M) | Time:00:08.78 | Rendering 50 / 64 samples
+Fra:1 Mem:61.55M (Peak 61.55M) | Time:00:10.82 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/fast_back.png'
+Time: 00:10.90 (Saving: 00:00.07)
+
+Writing to /workspace/ponex-playmodels/fleet-commander/export/FC_Heavy.obj
+OBJ export of 'FC_Heavy.obj' took 0.63 ms
+Fra:1 Mem:61.78M (Peak 61.78M) | Time:00:00.97 | Rendering 1 / 64 samples
+Fra:1 Mem:61.78M (Peak 61.78M) | Time:00:05.55 | Rendering 25 / 64 samples
+Fra:1 Mem:61.78M (Peak 61.78M) | Time:00:10.34 | Rendering 50 / 64 samples
+Fra:1 Mem:61.78M (Peak 61.78M) | Time:00:13.01 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/heavy_front.png'
+Time: 00:13.11 (Saving: 00:00.07)
+
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:00.75 | Rendering 1 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:05.22 | Rendering 25 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:09.72 | Rendering 50 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:12.30 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/heavy_34.png'
+Time: 00:12.39 (Saving: 00:00.07)
+
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:00.75 | Rendering 1 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:04.77 | Rendering 25 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:08.98 | Rendering 50 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:11.53 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/heavy_side.png'
+Time: 00:11.62 (Saving: 00:00.07)
+
+Fra:1 Mem:61.76M (Peak 61.76M) | Time:00:00.82 | Rendering 1 / 64 samples
+Fra:1 Mem:61.76M (Peak 61.76M) | Time:00:05.60 | Rendering 25 / 64 samples
+Fra:1 Mem:61.76M (Peak 61.76M) | Time:00:10.49 | Rendering 50 / 64 samples
+Fra:1 Mem:61.76M (Peak 61.76M) | Time:00:13.28 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/heavy_back.png'
+Time: 00:13.37 (Saving: 00:00.07)
+
+Writing to /workspace/ponex-playmodels/fleet-commander/export/FC_Shield.obj
+OBJ export of 'FC_Shield.obj' took 1.80 ms
+Fra:1 Mem:61.74M (Peak 61.74M) | Time:00:00.93 | Rendering 1 / 64 samples
+Fra:1 Mem:61.74M (Peak 61.74M) | Time:00:07.25 | Rendering 25 / 64 samples
+Fra:1 Mem:61.74M (Peak 61.74M) | Time:00:14.01 | Rendering 50 / 64 samples
+Fra:1 Mem:61.74M (Peak 61.74M) | Time:00:17.73 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/shield_front.png'
+Time: 00:17.83 (Saving: 00:00.07)
+
+Fra:1 Mem:61.74M (Peak 61.74M) | Time:00:00.94 | Rendering 1 / 64 samples
+Fra:1 Mem:61.74M (Peak 61.74M) | Time:00:08.54 | Rendering 25 / 64 samples
+Fra:1 Mem:61.74M (Peak 61.74M) | Time:00:16.46 | Rendering 50 / 64 samples
+Fra:1 Mem:61.74M (Peak 61.74M) | Time:00:20.71 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/shield_34.png'
+Time: 00:20.81 (Saving: 00:00.07)
+
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:01.01 | Rendering 1 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:09.62 | Rendering 25 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:18.73 | Rendering 50 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:23.78 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/shield_side.png'
+Time: 00:23.89 (Saving: 00:00.08)
+
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:00.81 | Rendering 1 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:07.02 | Rendering 25 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:13.34 | Rendering 50 / 64 samples
+Fra:1 Mem:61.75M (Peak 61.75M) | Time:00:16.92 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/shield_back.png'
+Time: 00:17.03 (Saving: 00:00.08)
+
+Fra:1 Mem:69.83M (Peak 69.83M) | Time:00:00.95 | Rendering 1 / 64 samples
+Fra:1 Mem:69.83M (Peak 69.83M) | Time:00:06.02 | Rendering 25 / 64 samples
+Fra:1 Mem:69.83M (Peak 69.83M) | Time:00:11.43 | Rendering 50 / 64 samples
+Fra:1 Mem:69.83M (Peak 69.83M) | Time:00:14.34 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/fleet-commander/preview/kit_board.png'
+Time: 00:14.48 (Saving: 00:00.10)
+
+MOTHERSHIP post-origin size=(2.6449999809265137, 0.9700927138328552, 1.1131999790668488)
+FC_Mothership verts=776 faces=556 size=(2.6449999809265137, 0.9700927138328552, 1.1131999790668488) empties=['Bridge', 'HangarBay', 'Spawn_Fast', 'Spawn_Heavy', 'Spawn_Shield']
+
+FBX export starting... '/workspace/ponex-playmodels/fleet-commander/export/FC_Mothership.fbx'
+export finished in 0.0113 sec.
+FBX -> /workspace/ponex-playmodels/fleet-commander/export/FC_Mothership.fbx (44156 bytes)
+OBJ -> /workspace/ponex-playmodels/fleet-commander/export/FC_Mothership.obj
+MOTHERSHIP post-origin size=(2.6449999809265137, 0.9700927138328552, 1.1131999790668488)
+PREVIEW [front] -> /workspace/ponex-playmodels/fleet-commander/preview/mothership_front.png (500829 bytes)
+PREVIEW [34] -> /workspace/ponex-playmodels/fleet-commander/preview/mothership_34.png (530720 bytes)
+PREVIEW [side] -> /workspace/ponex-playmodels/fleet-commander/preview/mothership_side.png (475315 bytes)
+PREVIEW [back] -> /workspace/ponex-playmodels/fleet-commander/preview/mothership_back.png (497041 bytes)
+GIF -> /workspace/ponex-playmodels/fleet-commander/preview/mothership_turntable.gif (784064 bytes)
+MP4 -> /workspace/ponex-playmodels/fleet-commander/preview/mothership_turntable.mp4 (47192 bytes)
+PREVIEW [hero] -> /workspace/ponex-playmodels/fleet-commander/preview/hero.png (1070297 bytes)
+FAST post-origin size=(0.91839998960495, 0.6248399615287781, 0.18040000647306442)
+FC_Fast verts=336 faces=254 size=(0.91839998960495, 0.6248399615287781, 0.18040000647306442) empties=['HitPoint']
+
+FBX export starting... '/workspace/ponex-playmodels/fleet-commander/export/FC_Fast.fbx'
+export finished in 0.0057 sec.
+FBX -> /workspace/ponex-playmodels/fleet-commander/export/FC_Fast.fbx (31436 bytes)
+OBJ -> /workspace/ponex-playmodels/fleet-commander/export/FC_Fast.obj
+FAST post-origin size=(0.91839998960495, 0.6248399615287781, 0.18040000647306442)
+PREVIEW [front] -> /workspace/ponex-playmodels/fleet-commander/preview/fast_front.png (423793 bytes)
+PREVIEW [34] -> /workspace/ponex-playmodels/fleet-commander/preview/fast_34.png (424771 bytes)
+PREVIEW [side] -> /workspace/ponex-playmodels/fleet-commander/preview/fast_side.png (408260 bytes)
+PREVIEW [back] -> /workspace/ponex-playmodels/fleet-commander/preview/fast_back.png (424776 bytes)
+HEAVY post-origin size=(0.963299959897995, 0.5616000294685364, 0.3041999936103821)
+FC_Heavy verts=522 faces=370 size=(0.963299959897995, 0.5616000294685364, 0.3041999936103821) empties=['GunPoint', 'HitPoint']
+
+FBX export starting... '/workspace/ponex-playmodels/fleet-commander/export/FC_Heavy.fbx'
+export finished in 0.0179 sec.
+FBX -> /workspace/ponex-playmodels/fleet-commander/export/FC_Heavy.fbx (37068 bytes)
+OBJ -> /workspace/ponex-playmodels/fleet-commander/export/FC_Heavy.obj
+HEAVY post-origin size=(0.963299959897995, 0.5616000294685364, 0.3041999936103821)
+PREVIEW [front] -> /workspace/ponex-playmodels/fleet-commander/preview/heavy_front.png (480587 bytes)
+PREVIEW [34] -> /workspace/ponex-playmodels/fleet-commander/preview/heavy_34.png (500423 bytes)
+PREVIEW [side] -> /workspace/ponex-playmodels/fleet-commander/preview/heavy_side.png (467380 bytes)
+PREVIEW [back] -> /workspace/ponex-playmodels/fleet-commander/preview/heavy_back.png (481723 bytes)
+SHIELD post-origin size=(0.6700000166893005, 0.699999988079071, 0.6899999976158142)
+FC_Shield verts=930 faces=860 size=(0.6700000166893005, 0.699999988079071, 0.6899999976158142) empties=['HitPoint', 'ShieldCore']
+
+FBX export starting... '/workspace/ponex-playmodels/fleet-commander/export/FC_Shield.fbx'
+export finished in 0.0069 sec.
+FBX -> /workspace/ponex-playmodels/fleet-commander/export/FC_Shield.fbx (54156 bytes)
+OBJ -> /workspace/ponex-playmodels/fleet-commander/export/FC_Shield.obj
+SHIELD post-origin size=(0.6700000166893005, 0.699999988079071, 0.6899999976158142)
+PREVIEW [front] -> /workspace/ponex-playmodels/fleet-commander/preview/shield_front.png (668775 bytes)
+PREVIEW [34] -> /workspace/ponex-playmodels/fleet-commander/preview/shield_34.png (788626 bytes)
+PREVIEW [side] -> /workspace/ponex-playmodels/fleet-commander/preview/shield_side.png (865348 bytes)
+PREVIEW [back] -> /workspace/ponex-playmodels/fleet-commander/preview/shield_back.png (669542 bytes)
+MOTHERSHIP post-origin size=(2.6449999809265137, 0.9700927138328552, 1.1131999790668488)
+FAST post-origin size=(0.91839998960495, 0.6248399615287781, 0.18040000647306442)
+HEAVY post-origin size=(0.963299959897995, 0.5616000294685364, 0.3041999936103821)
+SHIELD post-origin size=(0.6700000166893005, 0.699999988079071, 0.6899999976158142)
+PREVIEW [hero] -> /workspace/ponex-playmodels/fleet-commander/preview/kit_board.png (1041325 bytes)
+Info: Saved "FleetCommanderPlay.blend"
+Saved /workspace/ponex-playmodels/fleet-commander/blend/FleetCommanderPlay.blend
+LIVE FEED -> /workspace/ponex-forest-kit/live/latest.png (1070297 bytes)
+
+=== VALIDATION ===
+FBX version: 7400
+VALIDATE FC_Mothership.fbx: bytes=44156 meshes=[('FC_Mothership', 776, 556, ['HullPrimary', 'HullPanel', 'HullMid', 'HullDark', 'TrimSteel', 'HazardYellow', 'AccentGreen', 'CockpitGlass', 'DecalWhite'])] empties=['Bridge', 'HangarBay', 'Spawn_Fast', 'Spawn_Heavy', 'Spawn_Shield'] need={'Spawn_Heavy', 'Spawn_Shield', 'Spawn_Fast'} ok=True
+FBX version: 7400
+VALIDATE FC_Fast.fbx: bytes=31436 meshes=[('FC_Fast', 336, 254, ['HullPrimary', 'HullPanel', 'HullDark', 'CockpitGlass', 'DecalWhite', 'HullMid', 'EngineDark', 'AccentGreen'])] empties=['HitPoint'] need={'HitPoint'} ok=True
+FBX version: 7400
+VALIDATE FC_Heavy.fbx: bytes=37068 meshes=[('FC_Heavy', 522, 370, ['HullPrimary', 'HullPanel', 'HullMid', 'CockpitGlass', 'HullDark', 'EngineDark', 'AccentGreen', 'DecalWhite', 'AccentYellow'])] empties=['GunPoint', 'HitPoint'] need={'GunPoint'} ok=True
+FBX version: 7400
+VALIDATE FC_Shield.fbx: bytes=54156 meshes=[('FC_Shield', 930, 860, ['HullPrimary', 'HullPanel', 'HullMid', 'CockpitGlass', 'DecalWhite', 'HullDark', 'AccentCyan', 'TrimSteel'])] empties=['HitPoint', 'ShieldCore'] need={'ShieldCore'} ok=True
+
+=== STATS ===
+MOTHERSHIP {'verts': 776, 'faces': 556, 'size': (2.6449999809265137, 0.9700927138328552, 1.1131999790668488), 'fbx': '/workspace/ponex-playmodels/fleet-commander/export/FC_Mothership.fbx', 'empties': ['Bridge', 'HangarBay', 'Spawn_Fast', 'Spawn_Heavy', 'Spawn_Shield']}
+FAST {'verts': 336, 'faces': 254, 'size': (0.91839998960495, 0.6248399615287781, 0.18040000647306442), 'fbx': '/workspace/ponex-playmodels/fleet-commander/export/FC_Fast.fbx', 'empties': ['HitPoint']}
+HEAVY {'verts': 522, 'faces': 370, 'size': (0.963299959897995, 0.5616000294685364, 0.3041999936103821), 'fbx': '/workspace/ponex-playmodels/fleet-commander/export/FC_Heavy.fbx', 'empties': ['GunPoint', 'HitPoint']}
+SHIELD {'verts': 930, 'faces': 860, 'size': (0.6700000166893005, 0.699999988079071, 0.6899999976158142), 'fbx': '/workspace/ponex-playmodels/fleet-commander/export/FC_Shield.fbx', 'empties': ['HitPoint', 'ShieldCore']}
+FBX mothership bytes=44156 ok=True empties=['Bridge', 'HangarBay', 'Spawn_Fast', 'Spawn_Heavy', 'Spawn_Shield']
+FBX fast bytes=31436 ok=True empties=['HitPoint']
+FBX heavy bytes=37068 ok=True empties=['GunPoint', 'HitPoint']
+FBX shield bytes=54156 ok=True empties=['HitPoint', 'ShieldCore']
+ALL_OK= True
+Wrote /workspace/ponex-playmodels/fleet-commander/scripts/_last_stats.txt
+PREVIEW_FILES:
+  /workspace/ponex-playmodels/fleet-commander/preview/fast.png 424771
+  /workspace/ponex-playmodels/fleet-commander/preview/fast_34.png 424771
+  /workspace/ponex-playmodels/fleet-commander/preview/fast_back.png 424776
+  /workspace/ponex-playmodels/fleet-commander/preview/fast_front.png 423793
+  /workspace/ponex-playmodels/fleet-commander/preview/fast_side.png 408260
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy.png 500423
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy_34.png 500423
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy_back.png 481723
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy_front.png 480587
+  /workspace/ponex-playmodels/fleet-commander/preview/heavy_side.png 467380
+  /workspace/ponex-playmodels/fleet-commander/preview/hero.png 1070297
+  /workspace/ponex-playmodels/fleet-commander/preview/kit_board.png 1041325
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership.png 530720
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_34.png 530720
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_back.png 497041
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_front.png 500829
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_side.png 475315
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_turntable.gif 784064
+  /workspace/ponex-playmodels/fleet-commander/preview/mothership_turntable.mp4 47192
+  /workspace/ponex-playmodels/fleet-commander/preview/shield.png 788626
+  /workspace/ponex-playmodels/fleet-commander/preview/shield_34.png 788626
+  /workspace/ponex-playmodels/fleet-commander/preview/shield_back.png 669542
+  /workspace/ponex-playmodels/fleet-commander/preview/shield_front.png 668775
+  /workspace/ponex-playmodels/fleet-commander/preview/shield_side.png 865348
+
+Blender quit
+EXIT:0

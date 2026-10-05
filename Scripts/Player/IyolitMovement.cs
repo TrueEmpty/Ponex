@@ -106,24 +106,23 @@ public class IyolitMovement : MonoBehaviour
 
                     if (currentPosition == lastPosition && !moving)
                     {
-                        // Lane inputs are reversed vs candle index order — swap so stick matches on-screen move
                         if (pG.inp.tf_right)
-                        {
-                            currentPosition--;
-
-                            if (currentPosition < 0)
-                            {
-                                currentPosition = 0;
-                            }
-                        }
-
-                        if (pG.inp.tf_left)
                         {
                             currentPosition++;
 
                             if (currentPosition >= positions.Count)
                             {
                                 currentPosition = positions.Count - 1;
+                            }
+                        }
+
+                        if (pG.inp.tf_left)
+                        {
+                            currentPosition--;
+
+                            if (currentPosition < 0)
+                            {
+                                currentPosition = 0;
                             }
                         }
 
@@ -184,6 +183,9 @@ public class IyolitMovement : MonoBehaviour
 
         if(lastOne)
         {
+            // Sort left→right in her local space so stick right always advances along +transform.right
+            SortPositionsAlongFacing();
+
             //Update current Position which will be the middle
             currentPosition = Mathf.RoundToInt(positions.Count / 2) - 1;
 
@@ -199,6 +201,23 @@ public class IyolitMovement : MonoBehaviour
 
             ready = true;
         }
+    }
+
+    void SortPositionsAlongFacing()
+    {
+        if (positions == null || positions.Count < 2)
+            return;
+
+        Vector3 right = transform.right;
+        positions.Sort((a, b) =>
+        {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+            float da = Vector3.Dot(a.position, right);
+            float db = Vector3.Dot(b.position, right);
+            return da.CompareTo(db);
+        });
     }
 
     public Transform CurrentCandle()

@@ -1,0 +1,246 @@
+Writing to /workspace/ponex-playmodels/jack/export/Jack_Ship.obj
+Blender 4.3.2
+OBJ export of 'Jack_Ship.obj' took 1.19 ms
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:01.38 | Rendering 1 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:04.69 | Rendering 25 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:08.13 | Rendering 50 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:10.02 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/ship_front.png'
+Time: 00:10.23 (Saving: 00:00.18)
+
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:00.73 | Rendering 1 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:04.30 | Rendering 25 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:07.68 | Rendering 50 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:09.69 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/ship_34.png'
+Time: 00:09.77 (Saving: 00:00.06)
+
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:00.60 | Rendering 1 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:03.47 | Rendering 25 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:06.50 | Rendering 50 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:08.26 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/ship_side.png'
+Time: 00:08.34 (Saving: 00:00.06)
+
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:00.71 | Rendering 1 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:04.12 | Rendering 25 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:07.70 | Rendering 50 / 64 samples
+Fra:1 Mem:62.09M (Peak 62.09M) | Time:00:09.69 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/ship_back.png'
+Time: 00:09.79 (Saving: 00:00.07)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.56 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.43 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.38 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.41 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_000.png'
+Time: 00:05.44 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.49 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.52 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.59 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_001.png'
+Time: 00:05.61 (Saving: 00:00.01)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.62 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.47 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.55 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.77 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_002.png'
+Time: 00:05.80 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.46 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.31 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.46 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_003.png'
+Time: 00:05.49 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.44 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.28 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.37 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_004.png'
+Time: 00:05.39 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.53 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.34 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.16 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.21 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_005.png'
+Time: 00:05.24 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.54 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.33 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.15 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.20 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_006.png'
+Time: 00:05.23 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.55 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.35 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.02 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.11 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_007.png'
+Time: 00:05.14 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.34 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.05 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.19 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_008.png'
+Time: 00:05.22 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.55 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.41 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.26 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.41 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_009.png'
+Time: 00:05.44 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.56 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.49 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.39 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.61 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_010.png'
+Time: 00:05.64 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.57 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.57 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.40 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.61 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_011.png'
+Time: 00:05.63 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.59 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.47 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.35 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.49 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_012.png'
+Time: 00:05.52 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.55 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.54 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.54 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.57 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_013.png'
+Time: 00:05.59 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.59 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.57 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.53 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.54 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_014.png'
+Time: 00:05.57 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.55 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.38 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.31 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.32 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_015.png'
+Time: 00:05.34 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.63 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.34 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.22 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.14 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_016.png'
+Time: 00:05.17 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.62 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.24 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.07 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.04 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_017.png'
+Time: 00:05.07 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.24 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:03.97 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.84 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_018.png'
+Time: 00:04.87 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.55 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.26 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.10 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.03 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_019.png'
+Time: 00:05.05 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.58 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.32 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.21 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.16 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_020.png'
+Time: 00:05.18 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.62 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.43 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.36 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.38 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_021.png'
+Time: 00:05.41 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.63 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.44 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.47 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.53 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_022.png'
+Time: 00:05.56 (Saving: 00:00.02)
+
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:00.61 | Rendering 1 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:02.36 | Rendering 25 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:04.31 | Rendering 50 / 64 samples
+Fra:1 Mem:53.25M (Peak 53.25M) | Time:00:05.43 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/_tt_ship/frame_023.png'
+Time: 00:05.46 (Saving: 00:00.02)
+
+Fra:1 Mem:65.74M (Peak 65.74M) | Time:00:00.73 | Rendering 1 / 64 samples
+Fra:1 Mem:65.74M (Peak 65.74M) | Time:00:04.90 | Rendering 25 / 64 samples
+Fra:1 Mem:65.74M (Peak 65.74M) | Time:00:09.10 | Rendering 50 / 64 samples
+Fra:1 Mem:65.74M (Peak 65.74M) | Time:00:11.50 | Rendering 64 / 64 samples
+Saved: '/workspace/ponex-playmodels/jack/preview/hero.png'
+Time: 00:11.61 (Saving: 00:00.09)
+
+SHIP post-origin size=(1.9199999570846558, 0.8999999761581421, 1.7499999403953552) center=(0.09999996423721313, 0.0, 0.5749999582767487) min=(-0.8600000143051147, -0.44999998807907104, -0.30000001192092896) max=(1.059999942779541, 0.44999998807907104, 1.4499999284744263)
+SHIP verts=839 faces=573 size=(1.9199999570846558, 0.8999999761581421, 1.7499999403953552)
+EMPTIES: ['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03']
+
+FBX export starting... '/workspace/ponex-playmodels/jack/export/Jack_Ship.fbx'
+export finished in 0.0072 sec.
+FBX -> /workspace/ponex-playmodels/jack/export/Jack_Ship.fbx (51836 bytes)
+OBJ -> /workspace/ponex-playmodels/jack/export/Jack_Ship.obj
+PREVIEW [front] -> /workspace/ponex-playmodels/jack/preview/ship_front.png (641161 bytes)
+PREVIEW [34] -> /workspace/ponex-playmodels/jack/preview/ship_34.png (666333 bytes)
+PREVIEW [side] -> /workspace/ponex-playmodels/jack/preview/ship_side.png (592422 bytes)
+PREVIEW [back] -> /workspace/ponex-playmodels/jack/preview/ship_back.png (666524 bytes)
+GIF -> /workspace/ponex-playmodels/jack/preview/ship_turntable.gif (1111888 bytes)
+MP4 -> /workspace/ponex-playmodels/jack/preview/ship_turntable.mp4 (72858 bytes)
+PREVIEW [hero] -> /workspace/ponex-playmodels/jack/preview/hero.png (1034030 bytes)
+SHIP post-origin size=(1.9199999570846558, 0.8999999761581421, 1.7499999403953552) center=(0.09999996423721313, 0.0, 0.5749999582767487) min=(-0.8600000143051147, -0.44999998807907104, -0.30000001192092896) max=(1.059999942779541, 0.44999998807907104, 1.4499999284744263)
+Info: Saved "JackPlay.blend"
+Saved /workspace/ponex-playmodels/jack/blend/JackPlay.blend
+LIVE FEED -> /workspace/ponex-forest-kit/live/latest.png (1034030 bytes)
+
+=== VALIDATION ===
+FBX version: 7400
+VALIDATE Jack_Ship.fbx: bytes=51836 meshes=[('Jack_Ship', 839, 573, ['HullWood', 'HullDark', 'StripeCream', 'StripeOrange', 'DeckWood', 'MastWood', 'CabinWood', 'AccentBlack', 'RopeTan', 'SailCream', 'FlagBlack'])] empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03'] ok=True
+
+=== STATS ===
+SHIP {'verts': 839, 'faces': 573, 'size': (1.9199999570846558, 0.8999999761581421, 1.7499999403953552), 'fbx': '/workspace/ponex-playmodels/jack/export/Jack_Ship.fbx', 'empties': ['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03']}
+FBX bytes=51836 ok=True meshes=[('Jack_Ship', 839, 573, ['HullWood', 'HullDark', 'StripeCream', 'StripeOrange', 'DeckWood', 'MastWood', 'CabinWood', 'AccentBlack', 'RopeTan', 'SailCream', 'FlagBlack'])] empties=['AnchorPoint', 'Cannon_01', 'Cannon_02', 'Cannon_03']
+ALL_OK= True
+Wrote /workspace/ponex-playmodels/jack/scripts/_last_stats.txt
+PREVIEW_FILES:
+  /workspace/ponex-playmodels/jack/preview/hero.png 1034030
+  /workspace/ponex-playmodels/jack/preview/ship.png 666333
+  /workspace/ponex-playmodels/jack/preview/ship_34.png 666333
+  /workspace/ponex-playmodels/jack/preview/ship_back.png 666524
+  /workspace/ponex-playmodels/jack/preview/ship_front.png 641161
+  /workspace/ponex-playmodels/jack/preview/ship_side.png 592422
+  /workspace/ponex-playmodels/jack/preview/ship_turntable.gif 1111888
+  /workspace/ponex-playmodels/jack/preview/ship_turntable.mp4 72858
+
+Blender quit
