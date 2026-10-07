@@ -166,10 +166,13 @@ public class CharacterSelect : MonoBehaviour
 
         if (db.players.Count >= TeamModeToggle.ForceTeamAtPlayerCount)
         {
+            bool wasTeam = db.teamSelect;
             db.teamSelect = true;
             db.positionSelect = true;
             if (db.gametype == Gametype.Vs)
                 db.gametype = Gametype.Coop;
+            if (!wasTeam)
+                db.RestoreTeamModeSeats();
         }
     }
 

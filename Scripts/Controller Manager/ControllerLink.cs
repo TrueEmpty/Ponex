@@ -55,6 +55,21 @@ public class ControllerLink : MonoBehaviour
     {
         db = Database.instance;
 
+        // Character Creation: always route onto the draft (even if this instance was already listed)
+        if (CharacterCreationManager.IsActive)
+        {
+            index = CharacterCreationManager.instance.BindControllerToDraft(this);
+            if (index < 0)
+                index = db.PlayerAdd(this);
+            if (index < 0)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            AutoFillControllerLayout();
+            return;
+        }
+
         if(!db.controllers.Contains(this)) //&& !manager.controllers.Exists(x=> x.playerInput.devices.ToString() == playerInput.devices.ToString()))
         {
             index = db.PlayerAdd(this);

@@ -24,8 +24,10 @@ public class GridControl : MonoBehaviour
     public bool canLoopH = true;
     public bool canLoopV = true;
     string selectionSound = "Selection";
+#pragma warning disable CS0414 // Used by commented grid confirm/cancel SFX below
     string selectedSound = "Selected";
     string deselectSound = "DeSelect";
+#pragma warning restore CS0414
 
     // Start is called before the first frame update
     void Start()
@@ -375,10 +377,31 @@ public class GridControl : MonoBehaviour
         return (pos.x * gridSize.y) + pos.y;
     }
 
+    int cachedControlsVersion = -1;
+    int cachedGroupEnabledCount = -1;
+
     void ControlsInGroup()
     {
-        fc = mm.controls.FindAll(x => x.group == group && x.isActiveAndEnabled);
-        fc.Sort((p1,p2) => p2.OrderValue().CompareTo(p1.OrderValue()));
+        if (mm == null || mm.controls == null)
+            return;
+
+        // Rebuild only when the menu control set changes — was FindAll+Sort every frame
+        int version = mm.controls.Count;
+        int enabledCount = 0;
+        for (int i = 0; i < mm.controls.Count; i++)
+        {
+            GridControl c = mm.controls[i];
+            if (c != null && c.group == group && c.isActiveAndEnabled)
+                enabledCount++;
+        }
+
+        if (fc != null && version == cachedControlsVersion && enabledCount == cachedGroupEnabledCount)
+            return;
+
+        cachedControlsVersion = version;
+        cachedGroupEnabledCount = enabledCount;
+        fc = mm.controls.FindAll(x => x != null && x.group == group && x.isActiveAndEnabled);
+        fc.Sort((p1, p2) => p2.OrderValue().CompareTo(p1.OrderValue()));
     }
 
     bool IsSelected()

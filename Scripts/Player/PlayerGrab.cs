@@ -55,8 +55,9 @@ public class PlayerGrab : MonoBehaviour
         if (p == null)
             return;
 
-        ControllerLink cL = p.cLink;
-        if (cL == null)
+        // Merge every device on this slot (Character Creation: keyboard + pads together)
+        System.Collections.Generic.List<ControllerLink> links = CollectInputLinks(p);
+        if (links.Count == 0)
             return;
 
         bool lf_r = inp.right;
@@ -67,18 +68,25 @@ public class PlayerGrab : MonoBehaviour
         bool lf_dashR = inp.dashRight;
         bool lf_super = inp.superHeld;
 
-        // Move stick / D-pad
-        bool r = PressedAxis(cL, "Move", 1, 0);
-        bool l = PressedAxis(cL, "Move", -1, 0);
-        bool u = PressedAxis(cL, "Move", 0, 1);
-        bool d = PressedAxis(cL, "Move", 0, -1);
-
-        bool bumpBtn = IsPressed(cL, "Jump");
-        bool superBtn = IsPressed(cL, "Interact");
-        bool laneRightBtn = IsPressed(cL, "Crouch");
-        bool laneLeftBtn = IsPressed(cL, "Attack");
-        bool dashLeftBtn = IsPressed(cL, "DashLeft");
-        bool dashRightBtn = IsPressed(cL, "DashRight");
+        bool r = false, l = false, u = false, d = false;
+        bool bumpBtn = false, superBtn = false, laneRightBtn = false, laneLeftBtn = false;
+        bool dashLeftBtn = false, dashRightBtn = false;
+        for (int i = 0; i < links.Count; i++)
+        {
+            ControllerLink cL = links[i];
+            if (cL == null)
+                continue;
+            r |= PressedAxis(cL, "Move", 1, 0);
+            l |= PressedAxis(cL, "Move", -1, 0);
+            u |= PressedAxis(cL, "Move", 0, 1);
+            d |= PressedAxis(cL, "Move", 0, -1);
+            bumpBtn |= IsPressed(cL, "Jump");
+            superBtn |= IsPressed(cL, "Interact");
+            laneRightBtn |= IsPressed(cL, "Crouch");
+            laneLeftBtn |= IsPressed(cL, "Attack");
+            dashLeftBtn |= IsPressed(cL, "DashLeft");
+            dashRightBtn |= IsPressed(cL, "DashRight");
+        }
 
         // Facing-relative stick "back" (toward your wall) — separate from Interact
         bool stickBack;
@@ -148,6 +156,23 @@ public class PlayerGrab : MonoBehaviour
 
         // Super press edge — tracked on its own channel (not Enough(), not movement alone)
         inp.tf_super = !lf_super && inp.superHeld;
+    }
+
+    static System.Collections.Generic.List<ControllerLink> CollectInputLinks(Player p)
+    {
+        var links = new System.Collections.Generic.List<ControllerLink>(4);
+        if (p.inputLinks != null)
+        {
+            for (int i = 0; i < p.inputLinks.Count; i++)
+            {
+                ControllerLink link = p.inputLinks[i];
+                if (link != null && !links.Contains(link))
+                    links.Add(link);
+            }
+        }
+        if (p.cLink != null && !links.Contains(p.cLink))
+            links.Add(p.cLink);
+        return links;
     }
 
     bool IsPressed(ControllerLink cL, string action)

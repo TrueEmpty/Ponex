@@ -188,7 +188,7 @@ public class YuotayMit : MonoBehaviour
         if (Mathf.Abs(delta) <= deadZone)
             return 0f;
 
-        float maxSpeed = p.movementSpeed * speedScale;
+        float maxSpeed = p.EffectiveMovementSpeed * speedScale;
         // Ease off as we near the target so it doesn't jitter at the catch point
         float approach = Mathf.Clamp01(Mathf.Abs(delta) / 1.5f);
         float speed = maxSpeed * Mathf.SmoothStep(0.15f, 1f, approach);

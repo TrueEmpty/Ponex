@@ -10,6 +10,13 @@ public class Player
 
     public ControllerLink cLink;
 
+    /// <summary>
+    /// Extra devices driving this slot (Character Creation routes all pads here).
+    /// When empty, gameplay uses <see cref="cLink"/> only.
+    /// </summary>
+    [System.NonSerialized]
+    public List<ControllerLink> inputLinks = new List<ControllerLink>();
+
     public int index = -1;
 
     /// <summary>Index into Database.playerColors for duplicate-character skins. -1 = use player index.</summary>
@@ -64,6 +71,15 @@ public class Player
     public GameObject spawnedPlayer;
     public GameObject spawnedLifeline;
 
+    /// <summary>Tic coop: this slot is the wing-bumper form (no machine).</summary>
+    [System.NonSerialized] public bool ticWingForm;
+    /// <summary>Tic coop: this slot is the fused double-HP machine host.</summary>
+    [System.NonSerialized] public bool ticHostFused;
+    /// <summary>Tic coop: lateral wall offset for side-by-side machines.</summary>
+    [System.NonSerialized] public float ticWallSideOffset;
+    /// <summary>Tic coop: partner player index (-1 none).</summary>
+    [System.NonSerialized] public int ticPartnerIndex = -1;
+
     #region Selections
     public bool characterSelected = false;
     /// <summary>Roster "?" pick — concrete character is rolled in StartGame and again each rematch.</summary>
@@ -82,6 +98,10 @@ public class Player
     public List<PlayerConstraints> canBump = new List<PlayerConstraints>();
     [SerializeField]
     public List<PlayerConstraints> canSuper = new List<PlayerConstraints>();
+    [SerializeField]
+    public List<PlayerConstraints> canDash = new List<PlayerConstraints>();
+    [SerializeField]
+    public List<MoveSpeedModifier> moveSpeedModifiers = new List<MoveSpeedModifier>();
 
     #region Gameplay Stats
     public bool won = false;
@@ -243,6 +263,18 @@ public class Player
                     canSuper.Add(new PlayerConstraints(caller, length >= 0 ? Time.time + length : -1));
                 }
                 break;
+            case PlayerConstraint.Dash:
+                PlayerConstraints pC_D = canDash.Find(x => x.caller == caller);
+
+                if (pC_D != null)
+                {
+                    pC_D.endTime = length >= 0 ? Time.time + length : -1;
+                }
+                else
+                {
+                    canDash.Add(new PlayerConstraints(caller, length >= 0 ? Time.time + length : -1));
+                }
+                break;
         }
     }
 
@@ -259,7 +291,33 @@ public class Player
             case PlayerConstraint.Super:
                 canSuper.RemoveAll(x => x != null && x.caller == caller);
                 break;
+            case PlayerConstraint.Dash:
+                canDash.RemoveAll(x => x != null && x.caller == caller);
+                break;
         }
+    }
+
+    public void AddMoveSpeedFactor(GameObject caller, float length, float factor)
+    {
+        if (caller == null)
+            return;
+
+        MoveSpeedModifier existing = moveSpeedModifiers.Find(x => x != null && x.caller == caller);
+        float end = length >= 0 ? Time.time + length : -1f;
+        if (existing != null)
+        {
+            existing.endTime = end;
+            existing.factor = factor;
+        }
+        else
+        {
+            moveSpeedModifiers.Add(new MoveSpeedModifier(caller, end, factor));
+        }
+    }
+
+    public void RemoveMoveSpeedFactor(GameObject caller)
+    {
+        moveSpeedModifiers.RemoveAll(x => x != null && x.caller == caller);
     }
 
     public bool CanMove
@@ -286,6 +344,33 @@ public class Player
         }
     }
 
+    public bool CanDash
+    {
+        get
+        {
+            return !(canDash.Count > 0);
+        }
+    }
+
+    /// <summary>Combined move-speed multipliers from temporary effects (Shock Ball, etc.).</summary>
+    public float MoveSpeedMultiplier
+    {
+        get
+        {
+            float m = 1f;
+            for (int i = 0; i < moveSpeedModifiers.Count; i++)
+            {
+                MoveSpeedModifier mod = moveSpeedModifiers[i];
+                if (mod == null)
+                    continue;
+                m *= mod.factor;
+            }
+            return m;
+        }
+    }
+
+    public float EffectiveMovementSpeed => movementSpeed * MoveSpeedMultiplier;
+
     public bool WithinLastUpdate
     {
         get
@@ -304,10 +389,11 @@ public class Player
     {
         if (amount > 0)
         {
-            int lost = Mathf.Min(amount, currentHealth);
+            int floor = CharacterCreationManager.IsActive ? 1 : 0;
+            int lost = Mathf.Min(amount, Mathf.Max(0, currentHealth - floor));
             currentHealth -= amount;
-            if (currentHealth < 0)
-                currentHealth = 0;
+            if (currentHealth < floor)
+                currentHealth = floor;
 
             if (lost > 0)
                 RecordDamageTaken(lost);
@@ -319,8 +405,9 @@ public class Player
         currentHealth -= amount;
         if (currentHealth > maxHealth)
             currentHealth = maxHealth;
-        if (currentHealth < 0)
-            currentHealth = 0;
+        int healFloor = CharacterCreationManager.IsActive ? 1 : 0;
+        if (currentHealth < healFloor)
+            currentHealth = healFloor;
         return 0;
     }
 
@@ -588,5 +675,21 @@ public enum PlayerConstraint
 {
     Move,
     Bump,
-    Super
+    Super,
+    Dash
+}
+
+[System.Serializable]
+public class MoveSpeedModifier
+{
+    public GameObject caller;
+    public float endTime = -1f;
+    public float factor = 1f;
+
+    public MoveSpeedModifier(GameObject caller, float endTime = -1f, float factor = 1f)
+    {
+        this.caller = caller;
+        this.endTime = endTime;
+        this.factor = factor;
+    }
 }

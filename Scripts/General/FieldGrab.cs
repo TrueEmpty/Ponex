@@ -155,8 +155,15 @@ public class FieldGrab : MonoBehaviour
         UpdateSelection();
     }
 
+    int lastSelectedField = int.MinValue;
+
     void UpdateSelection()
     {
+        if (db == null) db = Database.instance;
+        int sel = db != null ? db.selectedField : int.MinValue;
+        if (sel == lastSelectedField)
+            return;
+        lastSelectedField = sel;
         RefreshSelectedLook();
     }
 
@@ -188,13 +195,13 @@ public class FieldGrab : MonoBehaviour
 
         if (isRandom)
         {
-            db.selectedField = -1;
+            db.SetSelectedFieldPersistent(-1);
         }
         else
         {
             if (field == null || !field.active || fieldIndex < 0)
                 return;
-            db.selectedField = fieldIndex;
+            db.SetSelectedFieldPersistent(fieldIndex);
         }
 
         FieldSelect fs = FieldSelect.instance;

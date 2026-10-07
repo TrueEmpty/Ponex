@@ -1,30 +1,43 @@
 using UnityEngine;
 
 /// <summary>
-/// Cycles db.selectedBall. step = +1 next, -1 previous. Use step = 0 for Random (-1).
+/// Cycles ball loadout settings.
+/// Default: cycles a ball slot type (including Random = -1).
+/// editCount: cycles how many balls are in play (1-5).
 /// </summary>
 public class BallStepButton : MonoBehaviour
 {
     public int step = 1;
     public bool setRandom = false;
 
+    [Tooltip("Which loadout slot to edit (0-4). Ignored when editCount is true.")]
+    public int slotIndex = 0;
+
+    [Tooltip("If true, step changes ball count instead of ball type.")]
+    public bool editCount = false;
+
     public void OnClick(int player)
     {
         Database db = Database.instance;
-        if (db == null || db.balls == null || db.balls.Count == 0)
+        if (db == null)
             return;
 
-        if (setRandom)
+        if (editCount)
         {
-            db.selectedBall = -1;
+            db.CycleBallCount(step == 0 ? 1 : step);
+            if (BallSelect.instance != null)
+                BallSelect.instance.RefreshLoadoutUI();
             return;
         }
 
-        db.selectedBall += step;
+        if (db.balls == null || db.balls.Count == 0)
+            return;
 
-        if (db.selectedBall >= db.balls.Count)
-            db.selectedBall = -1;
-        else if (db.selectedBall < -1)
-            db.selectedBall = db.balls.Count - 1;
+        if (BallSelect.instance != null)
+            BallSelect.instance.SetFocusSlot(slotIndex);
+
+        db.CycleBallSlot(slotIndex, step, setRandom);
+        if (BallSelect.instance != null)
+            BallSelect.instance.RefreshLoadoutUI();
     }
 }

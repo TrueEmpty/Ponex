@@ -4258,27 +4258,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 785872973}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9913cbfc51bf55740a95bfcf8778f81f, type: 3}
+  m_Script: {fileID: 11500000, guid: df423862f4de257418da82995b5a25a6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RunOnClicked
-  onClickEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1637413287}
-        m_TargetAssemblyTypeName: Database, Assembly-CSharp
-        m_MethodName: CharactersPicked
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: Teams
-          m_BoolArgument: 0
-        m_CallState: 2
-  onLongClickEvent:
-    m_PersistentCalls:
-      m_Calls: []
+  m_EditorClassIdentifier: Assembly-CSharp::ConfirmClicked
 --- !u!114 &785872980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11836,6 +11818,114 @@ MonoBehaviour:
     prefab: {fileID: 4093283886100061384, guid: f6f124a398d01b04c93ff740b3a75b41, type: 3}
     selection: {fileID: 703483552193483227, guid: 709edfd27817f804fb52b34121e28719, type: 3}
     color: {r: 0.93450105, g: 1, b: 0, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Frost Ball
+    prefab: {fileID: 4093283886100061384, guid: 97e1e392fae22d34fa4d7f3f5d673023, type: 3}
+    selection: {fileID: 8011001001001001001, guid: c1a8f0e24b6d4a319e57d82c0f4b91a3, type: 3}
+    color: {r: 0.45, g: 0.85, b: 1.0, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Illusion Ball
+    prefab: {fileID: 4093283886100061384, guid: 7fc56e5407e3016439b3f7e66dfff8a3, type: 3}
+    selection: {fileID: 8022002002002002001, guid: d2b9e1f35c7e4b42af68e93d1a5c02b4, type: 3}
+    color: {r: 0.85, g: 0.45, b: 1.0, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Time Ball
+    prefab: {fileID: 4093283886100061384, guid: 3a6d026b92a04a6428673c862272d3e6, type: 3}
+    selection: {fileID: 8033003003003003001, guid: e3c0f2046d8f4c53b079fa4e2b6d13c5, type: 3}
+    color: {r: 1.0, g: 0.85, b: 0.35, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Mimic Ball
+    prefab: {fileID: 4093283886100061384, guid: 91a1b2c3d4e5f60718293a4b5c6d7e8f, type: 3}
+    selection: {fileID: 8111001001001001001, guid: a1a1b2c3d4e5f60718293a4b5c6d7e8f, type: 3}
+    color: {r: 0.55, g: 0.35, b: 0.85, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Orbit Ball
+    prefab: {fileID: 4093283886100061384, guid: 92b2c3d4e5f60718293a4b5c6d7e8f90, type: 3}
+    selection: {fileID: 8222002002002002001, guid: a2b2c3d4e5f60718293a4b5c6d7e8f90, type: 3}
+    color: {r: 0.35, g: 0.45, b: 0.95, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 0
+  - name: Burn Ball
+    prefab: {fileID: 4093283886100061384, guid: 93c3d4e5f60718293a4b5c6d7e8f901a, type: 3}
+    selection: {fileID: 8333003003003003001, guid: a3c3d4e5f60718293a4b5c6d7e8f901a, type: 3}
+    color: {r: 1.0, g: 0.35, b: 0.08, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Meteor Ball
+    prefab: {fileID: 4093283886100061384, guid: 94d4e5f60718293a4b5c6d7e8f901a2b, type: 3}
+    selection: {fileID: 8444004004004004001, guid: a4d4e5f60718293a4b5c6d7e8f901a2b, type: 3}
+    color: {r: 0.55, g: 0.35, b: 0.22, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Nano Ball
+    prefab: {fileID: 4093283886100061384, guid: 95e5f60718293a4b5c6d7e8f901a2b3c, type: 3}
+    selection: {fileID: 8555005005005005001, guid: a5e5f60718293a4b5c6d7e8f901a2b3c, type: 3}
+    color: {r: 0.25, g: 0.95, b: 0.45, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Shape Ball
+    prefab: {fileID: 4093283886100061384, guid: 96f60718293a4b5c6d7e8f901a2b3c4d, type: 3}
+    selection: {fileID: 8666006006006006001, guid: a6f60718293a4b5c6d7e8f901a2b3c4d, type: 3}
+    color: {r: 1.0, g: 0.55, b: 0.12, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Mine Ball
+    prefab: {fileID: 4093283886100061384, guid: 07c422ebb4e142b7bbc18fa0357a2f1b, type: 3}
+    selection: {fileID: 8777007007007007001, guid: 27ccf942b09344f2903741e5ed29784e, type: 3}
+    color: {r: 0.12, g: 0.12, b: 0.14, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Shock Ball
+    prefab: {fileID: 4093283886100061384, guid: daf5f84d701c42caa29dd4a64f02eba2, type: 3}
+    selection: {fileID: 8888008008008008001, guid: 0354265c5b88496bb5ee7c0e206017ad, type: 3}
+    color: {r: 1.0, g: 0.92, b: 0.25, a: 1}
+    startSpeed: 1
+    minSpeed: 1
+    maxSpeed: 2
+    speedIncrease: 0.5
+    damage: 1
+  - name: Explosion Ball
+    prefab: {fileID: 4093283886100061384, guid: 7e3e435f6ca24bf8ba31e61e414ed903, type: 3}
+    selection: {fileID: 8999009009009009001, guid: 5d41cd9119f84f1181533f426e2cbab0, type: 3}
+    color: {r: 0.85, g: 0.2, b: 0.15, a: 1}
     startSpeed: 1
     minSpeed: 1
     maxSpeed: 2

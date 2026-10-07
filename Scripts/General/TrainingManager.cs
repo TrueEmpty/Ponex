@@ -44,6 +44,9 @@ public class TrainingManager : MonoBehaviour
     Text coverageText;
     Text btnAutoLabel;
     Text btnStopAfterLabel;
+    Text speedLabel;
+    Slider speedSlider;
+    float desiredCpuSpeed = 1f;
 
     public static bool IsActive => instance != null && instance.sessionActive;
 
@@ -92,6 +95,7 @@ public class TrainingManager : MonoBehaviour
         if (!sessionActive || panel == null)
             return;
 
+        ApplyCpuOnlyTimeScale();
         RefreshLabels();
 
         // After a match ends in auto mode, kick the next one
@@ -101,6 +105,40 @@ public class TrainingManager : MonoBehaviour
             waitingForRematch = true;
             StartCoroutine(ContinueAfterWin());
         }
+    }
+
+    bool HasHumanPlayers()
+    {
+        if (db == null || db.players == null)
+            return false;
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player p = db.players[i];
+            if (p != null && !p.computer)
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// CPU-only sessions can run sped up. Any human present forces 1x.
+    /// </summary>
+    void ApplyCpuOnlyTimeScale()
+    {
+        if (db == null)
+            return;
+
+        if (HasHumanPlayers())
+        {
+            if (Time.timeScale != 1f && !db.winnerScreen)
+                Time.timeScale = 1f;
+            return;
+        }
+
+        bool matchLive = db.gameStart || db.startingGame;
+        float target = matchLive ? Mathf.Max(1f, desiredCpuSpeed) : 1f;
+        if (!Mathf.Approximately(Time.timeScale, target))
+            Time.timeScale = target;
     }
 
     // ─── Session control ───────────────────────────────────────────────
@@ -254,6 +292,9 @@ public class TrainingManager : MonoBehaviour
         db.positionSelect = false;
         // Keep teamSelect as configured in lobby (5+ forces team)
         db.selectedField = -1;
+        db.EnsureBallSlotsPublic();
+        db.ballCount = 1;
+        db.ballSlots[0] = -1;
         db.selectedBall = -1;
         db.maxPlayers = Mathf.Max(db.players.Count, db.maxPlayers);
         db.minPlayers = Mathf.Min(2, db.players.Count);
@@ -309,6 +350,9 @@ public class TrainingManager : MonoBehaviour
         db.minPlayers = 2;
         db.maxPlayers = plan.playerCount;
         db.selectedField = plan.fieldIndex;
+        db.EnsureBallSlotsPublic();
+        db.ballCount = 1;
+        db.ballSlots[0] = -1;
         db.selectedBall = -1;
         db.levelSelect = false;
         db.ballSelect = false;
@@ -420,7 +464,7 @@ public class TrainingManager : MonoBehaviour
         if (panel != null)
             return;
 
-        Canvas canvas = FindFirstObjectByType<Canvas>();
+        Canvas canvas = FindAnyObjectByType<Canvas>();
         if (canvas == null)
         {
             GameObject cGo = new GameObject("TrainingCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -436,22 +480,96 @@ public class TrainingManager : MonoBehaviour
         prt.anchorMax = new Vector2(0f, 1f);
         prt.pivot = new Vector2(0f, 1f);
         prt.anchoredPosition = new Vector2(12f, -12f);
-        prt.sizeDelta = new Vector2(420f, 210f);
+        prt.sizeDelta = new Vector2(420f, 260f);
         Image bg = panel.GetComponent<Image>();
         bg.color = new Color(0.08f, 0.1f, 0.14f, 0.88f);
 
         statusText = MakeLabel(panel.transform, "Status", new Vector2(10, -8), new Vector2(400, 40), 13);
-        coverageText = MakeLabel(panel.transform, "Coverage", new Vector2(10, -48), new Vector2(400, 50), 11);
+        coverageText = MakeLabel(panel.transform, "Coverage", new Vector2(10, -48), new Vector2(400, 36), 11);
 
-        float y = -105f;
+        speedLabel = MakeLabel(panel.transform, "SpeedLabel", new Vector2(10, -86), new Vector2(400, 20), 12);
+        speedLabel.text = "CPU Speed: 1x (humans force 1x)";
+        speedSlider = MakeSlider(panel.transform, "SpeedSlider", new Vector2(10, -108), new Vector2(400, 22), 1f, 20f, 1f, OnSpeedChanged);
+
+        float y = -145f;
         btnAutoLabel = MakeButton(panel.transform, "BtnAuto", "Start Auto", new Vector2(10, y), new Vector2(130, 36), OnClickAuto);
         btnStopAfterLabel = MakeButton(panel.transform, "BtnStopAfter", "Stop After", new Vector2(150, y), new Vector2(120, 36), OnClickStopAfter);
         MakeButton(panel.transform, "BtnStopNow", "Stop Now", new Vector2(280, y), new Vector2(120, 36), OnClickStopNow);
 
-        y = -150f;
+        y = -190f;
         MakeButton(panel.transform, "BtnJoin", "Join / Pick", new Vector2(10, y), new Vector2(130, 36), OnClickJoin);
         MakeButton(panel.transform, "BtnStartLobby", "Start Lobby", new Vector2(150, y), new Vector2(120, 36), OnClickStartLobby);
         MakeButton(panel.transform, "BtnExit", "Exit", new Vector2(280, y), new Vector2(120, 36), OnClickExit);
+    }
+
+    Slider MakeSlider(Transform parent, string name, Vector2 pos, Vector2 size, float min, float max, float value, UnityEngine.Events.UnityAction<float> onChanged)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(Slider));
+        go.transform.SetParent(parent, false);
+        RectTransform rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0f, 1f);
+        rt.anchorMax = new Vector2(0f, 1f);
+        rt.pivot = new Vector2(0f, 1f);
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = size;
+
+        GameObject bgGo = new GameObject("Background", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        bgGo.transform.SetParent(go.transform, false);
+        RectTransform bgRt = bgGo.GetComponent<RectTransform>();
+        bgRt.anchorMin = new Vector2(0f, 0.25f);
+        bgRt.anchorMax = new Vector2(1f, 0.75f);
+        bgRt.offsetMin = Vector2.zero;
+        bgRt.offsetMax = Vector2.zero;
+        bgGo.GetComponent<Image>().color = new Color(0.15f, 0.18f, 0.22f, 1f);
+
+        GameObject fillArea = new GameObject("Fill Area", typeof(RectTransform));
+        fillArea.transform.SetParent(go.transform, false);
+        RectTransform faRt = fillArea.GetComponent<RectTransform>();
+        faRt.anchorMin = new Vector2(0f, 0.25f);
+        faRt.anchorMax = new Vector2(1f, 0.75f);
+        faRt.offsetMin = new Vector2(5f, 0f);
+        faRt.offsetMax = new Vector2(-5f, 0f);
+
+        GameObject fill = new GameObject("Fill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        fill.transform.SetParent(fillArea.transform, false);
+        RectTransform fRt = fill.GetComponent<RectTransform>();
+        fRt.anchorMin = Vector2.zero;
+        fRt.anchorMax = Vector2.one;
+        fRt.offsetMin = Vector2.zero;
+        fRt.offsetMax = Vector2.zero;
+        fill.GetComponent<Image>().color = new Color(0.35f, 0.75f, 0.45f, 1f);
+
+        GameObject handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
+        handleArea.transform.SetParent(go.transform, false);
+        RectTransform haRt = handleArea.GetComponent<RectTransform>();
+        haRt.anchorMin = Vector2.zero;
+        haRt.anchorMax = Vector2.one;
+        haRt.offsetMin = new Vector2(10f, 0f);
+        haRt.offsetMax = new Vector2(-10f, 0f);
+
+        GameObject handle = new GameObject("Handle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        handle.transform.SetParent(handleArea.transform, false);
+        RectTransform hRt = handle.GetComponent<RectTransform>();
+        hRt.sizeDelta = new Vector2(16f, 0f);
+        handle.GetComponent<Image>().color = Color.white;
+
+        Slider s = go.GetComponent<Slider>();
+        s.fillRect = fRt;
+        s.handleRect = hRt;
+        s.targetGraphic = handle.GetComponent<Image>();
+        s.direction = Slider.Direction.LeftToRight;
+        s.minValue = min;
+        s.maxValue = max;
+        s.wholeNumbers = true;
+        s.value = value;
+        s.onValueChanged.AddListener(onChanged);
+        return s;
+    }
+
+    void OnSpeedChanged(float v)
+    {
+        desiredCpuSpeed = Mathf.Clamp(v, 1f, 20f);
+        ApplyCpuOnlyTimeScale();
     }
 
     Text MakeLabel(Transform parent, string name, Vector2 pos, Vector2 size, int fontSize)
@@ -535,6 +653,14 @@ public class TrainingManager : MonoBehaviour
 
         if (btnStopAfterLabel != null)
             btnStopAfterLabel.text = (state == SessionState.StopAfterMatch) ? "Stopping…" : "Stop After";
+
+        if (speedLabel != null)
+        {
+            bool humans = HasHumanPlayers();
+            speedLabel.text = humans
+                ? "CPU Speed: locked 1x (human present)"
+                : "CPU Speed: " + Mathf.RoundToInt(desiredCpuSpeed) + "x (no humans)";
+        }
     }
 
     void OnClickAuto()

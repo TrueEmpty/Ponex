@@ -43,6 +43,7 @@ public class Bahrue : MonoBehaviour
 
     [SerializeField]
     Thought thought = Thought.Nothing;
+    ComputerBrain brain;
 
     // Start is called before the first frame update
     void Start()
@@ -50,6 +51,12 @@ public class Bahrue : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
         db = Database.instance;
+        brain = ComputerBrain.Ensure(gameObject, ComputerBrain.Mode.LanePaddle);
+        if (brain != null)
+        {
+            brain.hitTags = hitTags;
+            brain.wallStopDistance = 1f;
+        }
 
         rb.useGravity = false;
     }
@@ -80,7 +87,8 @@ public class Bahrue : MonoBehaviour
             else if (pg.player.CanMove)
             {
                 OnMove();
-                OnDash();
+                if (pg.player.CanDash)
+                    OnDash();
             }
 
             if (pg.player.CanBump && !chargingSuper)
@@ -110,11 +118,13 @@ public class Bahrue : MonoBehaviour
 
         if (pg.player.computer)
         {
-            ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, hitTags, 1f);
+            ComputerAI.Decision d = brain != null
+                ? brain.Lane
+                : ComputerAI.Evaluate(transform, pg.player, hitTags, 1f);
             moveDir = d.moveDir;
-            if (d.wantBump) thought = Thought.MoveUp;
-            else if (d.wantSuper) thought = Thought.MoveDown;
-            else thought = Thought.Nothing;
+            thought = brain != null
+                ? brain.Thought
+                : (d.wantBump ? Thought.MoveUp : (d.wantSuper ? Thought.MoveDown : Thought.Nothing));
         }
         else
         {
@@ -129,7 +139,7 @@ public class Bahrue : MonoBehaviour
             moveDir = 0;
 
         Vector3 rotDir = PaddleWall.AbsAxes(transform.right);
-        rb.linearVelocity = rotDir * moveDir * speedIncrease * pg.player.movementSpeed;
+        rb.linearVelocity = rotDir * moveDir * speedIncrease * pg.player.EffectiveMovementSpeed;
     }
 
     void OnDash()

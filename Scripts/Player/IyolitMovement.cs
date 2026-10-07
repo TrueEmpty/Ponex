@@ -28,6 +28,8 @@ public class IyolitMovement : MonoBehaviour
         pG = GetComponent<PlayerGrab>();
         db = Database.instance;
         SetupFlameVisuals();
+        // Candle-mode AI (auto-added for CPU players / new kits)
+        ComputerBrain.Ensure(gameObject, ComputerBrain.Mode.Candle);
     }
 
     void SetupFlameVisuals()
@@ -87,7 +89,7 @@ public class IyolitMovement : MonoBehaviour
                         if (moving)
                         {
                             // Half speed between candles
-                            percentDis += pG.player.movementSpeed * 0.5f * Time.deltaTime;
+                            percentDis += pG.player.EffectiveMovementSpeed * 0.5f * Time.deltaTime;
                             percentFC = 1 - (Mathf.Abs(.5f - percentDis) * 2);
 
                             if (percentDis < 1)
@@ -106,23 +108,23 @@ public class IyolitMovement : MonoBehaviour
 
                     if (currentPosition == lastPosition && !moving)
                     {
-                        if (pG.inp.tf_right)
+                        // Humans step candles; CPU Iyolit uses ComputerBrain.Candle
+                        if (pG.player == null || !pG.player.computer)
                         {
-                            currentPosition++;
-
-                            if (currentPosition >= positions.Count)
+                            if (pG.inp.tf_right)
                             {
-                                currentPosition = positions.Count - 1;
+                                currentPosition++;
+
+                                if (currentPosition >= positions.Count)
+                                    currentPosition = positions.Count - 1;
                             }
-                        }
 
-                        if (pG.inp.tf_left)
-                        {
-                            currentPosition--;
-
-                            if (currentPosition < 0)
+                            if (pG.inp.tf_left)
                             {
-                                currentPosition = 0;
+                                currentPosition--;
+
+                                if (currentPosition < 0)
+                                    currentPosition = 0;
                             }
                         }
 
@@ -160,13 +162,16 @@ public class IyolitMovement : MonoBehaviour
                 }
 
 
-                if (pG.inp.tf_super && !SuperOn() && pG.player.CanSuper && pG.player.super.amount >= pG.player.super.cost && pG.player.super.readyPercent >= 1)
+                bool wantSuper = pG.inp.tf_super;
+                if (pG.player.computer)
                 {
-                    superOn = superTime;
-                    superCooldownTimer = 0;
-                    pG.player.RecordUltUsed();
-                    //pG.player.CostSuper(pG.player.player.player.superCost);
+                    ComputerBrain brain = GetComponent<ComputerBrain>();
+                    if (brain != null && brain.WantSuper)
+                        wantSuper = true;
                 }
+
+                if (wantSuper && !SuperOn() && pG.player.CanSuper && pG.player.super.amount >= pG.player.super.cost && pG.player.super.readyPercent >= 1)
+                    ActivateSuper();
             }
         }
     }
@@ -176,6 +181,20 @@ public class IyolitMovement : MonoBehaviour
         return superOn > 0;
     }
 
+    public void ActivateSuper()
+    {
+        if (SuperOn() || pG == null || pG.player == null)
+            return;
+        if (!pG.player.CanSuper || pG.player.super == null)
+            return;
+        if (pG.player.super.amount < pG.player.super.cost || pG.player.super.readyPercent < 1f)
+            return;
+
+        superOn = superTime;
+        superCooldownTimer = 0;
+        pG.player.RecordUltUsed();
+    }
+
     public void AddPosition(Transform trans,bool lastOne = false)
     {
         //Add Position Ordered by position
@@ -183,7 +202,7 @@ public class IyolitMovement : MonoBehaviour
 
         if(lastOne)
         {
-            // Sort left→right in her local space so stick right always advances along +transform.right
+            // Sort screen-left→right (AbsAxes) so stick right is never flipped on top seat
             SortPositionsAlongFacing();
 
             //Update current Position which will be the middle
@@ -208,7 +227,8 @@ public class IyolitMovement : MonoBehaviour
         if (positions == null || positions.Count < 2)
             return;
 
-        Vector3 right = transform.right;
+        // Match paddle lane movement: +index follows AbsAxes(right), not flipped local right on top
+        Vector3 right = PaddleWall.AbsAxes(transform.right);
         positions.Sort((a, b) =>
         {
             if (a == null && b == null) return 0;

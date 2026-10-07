@@ -85,7 +85,7 @@ public class PullObjectIn : MonoBehaviour
     {
         hits.Clear();
 
-        GameObject[] allGO = GameObject.FindObjectsOfType<GameObject>();
+        GameObject[] allGO = UnityEngine.Object.FindObjectsByType<GameObject>();
 
         if (allGO.Length > 0)
         {

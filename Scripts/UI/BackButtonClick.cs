@@ -9,7 +9,7 @@ public class BackButtonClick : MonoBehaviour
 {
     public static void EnsureAll()
     {
-        GameObject[] all = FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        GameObject[] all = FindObjectsByType<GameObject>(FindObjectsInactive.Include);
         for (int i = 0; i < all.Length; i++)
         {
             GameObject go = all[i];

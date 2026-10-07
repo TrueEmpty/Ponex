@@ -8,7 +8,9 @@ public class FollowPlayer : MonoBehaviour
     public Transform playerTransform;
     public Vector3 offset = Vector3.zero;
     Vector3 lerpOffset = Vector3.zero;
-    float ttt = 1.5f;
+    public float ttt = 1.5f;
+
+    public bool absolutePosition = false;
 
     // Start is called before the first frame update
     void Start()
@@ -26,11 +28,18 @@ public class FollowPlayer : MonoBehaviour
     {
         if(playerTransform != null)
         {
-            transform.localPosition = offset;
-
-            if(offset != lerpOffset)
+            if (absolutePosition)
             {
-                offset = Vector3.MoveTowards(offset, lerpOffset, ttt * Time.deltaTime);
+                transform.position = Vector3.MoveTowards(transform.position, playerTransform.position + offset, ttt * Time.deltaTime);
+            }
+            else
+            {
+                transform.localPosition = offset;
+
+                if (offset != lerpOffset)
+                {
+                    offset = Vector3.MoveTowards(offset, lerpOffset, ttt * Time.deltaTime);
+                }
             }
         }
     }

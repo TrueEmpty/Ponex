@@ -68,7 +68,7 @@ public class DamageOnTagHit : MonoBehaviour
             return;
 
         // Actual HP lost (deduped if multiple DamageOnTagHit colliders hit the same ball this frame)
-        int lost = pg.player.ApplyGoalDamage(dealt, collision.gameObject.GetInstanceID());
+        int lost = pg.player.ApplyGoalDamage(dealt, collision.gameObject.GetEntityId().GetHashCode());
 
         // Credit ball owner for the HP actually removed — keeps Dealt/Taken in sync
         if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null && !ownBall)

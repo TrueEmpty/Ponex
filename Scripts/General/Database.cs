@@ -22,12 +22,21 @@ public class Database : MonoBehaviour
 
     public int selectedField = 0;
     public int selectedBall = -1;
+
+    public const int MaxMatchBalls = 5;
+    [Tooltip("How many match balls to keep in play (1-5).")]
+    public int ballCount = 1;
+    [Tooltip("Ball type index per slot; -1 = Random.")]
+    public int[] ballSlots = new int[] { -1, -1, -1, -1, -1 };
+
     int fieldSize = 0;
     /// <summary>Current match playfield width (field.size + 10). 0 before a match starts.</summary>
     public float FieldPlaySize => fieldSize;
 
     public GameObject outofBounds;
     public GameObject background;
+    [Tooltip("Optional Tic coop wing-bumper form. Falls back to runtime build / Resources/TicWing.")]
+    public GameObject ticWingBumperPrefab;
     public GameObject fieldObj;
     public Text gameplayinfo;
     #endregion
@@ -80,6 +89,21 @@ public class Database : MonoBehaviour
     #endregion
 
     const string SelectedCharacterPref = "Ponex.SelectedCharacter.";
+    const string PrefSelectedField = "Ponex.SelectedField";
+    const string PrefBallCount = "Ponex.BallCount";
+    const string PrefBallSlot = "Ponex.BallSlot.";
+    const string PrefSelectedBall = "Ponex.SelectedBall";
+
+    /// <summary>Team-mode seat memory (facing / lane / team) restored when leaving VS.</summary>
+    struct LobbySeatMemory
+    {
+        public bool valid;
+        public Facing facing;
+        public int position;
+        public int team;
+    }
+
+    readonly LobbySeatMemory[] lobbySeatMemory = new LobbySeatMemory[8];
     public const string RandomCharacterSentinel = "__RANDOM__";
 
     private void Awake()
@@ -91,7 +115,12 @@ public class Database : MonoBehaviour
         else
         {
             instance = this;
+            EnsureBallSlots();
             LoadCharactersFromAssets();
+            LoadMatchPrefs();
+            // Before ControllerLink.Start (-200) so Character Creation can claim pads
+            CharacterCreationManager.EnsureExists();
+            TrainingManager.EnsureExists();
         }
     }
 
@@ -103,6 +132,9 @@ public class Database : MonoBehaviour
         ComputerAI.EnsureLoaded();
         if (characters == null || characters.Count == 0)
             LoadCharactersFromAssets();
+
+        EnsureBallSlots();
+        LoadMatchPrefs();
 
         // Remove leftover Leave UI button — disconnect is a hold input (Select / Backspace), not UI
         if (playerSelectors != null)
@@ -120,6 +152,189 @@ public class Database : MonoBehaviour
 
         BackButtonClick.EnsureAll();
         TrainingManager.EnsureExists();
+        CharacterCreationManager.EnsureExists();
+    }
+
+    public void EnsureBallSlotsPublic() => EnsureBallSlots();
+
+    void EnsureBallSlots()
+    {
+        if (ballSlots == null || ballSlots.Length != MaxMatchBalls)
+        {
+            int[] next = new int[MaxMatchBalls];
+            for (int i = 0; i < MaxMatchBalls; i++)
+                next[i] = -1;
+            if (ballSlots != null)
+            {
+                for (int i = 0; i < Mathf.Min(ballSlots.Length, MaxMatchBalls); i++)
+                    next[i] = ballSlots[i];
+            }
+            ballSlots = next;
+        }
+
+        ballCount = Mathf.Clamp(ballCount, 1, MaxMatchBalls);
+        selectedBall = ballSlots[0];
+    }
+
+    public void LoadMatchPrefs()
+    {
+        EnsureBallSlots();
+
+        if (PlayerPrefs.HasKey(PrefSelectedField))
+            selectedField = PlayerPrefs.GetInt(PrefSelectedField, selectedField);
+
+        if (PlayerPrefs.HasKey(PrefBallCount))
+            ballCount = Mathf.Clamp(PlayerPrefs.GetInt(PrefBallCount, ballCount), 1, MaxMatchBalls);
+
+        for (int i = 0; i < MaxMatchBalls; i++)
+        {
+            string key = PrefBallSlot + i;
+            if (PlayerPrefs.HasKey(key))
+                ballSlots[i] = PlayerPrefs.GetInt(key, -1);
+        }
+
+        // Legacy single-ball key
+        if (PlayerPrefs.HasKey(PrefSelectedBall) && !PlayerPrefs.HasKey(PrefBallSlot + "0"))
+            ballSlots[0] = PlayerPrefs.GetInt(PrefSelectedBall, -1);
+
+        selectedBall = ballSlots[0];
+    }
+
+    public void SaveMatchPrefs()
+    {
+        EnsureBallSlots();
+        PlayerPrefs.SetInt(PrefSelectedField, selectedField);
+        PlayerPrefs.SetInt(PrefBallCount, ballCount);
+        PlayerPrefs.SetInt(PrefSelectedBall, ballSlots[0]);
+        for (int i = 0; i < MaxMatchBalls; i++)
+            PlayerPrefs.SetInt(PrefBallSlot + i, ballSlots[i]);
+        PlayerPrefs.Save();
+    }
+
+    public int GetBallSlot(int slot)
+    {
+        EnsureBallSlots();
+        if (slot < 0 || slot >= MaxMatchBalls)
+            return -1;
+        return ballSlots[slot];
+    }
+
+    public void SetBallSlot(int slot, int ballIndex)
+    {
+        EnsureBallSlots();
+        if (slot < 0 || slot >= MaxMatchBalls)
+            return;
+
+        if (ballIndex < -1)
+            ballIndex = -1;
+        if (balls != null && ballIndex >= balls.Count)
+            ballIndex = -1;
+
+        ballSlots[slot] = ballIndex;
+        if (slot == 0)
+            selectedBall = ballIndex;
+        SaveMatchPrefs();
+    }
+
+    public void CycleBallSlot(int slot, int step, bool setRandom)
+    {
+        EnsureBallSlots();
+        if (slot < 0 || slot >= MaxMatchBalls || balls == null || balls.Count == 0)
+            return;
+
+        if (setRandom)
+        {
+            SetBallSlot(slot, -1);
+            return;
+        }
+
+        int cur = ballSlots[slot];
+        cur += step;
+        if (cur >= balls.Count)
+            cur = -1;
+        else if (cur < -1)
+            cur = balls.Count - 1;
+        SetBallSlot(slot, cur);
+    }
+
+    public void CycleBallCount(int step)
+    {
+        EnsureBallSlots();
+        int next = Mathf.Clamp(ballCount + step, 1, MaxMatchBalls);
+        if (next == ballCount)
+            return;
+        ballCount = next;
+        SaveMatchPrefs();
+    }
+
+    public void SetSelectedFieldPersistent(int fieldIndex)
+    {
+        selectedField = fieldIndex;
+        SaveMatchPrefs();
+    }
+
+    int ResolveBallTypeIndex(int slotOrSelected)
+    {
+        int sB = slotOrSelected;
+        if (sB < 0 || balls == null || sB >= balls.Count)
+            sB = RandomBallIndex();
+        return sB;
+    }
+
+    readonly bool[] matchSlotFilled = new bool[MaxMatchBalls];
+    float nextBallCheckAt;
+
+    GameObject SpawnMatchBall(int slot, bool ballReady)
+    {
+        EnsureBallSlots();
+        if (balls == null || balls.Count == 0 || slot < 0 || slot >= ballCount)
+            return null;
+
+        int type = ResolveBallTypeIndex(ballSlots[slot]);
+        if (type < 0 || type >= balls.Count)
+            return null;
+
+        Ball ball = balls[type];
+        if (ball == null || ball.prefab == null)
+            return null;
+
+        GameObject bSpawned = Instantiate(ball.prefab);
+        float spread = Mathf.Max(0, ballCount - 1) * 0.55f;
+        float x = ballCount <= 1 ? 0f : Mathf.Lerp(-spread, spread, slot / Mathf.Max(1f, ballCount - 1f));
+        bSpawned.transform.position = new Vector3(x, 0f, fieldSize);
+
+        BallInfo bI = bSpawned.GetComponent<BallInfo>();
+        if (bI != null)
+        {
+            bI.ballReady = ballReady;
+            bI.matchSlot = slot;
+        }
+
+        return bSpawned;
+    }
+
+    void EnsureMatchBalls(bool ballReady)
+    {
+        EnsureBallSlots();
+        for (int i = 0; i < matchSlotFilled.Length; i++)
+            matchSlotFilled[i] = false;
+
+        // One pass over the live registry instead of FindObjects × ballCount
+        for (int i = 0; i < LiveBallRegistry.Count; i++)
+        {
+            BallInfo info = LiveBallRegistry.GetAt(i);
+            if (info == null || info.gameObject == null || !info.gameObject.activeInHierarchy)
+                continue;
+            int s = info.matchSlot;
+            if (s >= 0 && s < ballCount && s < matchSlotFilled.Length)
+                matchSlotFilled[s] = true;
+        }
+
+        for (int slot = 0; slot < ballCount; slot++)
+        {
+            if (!matchSlotFilled[slot])
+                SpawnMatchBall(slot, ballReady);
+        }
     }
 
     /// <summary>
@@ -163,6 +378,8 @@ public class Database : MonoBehaviour
 
         ControllerLink link = p.cLink;
         p.cLink = null;
+        if (p.inputLinks != null)
+            p.inputLinks.RemoveAll(x => x == null || x == link);
 
         if (p.pso != null)
         {
@@ -173,6 +390,15 @@ public class Database : MonoBehaviour
         controllers.RemoveAll(x => x == null || x == link || x.index == playerIndex);
         if (link != null)
             Destroy(link.gameObject);
+
+        // Character Creation draft must stay human-controlled (never flip to AI)
+        if (CharacterCreationManager.IsActive && p.index == 0)
+        {
+            p.computer = false;
+            if (p.inputLinks != null && p.inputLinks.Count > 0)
+                p.cLink = p.inputLinks[p.inputLinks.Count - 1];
+            return true;
+        }
 
         bool onMainMenu = IsMainMenu();
         bool removeSlot = onMainMenu || (!IsPastCharacterSelect() && players.Count > minPlayers);
@@ -246,6 +472,102 @@ public class Database : MonoBehaviour
 
         PlayerPrefs.SetString(SelectedCharacterPref + playerIndex, characterName);
         PlayerPrefs.Save();
+    }
+
+    /// <summary>
+    /// Standard VS layout by player index: unique wall/team cycle, A then B lane.
+    /// P0 Up/T1, P1 Down/T2, P2 Right/T3, P3 Left/T4, P4–P7 same walls lane B.
+    /// </summary>
+    public static void ApplyIndexSeatDefaults(Player p)
+    {
+        if (p == null || p.index < 0)
+            return;
+
+        int i = p.index % 8;
+        p.position = i >= 4 ? 1 : 0;
+        switch (i % 4)
+        {
+            case 0: p.facing = Facing.Up; p.team = 1; break;
+            case 1: p.facing = Facing.Down; p.team = 2; break;
+            case 2: p.facing = Facing.Right; p.team = 3; break;
+            default: p.facing = Facing.Left; p.team = 4; break;
+        }
+    }
+
+    /// <summary>VS mode: every lobby seat gets index-based facing/team (skips position/team menus).</summary>
+    public void ApplyVersusSeatLayout()
+    {
+        if (players == null)
+            return;
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i] != null)
+                ApplyIndexSeatDefaults(players[i]);
+        }
+    }
+
+    public void RememberLobbySeat(Player p)
+    {
+        if (p == null || p.index < 0 || p.index >= lobbySeatMemory.Length)
+            return;
+        lobbySeatMemory[p.index] = new LobbySeatMemory
+        {
+            valid = true,
+            facing = p.facing,
+            position = p.position,
+            team = p.team
+        };
+    }
+
+    public void RememberAllLobbySeats()
+    {
+        if (players == null)
+            return;
+        for (int i = 0; i < players.Count; i++)
+            RememberLobbySeat(players[i]);
+    }
+
+    public bool TryRestoreLobbySeat(Player p)
+    {
+        if (p == null || p.index < 0 || p.index >= lobbySeatMemory.Length)
+            return false;
+        LobbySeatMemory m = lobbySeatMemory[p.index];
+        if (!m.valid)
+            return false;
+        p.facing = m.facing;
+        p.position = m.position;
+        p.team = m.team;
+        return true;
+    }
+
+    /// <summary>Team Mode on: restore remembered seats, or keep current / index defaults.</summary>
+    public void RestoreTeamModeSeats()
+    {
+        if (players == null)
+            return;
+        for (int i = 0; i < players.Count; i++)
+        {
+            Player p = players[i];
+            if (p == null)
+                continue;
+            if (!TryRestoreLobbySeat(p))
+                ApplyIndexSeatDefaults(p);
+        }
+    }
+
+    /// <summary>
+    /// Call when leaving Team Mode menus or confirming seats so VS↔Team toggles keep picks.
+    /// </summary>
+    public void EnsureLobbySeatsForStart()
+    {
+        if (positionSelect || teamSelect)
+        {
+            RememberAllLobbySeats();
+            return;
+        }
+
+        // VS (no position/team menus): force index layout — everyone own team + wall by index
+        ApplyVersusSeatLayout();
     }
 
     public bool RemembersRandomCharacter(int playerIndex)
@@ -342,17 +664,31 @@ public class Database : MonoBehaviour
         }
     }
 
+    bool? lastPlayerSelectorsShown;
+
     void ShowAndHidePlayerSelectors()
     {
         // Hide during active match; show again on the win screen for menu navigation
         bool show = winnerScreen || !(gameStart || startingGame);
-        playerSelectors.gameObject.SetActive(show);
+        if (lastPlayerSelectorsShown.HasValue && lastPlayerSelectorsShown.Value == show)
+            return;
+        lastPlayerSelectorsShown = show;
+        if (playerSelectors != null)
+            playerSelectors.gameObject.SetActive(show);
     }
 
     public int PlayerAdd(ControllerLink cL)
     {
         int result = -1;
         bool computerMode = false;
+
+        // Character Creation: every device drives the draft slot (index 0)
+        if (cL != null && CharacterCreationManager.IsActive)
+        {
+            int bound = CharacterCreationManager.instance.BindControllerToDraft(cL);
+            if (bound >= 0)
+                return bound;
+        }
 
         // Human rejoining after Leave: take over an unbound CPU instead of spawning a duplicate
         if (cL != null && players != null)
@@ -387,6 +723,13 @@ public class Database : MonoBehaviour
 
             p.computer = computerMode;
             p.cLink = cL;
+            if (cL != null)
+            {
+                if (p.inputLinks == null)
+                    p.inputLinks = new System.Collections.Generic.List<ControllerLink>();
+                if (!p.inputLinks.Contains(cL))
+                    p.inputLinks.Add(cL);
+            }
             // Lobby CPUs default to Easy. Training is authoring-only (not in the level cycle).
             if (computerMode)
                 p.cpuDifficulty = ComputerAI.CpuDifficulty.Easy;
@@ -403,49 +746,11 @@ public class Database : MonoBehaviour
 
             p.index = index;
 
-            switch(index)
-            {
-                case 0:
-                    p.team = 1;
-                    p.facing = Facing.Up;
-                    p.position = 0;
-                    break;
-                case 1:
-                    p.team = 2;
-                    p.facing = Facing.Down;
-                    p.position = 0;
-                    break;
-                case 2:
-                    p.team = 3;
-                    p.facing = Facing.Right;
-                    p.position = 0;
-                    break;
-                case 3:
-                    p.team = 4;
-                    p.facing = Facing.Left;
-                    p.position = 0;
-                    break;
-                case 4:
-                    p.team = 1;
-                    p.facing = Facing.Up;
-                    p.position = 1;
-                    break;
-                case 5:
-                    p.team = 2;
-                    p.facing = Facing.Down;
-                    p.position = 1;
-                    break;
-                case 6:
-                    p.team = 3;
-                    p.facing = Facing.Right;
-                    p.position = 1;
-                    break;
-                case 7:
-                    p.team = 4;
-                    p.facing = Facing.Left;
-                    p.position = 1;
-                    break;
-            }
+            // VS / index defaults; Team Mode restores remembered seats when toggled on
+            if (teamSelect && TryRestoreLobbySeat(p))
+            { }
+            else
+                ApplyIndexSeatDefaults(p);
 
             if (cS != null)
             {
@@ -474,10 +779,13 @@ public class Database : MonoBehaviour
             // 5+ players always require Team Mode
             if (players.Count >= TeamModeToggle.ForceTeamAtPlayerCount)
             {
+                bool wasTeam = teamSelect;
                 teamSelect = true;
                 positionSelect = true;
                 if (gametype == Gametype.Vs)
                     gametype = Gametype.Coop;
+                if (!wasTeam)
+                    RestoreTeamModeSeats();
             }
         }
 
@@ -510,6 +818,10 @@ public class Database : MonoBehaviour
         p.computer = false;
         p.cLink = cL;
         cL.index = p.index;
+        if (p.inputLinks == null)
+            p.inputLinks = new System.Collections.Generic.List<ControllerLink>();
+        if (!p.inputLinks.Contains(cL))
+            p.inputLinks.Add(cL);
 
         if (p.pso != null)
         {
@@ -602,41 +914,53 @@ public class Database : MonoBehaviour
                         }
                     }
                 }
+
+                if (p.canDash != null && p.canDash.Count > 0)
+                {
+                    for (int i = p.canDash.Count - 1; i >= 0; i--)
+                    {
+                        if (p.canDash[i].endTime <= Time.time && p.canDash[i].endTime >= 0)
+                        {
+                            p.canDash.RemoveAt(i);
+                        }
+                    }
+                }
+
+                if (p.moveSpeedModifiers != null && p.moveSpeedModifiers.Count > 0)
+                {
+                    for (int i = p.moveSpeedModifiers.Count - 1; i >= 0; i--)
+                    {
+                        MoveSpeedModifier mod = p.moveSpeedModifiers[i];
+                        if (mod != null && mod.endTime <= Time.time && mod.endTime >= 0)
+                        {
+                            p.moveSpeedModifiers.RemoveAt(i);
+                        }
+                    }
+                }
             }
         }
     }
 
     void BallCheck()
     {
-        GameObject[] allBalls = GameObject.FindGameObjectsWithTag("Ball");
-
-        if(allBalls.Length <= 0)
-        {
-            int sB = selectedBall;
-
-            if (selectedBall < 0 || selectedBall >= balls.Count)
-                sB = RandomBallIndex();
-
-            if (sB < 0 || sB >= balls.Count)
-                return;
-
-            Ball ball = balls[sB];
-
-            GameObject bSpawned = Instantiate(ball.prefab);
-            bSpawned.transform.position = new Vector3(0, 0, fieldSize);
-            BallInfo bI = bSpawned.GetComponent<BallInfo>();
-
-            if (bI != null)
-            {
-                bI.ballReady = true;
-            }
-        }
+        // Throttle respawn scan — was FindObjects every frame
+        if (Time.time < nextBallCheckAt)
+            return;
+        nextBallCheckAt = Time.time + 0.2f;
+        EnsureMatchBalls(true);
     }
+
+    readonly List<Player> winnersBuffer = new List<Player>(8);
+    readonly List<int> aliveTeamsBuffer = new List<int>(4);
 
     void CheckForWinner()
     {
-        List<int> aliveTeams = new List<int>();
-        List<Player> winners = new List<Player>();
+        // Character Creation sandbox never ends a match
+        if (CharacterCreationManager.IsActive)
+            return;
+
+        winnersBuffer.Clear();
+        aliveTeamsBuffer.Clear();
 
         if (players.Count > 0)
         {
@@ -654,25 +978,25 @@ public class Database : MonoBehaviour
                 }
             }
 
-            winners = players.FindAll(x => x.currentHealth > 0);
-
-            for (int i = 0; i < winners.Count; i++)
+            for (int i = 0; i < players.Count; i++)
             {
-                int team = winners[i].team;
-                if (!aliveTeams.Contains(team))
-                {
-                    aliveTeams.Add(team);
-                }
+                Player p = players[i];
+                if (p == null || p.currentHealth <= 0)
+                    continue;
+                winnersBuffer.Add(p);
+                int team = p.team;
+                if (!aliveTeamsBuffer.Contains(team))
+                    aliveTeamsBuffer.Add(team);
             }
         }
 
-        int eliminated = players.Count - winners.Count;
+        int eliminated = players.Count - winnersBuffer.Count;
         // FFA / default: last person standing. Team select: last team standing.
         // Require someone eliminated so solo practice doesn't instantly end.
         bool matchOver = eliminated > 0 && (
             teamSelect
-                ? aliveTeams.Count <= 1
-                : winners.Count <= 1
+                ? aliveTeamsBuffer.Count <= 1
+                : winnersBuffer.Count <= 1
         );
 
         if (matchOver)
@@ -683,7 +1007,7 @@ public class Database : MonoBehaviour
                 for (int i = 0; i < players.Count; i++)
                 {
                     Player p = players[i];
-                    p.won = winners.Contains(p);
+                    p.won = winnersBuffer.Contains(p);
                 }
             }
 
@@ -712,7 +1036,7 @@ public class Database : MonoBehaviour
         winnerScreen = false;
         Time.timeScale = 1f;
 
-        ClearAfterTheGame[] toClear = FindObjectsByType<ClearAfterTheGame>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        ClearAfterTheGame[] toClear = FindObjectsByType<ClearAfterTheGame>(FindObjectsInactive.Include);
         for (int i = toClear.Length - 1; i >= 0; i--)
         {
             if (toClear[i] != null)
@@ -806,7 +1130,7 @@ public class Database : MonoBehaviour
         // Only clear objects marked for match cleanup.
         // Do NOT SetActive/toggle every GameObject — that corrupts Canvas layout (Invalid AABB)
         // and can freeze the match with winnerScreen stuck true if the coroutine dies mid-loop.
-        ClearAfterTheGame[] toClear = FindObjectsByType<ClearAfterTheGame>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        ClearAfterTheGame[] toClear = FindObjectsByType<ClearAfterTheGame>(FindObjectsInactive.Include);
         for (int i = toClear.Length - 1; i >= 0; i--)
         {
             if (toClear[i] != null)
@@ -877,7 +1201,7 @@ public class Database : MonoBehaviour
 
     void EnsureWinnersButtonsClickable()
     {
-        GridControl[] controls = FindObjectsByType<GridControl>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        GridControl[] controls = FindObjectsByType<GridControl>(FindObjectsInactive.Include);
         for (int i = 0; i < controls.Length; i++)
         {
             GridControl gc = controls[i];
@@ -1101,6 +1425,9 @@ public class Database : MonoBehaviour
             players[i].gridLock = false;
         }
 
+        // Persist team-mode seats; VS skips menus so re-apply index walls/teams
+        EnsureLobbySeatsForStart();
+
         if(startGame && !startingGame)
         {
             StartCoroutine(StartGame());
@@ -1142,16 +1469,14 @@ public class Database : MonoBehaviour
             #endregion
 
             #region Add Players
-            for(int i = 0; i < maxPlayers; i++)
+            // Phase 1 — bind roster / clear match stats for every seat
+            int spawnCount = Mathf.Min(maxPlayers, players.Count);
+            for (int i = 0; i < spawnCount; i++)
             {
-                if(i >= players.Count)
-                {
-                    break;
-                }
-
                 Player p = players[i];
+                if (p == null)
+                    continue;
 
-                // Fresh match stats (also cleared on win-menu exit; belt-and-suspenders here)
                 p.won = false;
                 p.damageDealt = 0;
                 p.damageTaken = 0;
@@ -1164,142 +1489,173 @@ public class Database : MonoBehaviour
                 p.afterDeathHits = 0;
                 p.afterDeathDamage = 0;
 
-                // Always re-bind from the character roster before spawn.
-                // Random stays flagged so rematch re-rolls a new fighter each match.
-                Characters rosterChar = null;
-                if (p.wantRandomCharacter || RemembersRandomCharacter(p.index))
+                bool keepCreationDraft = CharacterCreationManager.IsActive
+                    && p.index == 0
+                    && p.character != null
+                    && p.character.prefabs != null;
+
+                if (!keepCreationDraft)
                 {
-                    p.wantRandomCharacter = true;
-                    rosterChar = RandomCharacter();
-                }
-                else if (!string.IsNullOrEmpty(p.name))
-                {
-                    rosterChar = characters.Find(x => x != null && x.name == p.name);
+                    Characters rosterChar = null;
+                    if (p.wantRandomCharacter || RemembersRandomCharacter(p.index))
+                    {
+                        p.wantRandomCharacter = true;
+                        rosterChar = RandomCharacter();
+                    }
+                    else if (!string.IsNullOrEmpty(p.name))
+                    {
+                        rosterChar = characters.Find(x => x != null && x.name == p.name);
+                    }
+
+                    if (rosterChar == null || rosterChar.character == null || rosterChar.character.prefabs == null)
+                        rosterChar = RandomCharacter();
+
+                    if (rosterChar != null)
+                        p.SetUpCharacter(rosterChar);
                 }
 
-                if (rosterChar == null || rosterChar.character == null || rosterChar.character.prefabs == null)
-                    rosterChar = RandomCharacter();
+                if (p.computer)
+                    ComputerAI.AssignMatchBrain(p);
+            }
 
-                if (rosterChar != null)
-                    p.SetUpCharacter(rosterChar);
+            // Tic same-wall pairs: side-by-side or fused machine + wing bumper
+            TicCoopLayout.Prepare(players, fieldSize);
+
+            // Phase 2 — spawn (hosts before wing forms so partners can find the machine)
+            List<int> spawnOrder = new List<int>(spawnCount);
+            for (int i = 0; i < spawnCount; i++)
+            {
+                if (players[i] != null && !players[i].ticWingForm)
+                    spawnOrder.Add(i);
+            }
+            for (int i = 0; i < spawnCount; i++)
+            {
+                if (players[i] != null && players[i].ticWingForm)
+                    spawnOrder.Add(i);
+            }
+
+            for (int oi = 0; oi < spawnOrder.Count; oi++)
+            {
+                int i = spawnOrder[oi];
+                Player p = players[i];
+                if (p == null)
+                    continue;
 
                 if (p.character == null || p.character.prefabs == null)
                 {
-                    Debug.LogError($"StartGame: Player index={p.index} name='{p.name}' has no character prefab after roster bind. Skipping spawn.");
-                    continue;
+                    if (CharacterCreationManager.IsActive && p.index == 0)
+                    {
+                        Debug.Log("[CharacterCreation] Draft has no character prefab yet — assign one in Object Assign (Ctrl+Shift+O).");
+                        continue;
+                    }
+                    if (!p.ticWingForm)
+                    {
+                        Debug.LogError($"StartGame: Player index={p.index} name='{p.name}' has no character prefab after roster bind. Skipping spawn.");
+                        continue;
+                    }
                 }
 
-                // Assign difficulty style variant for this match (re-rolls each StartGame / rematch)
-                if (p.computer)
-                    ComputerAI.AssignMatchBrain(p);
-
-                switch(p.facing)
+                switch (p.facing)
                 {
                     case Facing.Up:
-                        pPos = new Vector3(0,-(fieldSize/2),fieldSize);
-                        fRot = new Vector3(0,0,0);
+                        fRot = new Vector3(0, 0, 0);
                         break;
                     case Facing.Down:
-                        pPos = new Vector3(0, (fieldSize / 2), fieldSize);
                         fRot = new Vector3(0, 0, 180);
                         break;
                     case Facing.Left:
-                        pPos = new Vector3((fieldSize / 2), 0, fieldSize);
                         fRot = new Vector3(0, 0, 90);
                         break;
                     case Facing.Right:
-                        pPos = new Vector3(-(fieldSize / 2),0, fieldSize);
                         fRot = new Vector3(0, 0, 270);
                         break;
                 }
 
-                //Spawn Player
-                p.spawnedPlayer = Instantiate(p.character.prefabs);
-                p.spawnedPlayer.transform.position = pPos;
-                p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
-                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
-                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * (p.character.positionOffset.y * ((p.position == 0) ? 1 : 1.5f));
-                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
-                PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
+                // Snap to the real wall surface (large maps often don't match fieldSize/2 math)
+                pPos = GetSpawnWallPos(p.facing);
 
-                if(pG != null)
+                if (p.ticWingForm)
                 {
-                    pG.playerIndex = p.index;
+                    SpawnTicWingBumperPlayer(p, pPos, fRot);
                 }
-                PlayerSkin.Apply(p.spawnedPlayer, p, this);
-
-                //Spawn Lifeline — always on that side's wall (not at coop player depth)
-                if (p.lifeline != null && p.lifeline.prefabs != null)
+                else
                 {
-                    p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
-                    PlaceLifelineOnWall(p.spawnedLifeline, p.facing, p.spawnedPlayer.transform.position, fRot, p.lifeline);
-                    // Trigger's multi-capsule barrier: keep test-zone spacing, spread with larger walls
-                    SpreadTriggerLifelineParts(p.spawnedLifeline, p);
-                    PlayerGrab lifePG = p.spawnedLifeline.GetComponent<PlayerGrab>();
+                    p.spawnedPlayer = Instantiate(p.character.prefabs);
+                    p.spawnedPlayer.transform.position = pPos;
+                    p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
+                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
 
-                    if (lifePG != null)
+                    // Tic side-by-side: same depth, split along the wall. Otherwise legacy stack.
+                    if (Mathf.Abs(p.ticWallSideOffset) > 0.01f)
                     {
-                        lifePG.playerIndex = p.index;
-                    }
-                    PlayerSkin.Apply(p.spawnedLifeline, p, this);
-                }
-
-                //Spawn Info box
-                GameObject sIB = playerInfo;
-
-                if(p.playerInfo != null)
-                {
-                    sIB = p.playerInfo;
-                }
-
-                if (sIB != null)
-                {
-                    GameObject iB = Instantiate(sIB);
-
-                    if((i % 2) == 0)
-                    {
-                        iB.transform.SetParent(playerInfoHolderRS);
+                        p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * p.character.positionOffset.y;
+                        p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.ticWallSideOffset;
                     }
                     else
                     {
-                        iB.transform.SetParent(playerInfoHolderLS);
+                        p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up
+                            * (p.character.positionOffset.y * ((p.position == 0) ? 1f : 1.5f));
                     }
+
+                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
+                    PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
+                    if (pG != null)
+                        pG.playerIndex = p.index;
+
+                    // Shared CPU brain — new characters get AI intents automatically
+                    if (p.computer)
+                        ComputerBrain.Ensure(p.spawnedPlayer);
+
+                    if (!SkipPlayerSkin.ShouldSkipRoot(p.spawnedPlayer)
+                        && p.spawnedPlayer.GetComponentInChildren<Field_Info>(true) == null)
+                        PlayerSkin.Apply(p.spawnedPlayer, p, this);
+
+                    // Fused host keeps the only lifeline (double HP already applied in Prepare)
+                    if (p.lifeline != null && p.lifeline.prefabs != null)
+                    {
+                        p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
+                        PlaceLifelineOnWall(p.spawnedLifeline, p.facing, p.spawnedPlayer.transform.position, fRot, p.lifeline);
+                        SpreadTriggerLifelineParts(p.spawnedLifeline, p);
+                        PlayerGrab lifePG = p.spawnedLifeline.GetComponent<PlayerGrab>();
+                        if (lifePG != null)
+                            lifePG.playerIndex = p.index;
+                        if (!SkipPlayerSkin.ShouldSkipRoot(p.spawnedLifeline))
+                            PlayerSkin.Apply(p.spawnedLifeline, p, this);
+                    }
+                }
+
+                GameObject sIB = p.playerInfo != null ? p.playerInfo : playerInfo;
+                if (sIB != null)
+                {
+                    GameObject iB = Instantiate(sIB);
+                    if ((i % 2) == 0)
+                        iB.transform.SetParent(playerInfoHolderRS);
+                    else
+                        iB.transform.SetParent(playerInfoHolderLS);
 
                     PlayerGrab ibpG = iB.GetComponent<PlayerGrab>();
-
                     if (ibpG != null)
-                    {
                         ibpG.playerIndex = p.index;
-                    }
                 }
                 yield return null;
             }
             #endregion
 
             #region Add Ball
-            // selectedBall == -1 means Random — keep it so rematch re-rolls
-            int sB = selectedBall;
+            EnsureBallSlots();
+            bool anySpawned = false;
+            for (int slot = 0; slot < ballCount; slot++)
+            {
+                if (SpawnMatchBall(slot, false) != null)
+                    anySpawned = true;
+                yield return null;
+            }
 
-            if (selectedBall < 0 || selectedBall >= balls.Count)
-                sB = RandomBallIndex();
-
-            if (sB < 0 || sB >= balls.Count)
+            if (!anySpawned)
             {
                 Debug.LogError("StartGame: no ball available to spawn.");
                 yield break;
             }
-
-            Ball ball = balls[sB];
-
-            GameObject bSpawned = Instantiate(ball.prefab);
-            bSpawned.transform.position = new Vector3(0, 0, fieldSize);
-            BallInfo bI = bSpawned.GetComponent<BallInfo>();
-
-            if (bI != null)
-            {
-                bI.ballReady = false;
-            }
-            yield return null;
             #endregion
 
             #region Start Count Down
@@ -1327,9 +1683,12 @@ public class Database : MonoBehaviour
             gameplayinfo.gameObject.SetActive(false);
             #endregion
 
-            if (bI != null)
+            // Release all match-slot balls after countdown (extras keep matchSlot < 0)
+            for (int i = 0; i < LiveBallRegistry.Count; i++)
             {
-                bI.ballReady = true;
+                BallInfo info = LiveBallRegistry.GetAt(i);
+                if (info != null && info.matchSlot >= 0)
+                    info.ballReady = true;
             }
             gameStart = true;
             yield return null;
@@ -1375,37 +1734,50 @@ public class Database : MonoBehaviour
         Vector3 origin = root.position + root.up * 0.5f;
         float leftDist = RayDistanceToWall(origin, -root.right);
         float rightDist = RayDistanceToWall(origin, root.right);
-        float wallSpan = (leftDist > 0.01f && rightDist > 0.01f)
-            ? leftDist + rightDist
-            : Mathf.Max(8f, fieldSize);
+        if (leftDist <= 0.01f || rightDist <= 0.01f)
+        {
+            float half = Mathf.Max(4f, fieldSize * 0.5f);
+            leftDist = half;
+            rightDist = half;
+        }
 
-        // Prefab tuned for fieldSize ≈ 20 (size 10 test zone)
-        const float referenceSpan = 20f;
-        float scale = Mathf.Clamp(wallSpan / referenceSpan, 0.55f, 4f);
+        // Place outer capsules so their edge sits on the side walls (tiny skin only)
+        float radius = OuterCapsuleRadius(parts[0]);
+        float leftX = -(leftDist - radius);
+        float rightX = rightDist - radius;
+        if (rightX < leftX)
+        {
+            float mid = (leftX + rightX) * 0.5f;
+            leftX = mid - 0.25f;
+            rightX = mid + 0.25f;
+        }
 
-        // Scale existing even spacing; keep relative layout
         for (int i = 0; i < parts.Count; i++)
         {
+            float t = parts.Count == 1 ? 0.5f : i / (float)(parts.Count - 1);
             Vector3 lp = parts[i].localPosition;
-            lp.x *= scale;
+            lp.x = Mathf.Lerp(leftX, rightX, t);
             parts[i].localPosition = lp;
         }
+    }
 
-        // Soft clamp: if outer parts would sit past the walls, re-fit evenly inside margins
-        float outer = Mathf.Abs(parts[parts.Count - 1].localPosition.x);
-        float halfSpan = wallSpan * 0.5f;
-        float partHalf = Mathf.Max(0.25f, Mathf.Abs(parts[0].localScale.x) * 0.55f);
-        float maxOuter = Mathf.Max(0.5f, halfSpan - partHalf * 1.25f);
-        if (outer > maxOuter + 0.01f && outer > 0.01f)
+    static float OuterCapsuleRadius(Transform part)
+    {
+        if (part == null)
+            return 0.25f;
+
+        CapsuleCollider cap = part.GetComponent<CapsuleCollider>();
+        if (cap != null)
         {
-            float fit = maxOuter / outer;
-            for (int i = 0; i < parts.Count; i++)
-            {
-                Vector3 lp = parts[i].localPosition;
-                lp.x *= fit;
-                parts[i].localPosition = lp;
-            }
+            float s = Mathf.Max(part.lossyScale.x, part.lossyScale.z);
+            return Mathf.Max(0.08f, cap.radius * s);
         }
+
+        Collider col = part.GetComponent<Collider>();
+        if (col != null)
+            return Mathf.Max(0.08f, col.bounds.extents.x);
+
+        return 0.25f;
     }
 
     float RayDistanceToWall(Vector3 origin, Vector3 dir)
@@ -1428,6 +1800,75 @@ public class Database : MonoBehaviour
     /// Place a lifeline flush on that side's wall. Uses the player's lateral position along the wall
     /// (coop can sit further inward) but never inherits the player's depth off the wall.
     /// </summary>
+    /// <summary>
+    /// Second Tic on a cramped wall: controllable wing-bumper loaded into the host machine.
+    /// </summary>
+    void SpawnTicWingBumperPlayer(Player p, Vector3 wallPos, Vector3 facingEuler)
+    {
+        if (p == null)
+            return;
+
+        Tic host = null;
+        Player hostPlayer = null;
+        if (p.ticPartnerIndex >= 0 && p.ticPartnerIndex < players.Count)
+            hostPlayer = players[p.ticPartnerIndex];
+        if (hostPlayer != null && hostPlayer.spawnedPlayer != null)
+            host = hostPlayer.spawnedPlayer.GetComponent<Tic>();
+
+        GameObject prefab = ticWingBumperPrefab;
+        if (prefab == null)
+            prefab = Resources.Load<GameObject>("TicWing");
+
+        Vector3 spawnPos = wallPos + Quaternion.Euler(facingEuler) * Vector3.up * 2f;
+        Quaternion spawnRot = Quaternion.Euler(facingEuler);
+        if (host != null && host.loadPoint != null)
+        {
+            spawnPos = host.loadPoint.position;
+            spawnRot = host.transform.rotation;
+        }
+
+        GameObject go;
+        if (prefab != null)
+        {
+            go = Instantiate(prefab, spawnPos, spawnRot);
+        }
+        else
+        {
+            go = TicWingBumper.CreateRuntimePrefabInstance();
+            go.transform.position = spawnPos;
+            go.transform.rotation = spawnRot;
+        }
+
+        go.name = "TicWingBumper_" + p.index;
+        go.tag = "Paddle";
+        p.spawnedPlayer = go;
+        p.spawnedLifeline = null; // fused host owns the lifeline
+
+        PlayerGrab grab = go.GetComponent<PlayerGrab>();
+        if (grab == null)
+            grab = go.AddComponent<PlayerGrab>();
+        grab.playerIndex = p.index;
+
+        TicBumper bumper = go.GetComponent<TicBumper>();
+        if (bumper == null)
+            bumper = go.AddComponent<TicBumper>();
+
+        TicWingBumper wing = go.GetComponent<TicWingBumper>();
+        if (wing == null)
+            wing = go.AddComponent<TicWingBumper>();
+
+        if (host != null)
+        {
+            wing.SetHost(host);
+            bumper.Init(host, p.index);
+            if (host.launchArea != null)
+                host.launchArea.RegisterBumperPassThrough(bumper);
+            host.RegisterLiveBumper(bumper);
+        }
+
+        PlayerSkin.Apply(go, p, this);
+    }
+
     void PlaceLifelineOnWall(GameObject lifeline, Facing facing, Vector3 playerWorldPos, Vector3 facingEuler, ObjectInfo lifeInfo)
     {
         if (lifeline == null)
@@ -1505,6 +1946,31 @@ public class Database : MonoBehaviour
             default:
                 return new Vector3(0f, 0f, fieldSize);
         }
+    }
+
+    /// <summary>
+    /// Wall anchor for character spawn. Prefer a raycast hit so large/custom fields
+    /// whose walls aren't exactly at fieldSize/2 still place Tic flush (then inset by offset.y).
+    /// </summary>
+    Vector3 GetSpawnWallPos(Facing facing)
+    {
+        Vector3 wallPos = GetMathematicalWallPos(facing);
+        if (TryRaycastWall(facing, out Vector3 rayWall))
+        {
+            switch (facing)
+            {
+                case Facing.Up:
+                case Facing.Down:
+                    wallPos.y = rayWall.y;
+                    break;
+                case Facing.Left:
+                case Facing.Right:
+                    wallPos.x = rayWall.x;
+                    break;
+            }
+        }
+        wallPos.z = fieldSize;
+        return wallPos;
     }
 
     bool TryRaycastWall(Facing facing, out Vector3 point)

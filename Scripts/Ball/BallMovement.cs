@@ -10,6 +10,7 @@ public class BallMovement : MonoBehaviour
     Database db;
 
     bool moveReady = false;
+    bool launcherHold;
     Vector3 velocityBeforePhysics;
 
     void Start()
@@ -19,13 +20,36 @@ public class BallMovement : MonoBehaviour
         db = Database.instance;
     }
 
+    /// <summary>When true, ball stays at zero velocity (Tic plunger bay after lifeline catch).</summary>
+    public void SetLauncherHold(bool hold)
+    {
+        launcherHold = hold;
+        if (hold && rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+    }
+
+    public bool IsLauncherHeld => launcherHold;
+
     void FixedUpdate()
     {
+        if (launcherHold && rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            velocityBeforePhysics = Vector3.zero;
+            return;
+        }
         velocityBeforePhysics = rb.linearVelocity;
     }
 
     void Update()
     {
+        if (launcherHold)
+            return;
+
         if (bI.ballReady && db.gameStart)
         {
             if (moveReady)
@@ -145,6 +169,9 @@ public class BallMovement : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
+        if (collision == null || collision.gameObject == null || rb == null || bI == null || bI.ball == null)
+            return;
+
         PlayerGrab pG = collision.gameObject.GetComponent<PlayerGrab>();
         if (pG == null)
             pG = collision.gameObject.GetComponentInParent<PlayerGrab>();
@@ -155,22 +182,12 @@ public class BallMovement : MonoBehaviour
         {
             case "Player":
                 SetSpeedPreservingDirection(speed * Mathf.Max(1f, bI.ball.speedIncrease * 1.2f));
-
-                if (pG != null && pG.IsLinked())
-                {
-                    Player p = db.players[pG.playerIndex];
-                    p.RecordBallHit();
-                    ComputerAI.OnPaddleHitBall(p);
-                }
+                RecordHitIfLinked(pG, true);
                 break;
 
             case "Lifeline":
                 // Mit catch/throw owns speed — don't double-boost stuck balls
-                if (pG != null && pG.IsLinked())
-                {
-                    Player p = db.players[pG.playerIndex];
-                    p.RecordBallHit();
-                }
+                RecordHitIfLinked(pG, false);
                 break;
 
             case "Ball":
@@ -180,12 +197,7 @@ public class BallMovement : MonoBehaviour
                 // Yuotay bat already applied directed hit force on Enter — keep that velocity
                 if (collision.gameObject.GetComponentInParent<Yuotay>() != null)
                 {
-                    if (pG != null && pG.IsLinked())
-                    {
-                        Player p = db.players[pG.playerIndex];
-                        p.RecordBallHit();
-                        ComputerAI.OnPaddleHitBall(p);
-                    }
+                    RecordHitIfLinked(pG, true);
                     break;
                 }
 
@@ -199,12 +211,7 @@ public class BallMovement : MonoBehaviour
                     bumpedSpeed = Mathf.Min(bumpedSpeed, bumpCap);
                     SetSpeedPreservingDirection(bumpedSpeed);
 
-                    if (pG != null && pG.IsLinked())
-                    {
-                        Player p = db.players[pG.playerIndex];
-                        p.RecordBallHit();
-                        ComputerAI.OnPaddleHitBall(p);
-                    }
+                    RecordHitIfLinked(pG, true);
                 }
                 break;
 
@@ -218,20 +225,35 @@ public class BallMovement : MonoBehaviour
         if (bI.documentColisions)
         {
             bI.futureColisions.Add(collision);
-            Vector3 hitPoint = collision.collider.transform.position;
+            Vector3 hitPoint = transform.position;
+            if (collision.collider != null)
+                hitPoint = collision.collider.transform.position;
             if (collision.contactCount > 0)
                 hitPoint = collision.GetContact(0).point;
             bI.futureColisionPoints.Add(hitPoint);
         }
-        else
+        else if (transform.childCount > 0)
         {
-            if (transform.childCount > 0)
+            for (int i = 0; i < transform.childCount; i++)
             {
-                for (int i = 0; i < transform.childCount; i++)
-                {
-                    transform.GetChild(i).SendMessage("Ball_Hit", collision.gameObject, SendMessageOptions.DontRequireReceiver);
-                }
+                transform.GetChild(i).SendMessage("Ball_Hit", collision.gameObject, SendMessageOptions.DontRequireReceiver);
             }
         }
+    }
+
+    void RecordHitIfLinked(PlayerGrab pG, bool notifyAi)
+    {
+        if (pG == null || !pG.IsLinked() || db == null || db.players == null)
+            return;
+        if (pG.playerIndex < 0 || pG.playerIndex >= db.players.Count)
+            return;
+
+        Player p = db.players[pG.playerIndex];
+        if (p == null)
+            return;
+
+        p.RecordBallHit();
+        if (notifyAi)
+            ComputerAI.OnPaddleHitBall(p);
     }
 }

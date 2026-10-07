@@ -78,6 +78,29 @@ public class NariTail : MonoBehaviour
 
                 if (pass)
                 {
+                    int ballId = collision.gameObject.GetEntityId().GetHashCode();
+                    int lost;
+
+                    // Mine / Explosion blasts: 1 HP only — never treat as closest-segment sever
+                    if (BallBlast.TreatCollisionAsExplosion(collision.gameObject))
+                    {
+                        Player owner = null;
+                        if (tpG != null && tpG.IsLinked())
+                            owner = tpG.player;
+                        lost = BallBlast.DamagePlayer(pG.player, owner, ballId, BallBlast.MaxExplosionDamage);
+                        if (lost <= 0)
+                            return;
+
+                        // Keep maxHealth in sync with body length after flat chip damage
+                        pG.player.maxHealth = Mathf.Max(pG.player.currentHealth, pG.player.maxHealth);
+                        if (pG.player.maxHealth > pG.player.currentHealth)
+                            pG.player.maxHealth = pG.player.currentHealth;
+
+                        if (pG.player.computer)
+                            ComputerAI.OnTookGoalDamage(pG.player, lost);
+                        return;
+                    }
+
                     // Sever from this segment outward — HP lost must go through ApplyGoalDamage
                     // so taken/dealt stats (and dedupe) match other characters.
                     int targetHealth = Mathf.Max(0, healthIndex - 1);
@@ -85,8 +108,7 @@ public class NariTail : MonoBehaviour
                     if (toLose <= 0)
                         return;
 
-                    int ballId = collision.gameObject.GetInstanceID();
-                    int lost = pG.player.ApplyGoalDamage(toLose, ballId);
+                    lost = pG.player.ApplyGoalDamage(toLose, ballId);
                     if (lost <= 0)
                         return;
 

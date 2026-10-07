@@ -22,11 +22,14 @@ public class UniversalCollisionDetector : MonoBehaviour
     private float broadphasePadding = 0.25f;
 
     [SerializeField]
-    private bool debugLogs = true;
+    private bool debugLogs = false;
 
     private Collider[] myColliders;
     private readonly HashSet<Collider> currentFrameColliders = new HashSet<Collider>();
     private readonly List<Collider> exitBuffer = new List<Collider>();
+    static readonly Collider[] overlapBuffer = new Collider[48];
+    Vector3 lastSyncPos;
+    bool hasLastSyncPos;
 
     void Awake()
     {
@@ -55,19 +58,25 @@ public class UniversalCollisionDetector : MonoBehaviour
         if (myColliders == null || myColliders.Length == 0)
             return;
 
-        // Transforms moved without a Rigidbody are not in the physics world until synced
-        Physics.SyncTransforms();
+        // Only sync physics when the cursor actually moved
+        Vector3 pos = transform.position;
+        if (!hasLastSyncPos || (pos - lastSyncPos).sqrMagnitude > 0.0001f)
+        {
+            Physics.SyncTransforms();
+            lastSyncPos = pos;
+            hasLastSyncPos = true;
+        }
 
         currentFrameColliders.Clear();
 
         if (!TryGetBroadphase(out Vector3 center, out float radius))
             return;
 
-        Collider[] candidates = Physics.OverlapSphere(center, radius, ~0, triggerInteraction);
+        int hitCount = Physics.OverlapSphereNonAlloc(center, radius, overlapBuffer, ~0, triggerInteraction);
 
-        for (int i = 0; i < candidates.Length; i++)
+        for (int i = 0; i < hitCount; i++)
         {
-            Collider other = candidates[i];
+            Collider other = overlapBuffer[i];
             if (other == null || !other.enabled || !other.gameObject.activeInHierarchy)
                 continue;
 

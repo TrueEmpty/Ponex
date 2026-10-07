@@ -3,8 +3,8 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Character Select lobby toggle: VS Mode vs Team Mode.
-/// VS skips team/position select. 5+ players forces Team Mode.
-/// Cursor SendMessage uses OnClick(int).
+/// VS skips team/position select and auto-seats by player index.
+/// Team Mode remembers position/team picks across toggles. 5+ players forces Team Mode.
 /// </summary>
 public class TeamModeToggle : MonoBehaviour
 {
@@ -59,21 +59,16 @@ public class TeamModeToggle : MonoBehaviour
 
     void LateUpdate()
     {
-        // Cursor SendMessage hits multiple OnClick handlers; always keep the label honest.
         ApplyLabelText();
     }
 
-    /// <summary>Cursor / Selection click.</summary>
     public void OnClick(int player)
     {
         Toggle();
     }
 
-    /// <summary>Unity Button / RunOnClicked.</summary>
     public void Toggle()
     {
-        // Prefab historically wired Toggle on both TeamModeToggle.OnClick and RunOnClicked —
-        // one confirm would flip twice and look stuck.
         if (Time.unscaledTime - lastToggleUnscaled < ToggleDebounce)
             return;
         lastToggleUnscaled = Time.unscaledTime;
@@ -102,6 +97,12 @@ public class TeamModeToggle : MonoBehaviour
         if (db == null)
             return;
 
+        bool wasTeam = db.teamSelect;
+
+        // Leaving Team Mode — snapshot seats before VS overwrites them
+        if (wasTeam && !teamMode)
+            db.RememberAllLobbySeats();
+
         db.teamSelect = teamMode;
         db.positionSelect = teamMode;
 
@@ -116,6 +117,18 @@ public class TeamModeToggle : MonoBehaviour
 
         if (db.gametype == Gametype.Vs || db.gametype == Gametype.Coop)
             db.maxPlayers = 8;
+
+        if (teamMode)
+        {
+            // Entering / staying in Team Mode — restore remembered walls/teams
+            if (!wasTeam || force)
+                db.RestoreTeamModeSeats();
+        }
+        else
+        {
+            // VS: no position/team menus — unique teams + index walls
+            db.ApplyVersusSeatLayout();
+        }
     }
 
     void RefreshVisuals()
@@ -157,9 +170,7 @@ public class TeamModeToggle : MonoBehaviour
         int count = db.players != null ? db.players.Count : 0;
         bool locked = count >= ForceTeamAtPlayerCount;
 
-        string want = locked ? "Team Mode" : (team ? "Team Mode" : "VS Mode");
-        if (locked)
-            want = "Team Mode (Req)";
+        string want = locked ? "Team Mode (Req)" : (team ? "Team Mode" : "VS Mode");
 
         if (label.text != want)
             label.text = want;

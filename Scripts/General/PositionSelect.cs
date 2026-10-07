@@ -15,6 +15,10 @@ public class PositionSelect : MonoBehaviour
 
     public List<PositionSlot> slots = new List<PositionSlot>();
     readonly List<Text> markers = new List<Text>();
+    readonly List<PositionPlayerMarker> dragMarkers = new List<PositionPlayerMarker>();
+
+    /// <summary>Player chip currently picked up (cursor drag). -1 = none.</summary>
+    public int heldPlayerIndex = -1;
 
     Transform markerHolder;
     bool setup;
@@ -37,15 +41,25 @@ public class PositionSelect : MonoBehaviour
     {
         if (!setup)
             Setup();
-        else
+        else if (!AnyDragging())
             RefreshMarkers();
+    }
+
+    bool AnyDragging()
+    {
+        for (int i = 0; i < dragMarkers.Count; i++)
+        {
+            PositionPlayerMarker m = dragMarkers[i];
+            if (m != null && m.IsDragging)
+                return true;
+        }
+        return false;
     }
 
     void Setup()
     {
         if (setup) return;
 
-        // Authored PositionSlot components under Zones / menu (baked into the UI)
         if (slots == null || slots.Count == 0)
         {
             slots = new List<PositionSlot>();
@@ -71,13 +85,19 @@ public class PositionSelect : MonoBehaviour
             markerHolder = transform.GetChild(2);
 
         markers.Clear();
+        dragMarkers.Clear();
         if (markerHolder != null)
         {
             for (int i = 0; i < markerHolder.childCount; i++)
             {
                 Text t = markerHolder.GetChild(i).GetComponent<Text>();
-                if (t != null)
-                    markers.Add(t);
+                if (t == null) continue;
+                markers.Add(t);
+
+                PositionPlayerMarker drag = t.GetComponent<PositionPlayerMarker>();
+                if (drag == null)
+                    drag = t.gameObject.AddComponent<PositionPlayerMarker>();
+                dragMarkers.Add(drag);
             }
         }
 
@@ -104,26 +124,41 @@ public class PositionSelect : MonoBehaviour
         for (int i = 0; i < markers.Count; i++)
         {
             Text marker = markers[i];
+            PositionPlayerMarker drag = i < dragMarkers.Count ? dragMarkers[i] : null;
+
             if (i < db.players.Count)
             {
                 Player p = db.players[i];
                 marker.gameObject.SetActive(true);
+                if (drag != null)
+                    drag.playerIndex = p.index;
+
+                // Skip repositioning the chip that's currently being carried
+                if (heldPlayerIndex == p.index && drag != null && drag.IsDragging)
+                    continue;
 
                 Color c = i < db.playerColors.Count ? db.playerColors[i].color : Color.white;
+                string label;
                 if (p.computer)
                 {
-                    marker.text = "CPU" + (i + 1);
+                    label = "CPU" + (i + 1);
                     marker.color = Color.gray;
                 }
                 else
                 {
-                    marker.text = string.IsNullOrEmpty(p.nickName) ? "P" + (i + 1) : p.nickName;
+                    label = string.IsNullOrEmpty(p.nickName) ? "P" + (i + 1) : p.nickName;
                     marker.color = c;
                 }
+                marker.text = label;
 
                 Outline ol = marker.GetComponent<Outline>();
                 if (ol != null)
-                    ol.effectColor = p.characterSelected ? readyColor : outlineColor;
+                {
+                    if (heldPlayerIndex == p.index)
+                        ol.effectColor = Color.yellow;
+                    else
+                        ol.effectColor = p.characterSelected ? readyColor : outlineColor;
+                }
 
                 Vector2 cP = new Vector2(p.position == 0 ? setPos.z : -setPos.z, p.position == 0 ? setPos.x : setPos.y);
                 switch (p.facing)
@@ -145,6 +180,8 @@ public class PositionSelect : MonoBehaviour
             else
             {
                 marker.gameObject.SetActive(false);
+                if (drag != null)
+                    drag.playerIndex = -1;
             }
         }
 
@@ -156,7 +193,10 @@ public class PositionSelect : MonoBehaviour
             if (owner != null)
             {
                 Color c = owner.index < db.playerColors.Count ? db.playerColors[owner.index].color : Color.white;
-                slot.SetOccupiedLook(true, c);
+                string occLabel = owner.computer
+                    ? "CPU" + (owner.index + 1)
+                    : (string.IsNullOrEmpty(owner.nickName) ? "P" + (owner.index + 1) : owner.nickName);
+                slot.SetOccupiedLook(true, c, occLabel);
             }
             else
             {
@@ -171,9 +211,20 @@ public class PositionSelect : MonoBehaviour
         if (p == null) return;
 
         p.characterSelected = true;
+
+        // Auto-ready CPUs so solo / vs-CPU can advance
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            if (db.players[i].computer)
+                db.players[i].characterSelected = true;
+        }
+
         RefreshMarkers();
 
         if (!db.players.Exists(x => !x.characterSelected))
+        {
+            db.RememberAllLobbySeats();
             db.CharactersPicked("positions");
+        }
     }
 }

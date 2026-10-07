@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7795ef60b1b9624499a188eb9998457a, type: 3}
+  m_Name: ActiveDraft
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterCreationDraft
+  hasSession: 1
+  fieldIndex: 0
+  characterName: Tic
+  maxHealth: 7
+  movementSpeed: 5
+  pushBack: 1000
+  ignoreFacing: 0
+  bump:
+    amount: 1
+    max: 1
+    cost: 1
+    speed: 2
+    readyPercent: 0
+  super:
+    amount: 34
+    max: 50
+    cost: 50
+    speed: 5
+    readyPercent: 1.270062
+  dash:
+    amount: 2
+    max: 2
+    cost: 1
+    speed: 3
+    readyPercent: 0
+  character:
+    prefabs: {fileID: 6101373401462468849, guid: 7844c0ca75749f442b1036de8361417b, type: 3}
+    positionOffset: {x: 0.22, y: 0.28, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+  lifeline:
+    prefabs: {fileID: 8650209118600638217, guid: 609022151a1d3df499c5a8e0204395d9, type: 3}
+    positionOffset: {x: -0.95000005, y: 0.25, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+  sourceCharacterPrefab: {fileID: 6101373401462468849, guid: 7844c0ca75749f442b1036de8361417b, type: 3}
+  sourceLifelinePrefab: {fileID: 8650209118600638217, guid: 609022151a1d3df499c5a8e0204395d9, type: 3}
+  playerInfo: {fileID: 3846361648969047310, guid: ba799a7b10e921541b556f9a1634e700, type: 3}
+  playerInfoCustom: 1
+  superName: Loads bumpers into your bump zone
+  superDescription: 
+  portraitColor: {r: 0.72, g: 0.55, b: 0.95, a: 1}
+  portrait: {fileID: 2800000, guid: d38dc5fb9e144fc087389ae4e8bacd25, type: 3}
+  icon: {fileID: 2800000, guid: 01561edc0b5c4fd2b8f03f3aca89685d, type: 3}

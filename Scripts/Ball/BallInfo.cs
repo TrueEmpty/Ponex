@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class BallInfo : MonoBehaviour
@@ -32,15 +31,32 @@ public class BallInfo : MonoBehaviour
     public bool projectionOn = true;
     public bool showProjection = false;
 
-    int _maxPhysicsFrameIterations = 100;
-    bool runProjection = false;
-    float speedUp = 10;
+    /// <summary>
+    /// Match loadout slot (0..ballCount-1). -1 = ability/extra ball (clone, orbit satellite, etc.).
+    /// </summary>
+    public int matchSlot = -1;
 
     public bool showFutureCollisions = false;
+
+    [Tooltip("How often to refresh analytic bounce prediction for AI.")]
+    public float predictionInterval = 0.12f;
+
+    float nextPredictionAt;
+    float cachedRadius = 0.25f;
 
     PlayerGrab ownerGrab;
     int ownershipPlayerIndex = -1;
     float ownershipTimer = 0f;
+
+    void OnEnable()
+    {
+        LiveBallRegistry.Register(this);
+    }
+
+    void OnDisable()
+    {
+        LiveBallRegistry.Unregister(this);
+    }
 
     void Start()
     {
@@ -48,64 +64,52 @@ public class BallInfo : MonoBehaviour
         db = Database.instance;
         lPos = transform.position;
         ownerGrab = GetComponent<PlayerGrab>();
+        LiveBallRegistry.Register(this);
+
+        SphereCollider sc = GetComponent<SphereCollider>();
+        if (sc != null)
+            cachedRadius = sc.radius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.y);
+        else
+        {
+            BoxCollider bc = GetComponent<BoxCollider>();
+            if (bc != null)
+            {
+                Vector3 s = Vector3.Scale(bc.size, transform.lossyScale);
+                cachedRadius = Mathf.Max(s.x, s.y) * 0.5f;
+            }
+        }
     }
 
     void Update()
     {
-        if (db.gameStart)
+        if (db == null || !db.gameStart)
+            return;
+
+        if (anchor == null)
         {
-            if (anchor == null)
-            {
-                Destroy(gameObject);
-            }
+            Destroy(gameObject);
+            return;
+        }
 
-            if (ballReady)
-            {
-                TrackBallOwnership();
+        if (!ballReady)
+            return;
 
-                if (checkStuck)
-                {
-                    StuckInAxis();
-                }
+        TrackBallOwnership();
 
-                if (!runProjection)
-                {
-                    if (projectionOn == true)
-                    {
-                        runProjection = true;
-                        StartCoroutine(RunProjection());
-                    }
-                }
+        if (checkStuck)
+            StuckInAxis();
 
-                if (showFutureCollisions)
-                {
-                    if (futureColisionPoints.Count > 0)
-                    {
-                        for (int i = 0; i < futureColisionPoints.Count; i++)
-                        {
-                            Vector3 cP = futureColisionPoints[i];
-
-                            GameObject cG = GameObject.CreatePrimitive(PrimitiveType.Cube);
-
-                            GameObject oldHp = GameObject.Find("Hit Point: " + i);
-
-                            if (oldHp != null)
-                            {
-                                Destroy(oldHp);
-                            }
-
-                            cG.name = "Hit Point: " + i;
-                            cG.layer = 7;
-
-                            cG.GetComponent<Renderer>().material = gameObject.GetComponent<Renderer>().material;
-                            cG.GetComponent<Renderer>().material.color = Color.magenta;
-                            cG.transform.localScale = Vector3.one * 5;
-                            cG.transform.position = cP;
-                            Destroy(cG, 1);
-                        }
-                    }
-                }
-            }
+        // Cheap analytic bounce path for AI (replaces Instantiate ghost projection)
+        if (projectionOn && Time.time >= nextPredictionAt && rb != null)
+        {
+            nextPredictionAt = Time.time + Mathf.Max(0.05f, predictionInterval);
+            BallTrajectory.Predict(
+                rb.position,
+                rb.linearVelocity,
+                cachedRadius,
+                futureColisionPoints,
+                5,
+                48f);
         }
     }
 
@@ -141,70 +145,6 @@ public class BallInfo : MonoBehaviour
         {
             Destroy(gameObject);
         }
-    }
-
-    IEnumerator RunProjection()
-    {
-        if (projectionOn)
-        {
-            GameObject ghostObj = Instantiate(gameObject);
-            ghostObj.name = "(Ghost) " + gameObject.name;
-            ghostObj.tag = "Ghost";
-            ghostObj.layer = 7;
-
-            Renderer re = ghostObj.GetComponent<Renderer>();
-            if (re != null)
-            {
-                re.enabled = showProjection;
-            }
-
-            BallInfo gBI = ghostObj.GetComponent<BallInfo>();
-            gBI.anchor = gameObject;
-            gBI.checkStuck = false;
-            gBI.speedCap = false;
-            gBI.futureColisions.Clear();
-            gBI.futureColisionPoints.Clear();
-            gBI.documentColisions = true;
-            gBI.projectionOn = false;
-            gBI.runProjection = true;
-
-            if (gBI.transform.childCount > 0)
-            {
-                for (int i = 0; i < gBI.transform.childCount; i++)
-                {
-                    Transform cC = gBI.transform.GetChild(i);
-                    cC.tag = "Ghost";
-                    cC.gameObject.layer = 7;
-
-                    Renderer cRe = cC.GetComponent<Renderer>();
-                    if (cRe != null)
-                    {
-                        cRe.enabled = showProjection;
-                    }
-                }
-            }
-            yield return null;
-
-            ghostObj.GetComponent<Rigidbody>().linearVelocity = rb.linearVelocity;
-            yield return new WaitForSeconds(.001f);
-
-            ghostObj.GetComponent<Rigidbody>().linearVelocity *= speedUp;
-            yield return null;
-
-            yield return new WaitForSeconds(_maxPhysicsFrameIterations / 60);
-
-            // Copy data before destroy — previously read after Destroy (always failed)
-            List<Collision> cols = gBI.futureColisions;
-            List<Vector3> points = gBI.futureColisionPoints;
-            Destroy(ghostObj);
-            futureColisions = cols;
-            futureColisionPoints = points;
-            yield return null;
-
-            runProjection = false;
-        }
-
-        yield return null;
     }
 
     void TrackBallOwnership()

@@ -14,22 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   rosterOrder: 11
   characterName: Tic
-  maxHealth: 10
+  maxHealth: 7
   movementSpeed: 5
-  pushBack: 50
+  pushBack: 1000
   ignoreFacing: 0
   bump:
     amount: 1
     max: 1
     cost: 1
-    speed: 0.5
+    speed: 2
     readyPercent: 0
   super:
-    amount: 0
-    max: 20
-    cost: 10
+    amount: 30
+    max: 50
+    cost: 50
     speed: 5
-    readyPercent: 0
+    readyPercent: 3.819505
   dash:
     amount: 2
     max: 2
@@ -37,18 +37,18 @@ MonoBehaviour:
     speed: 3
     readyPercent: 0
   character:
-    prefabs: {fileID: 5914598984665035951, guid: fc4636086c4d7d94dac0dc01aafe1322, type: 3}
-    positionOffset: {x: 0, y: 0, z: 0}
+    prefabs: {fileID: 6101373401462468849, guid: 7844c0ca75749f442b1036de8361417b, type: 3}
+    positionOffset: {x: 0.22, y: 0.28, z: 0}
     rotationOffset: {x: 0, y: 0, z: 0}
   lifeline:
-    prefabs: {fileID: 5464540073599567351, guid: f48278432e9dd604fbe28671498742a4, type: 3}
-    positionOffset: {x: 0, y: 0, z: 0}
+    prefabs: {fileID: 8650209118600638217, guid: 609022151a1d3df499c5a8e0204395d9, type: 3}
+    positionOffset: {x: -0.95, y: 0.25, z: 0}
     rotationOffset: {x: 0, y: 0, z: 0}
   selector: {fileID: 0}
-  playerInfo: {fileID: 0}
-  superName: 
+  playerInfo: {fileID: 3846361648969047310, guid: ba799a7b10e921541b556f9a1634e700, type: 3}
+  superName: Loads bumpers into your bump zone
   superDescription: 
-  portraitColor: {r: 0.6, g: 0.75, b: 1, a: 1}
+  portraitColor: {r: 0.72, g: 0.55, b: 0.95, a: 1}
   portrait: {fileID: 2800000, guid: d38dc5fb9e144fc087389ae4e8bacd25, type: 3}
   icon: {fileID: 2800000, guid: 01561edc0b5c4fd2b8f03f3aca89685d, type: 3}
   active: 1

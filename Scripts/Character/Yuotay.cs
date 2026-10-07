@@ -58,12 +58,19 @@ public class Yuotay : MonoBehaviour
     bool laneReady;
     bool batWallIgnoreReady;
     Collider[] batColliders;
+    ComputerBrain brain;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
         db = Database.instance;
+        brain = ComputerBrain.Ensure(gameObject, ComputerBrain.Mode.LanePaddle);
+        if (brain != null)
+        {
+            brain.hitTags = hitTags;
+            brain.wallStopDistance = dis;
+        }
 
         rb.useGravity = false;
 
@@ -96,7 +103,7 @@ public class Yuotay : MonoBehaviour
 
             if (p.CanMove)
             {
-                if (!swinging)
+                if (!swinging && p.CanDash)
                     OnDash();
 
                 OnMove();
@@ -218,7 +225,7 @@ public class Yuotay : MonoBehaviour
         if (batColliders == null || batColliders.Length == 0)
             return;
 
-        Collider[] walls = FindObjectsByType<Collider>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        Collider[] walls = FindObjectsByType<Collider>(FindObjectsInactive.Exclude);
         int ignored = 0;
         for (int w = 0; w < walls.Length; w++)
         {
@@ -273,9 +280,20 @@ public class Yuotay : MonoBehaviour
 
         if (pg.player.computer)
         {
-            ComputerAI.Decision d = ComputerAI.Evaluate(transform, pg.player, hitTags, dis);
+            ComputerAI.Decision d = brain != null
+                ? brain.Lane
+                : ComputerAI.Evaluate(transform, pg.player, hitTags, dis);
             moveDir = d.moveDir;
-            if (d.wantBump) thought = Thought.MoveUp;
+            if (brain != null)
+            {
+                thought = brain.Thought;
+                if (thought == Thought.Nothing)
+                {
+                    if (d.moveDir > 0) thought = Thought.MoveRight;
+                    else if (d.moveDir < 0) thought = Thought.MoveLeft;
+                }
+            }
+            else if (d.wantBump) thought = Thought.MoveUp;
             else if (d.wantSuper) thought = Thought.MoveDown;
             else if (d.moveDir > 0) thought = Thought.MoveRight;
             else if (d.moveDir < 0) thought = Thought.MoveLeft;
@@ -310,18 +328,21 @@ public class Yuotay : MonoBehaviour
 
         Vector3 rotDir = PaddleWall.AbsAxes(transform.right);
         float swingSlow = swinging ? swingingMoveSpeedOffset : 1f;
-        rb.linearVelocity = rotDir * moveDir * (speedIncrease / swingSlow) * pg.player.movementSpeed;
+        rb.linearVelocity = rotDir * moveDir * (speedIncrease / swingSlow) * pg.player.EffectiveMovementSpeed;
 
         if (!swinging && batHitPoint != null)
         {
-            Vector3 gotoPos = -(transform.up * 2) + ((lastfacing == 1) ? (transform.right * 2f) : -(transform.right * 2f)) - (transform.forward * 1.5f);
+            // lastNonZeroMoveDir is screen/AbsAxes space; bat poses are local — convert for top (Z=180) etc.
+            int swingLocal = MoveDirToLocalBatX(lastNonZeroMoveDir);
+            // Wind up opposite the swing arc (local +X during SwingBat)
+            Vector3 gotoPos = new Vector3(-swingLocal * 2f, -2f, -1.5f);
             batHitPoint.localPosition = Vector3.Lerp(batHitPoint.localPosition, gotoPos, facingSpeed * Time.deltaTime);
 
             if (moveDir == 0 && swingTimer + swingTimeDelay < Time.time && !swung)
             {
                 swinging = true;
                 swung = true;
-                StartCoroutine(SwingBat(lastNonZeroMoveDir));
+                StartCoroutine(SwingBat(swingLocal));
             }
         }
 
@@ -420,7 +441,7 @@ public class Yuotay : MonoBehaviour
 
         p.AddConstraint(gameObject);
         p.pushBack = 100;
-        Vector3 nP = lastNonZeroMoveDir * transform.right * 2;
+        Vector3 nP = new Vector3(MoveDirToLocalBatX(lastNonZeroMoveDir) * 2f, 0f, 0f);
         batHitPoint.localPosition = Vector3.Lerp(batHitPoint.localPosition, nP, p.super.speed * Time.deltaTime);
 
         bunting = true;
@@ -430,6 +451,24 @@ public class Yuotay : MonoBehaviour
     bool WallInDirection(int dir)
     {
         return PaddleWall.WallInDirection(transform, dir, hitTags, dis);
+    }
+
+    /// <summary>
+    /// Movement ±1 follows AbsAxes (screen-consistent). Bat local +X follows transform.right,
+    /// which is flipped on top (Facing.Down / Z=180). Convert so swing continues the move.
+    /// </summary>
+    int MoveDirToLocalBatX(int moveDir)
+    {
+        if (moveDir == 0)
+            return 0;
+
+        Vector3 localRight = transform.right;
+        localRight.z = 0f;
+        Vector3 screenRight = PaddleWall.AbsAxes(transform.right);
+        if (localRight.sqrMagnitude < 0.0001f || screenRight.sqrMagnitude < 0.0001f)
+            return moveDir;
+
+        return Vector3.Dot(localRight.normalized, screenRight) < 0f ? -moveDir : moveDir;
     }
 
     void OnCollisionEnter(Collision collision)

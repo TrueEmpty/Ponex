@@ -353,7 +353,7 @@ public class CelarusResidue : MonoBehaviour
             Physics.IgnoreCollision(self, other, true);
         }
 
-        PlayerGrab[] grabs = Object.FindObjectsByType<PlayerGrab>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        PlayerGrab[] grabs = Object.FindObjectsByType<PlayerGrab>(FindObjectsInactive.Exclude);
         for (int i = 0; i < grabs.Length; i++)
         {
             PlayerGrab g = grabs[i];

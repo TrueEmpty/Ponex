@@ -232,7 +232,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
     static RectTransform FindActiveBackRect()
     {
-        BackButtonClick[] backs = UnityEngine.Object.FindObjectsByType<BackButtonClick>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        BackButtonClick[] backs = UnityEngine.Object.FindObjectsByType<BackButtonClick>(FindObjectsInactive.Exclude);
         for (int i = 0; i < backs.Length; i++)
         {
             BackButtonClick b = backs[i];
@@ -245,7 +245,7 @@ public class PlayerSelectorObj : MonoBehaviour
         }
 
         // Fallback: name match if EnsureAll hasn't run yet
-        GameObject[] all = UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        GameObject[] all = UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Exclude);
         for (int i = 0; i < all.Length; i++)
         {
             GameObject go = all[i];

@@ -102,7 +102,7 @@ public class GarmenDrive : MonoBehaviour
                 moveDir = 0;
 
             Vector3 rotDir = PaddleWall.AbsAxes(transform.right);
-            rb.linearVelocity = rotDir * moveDir * pg.player.movementSpeed;
+            rb.linearVelocity = rotDir * moveDir * pg.player.EffectiveMovementSpeed;
             PaddleWall.Unstick(rb, transform, hitTags);
 
             if(moveDir != 0)

@@ -16,6 +16,9 @@ public static class ComputerAI
     public const int VariantsPerLevel = 3;
     const float MaxAggression = 0.85f;
 
+    // Reused every AI think — avoids FindGameObjectsWithTag + GC each frame
+    static readonly List<GameObject> liveBallBuffer = new List<GameObject>(32);
+
     /// <summary>
     /// Match difficulty. Training uses the learned profile directly (best for practice).
     /// Easy–Impossible clamp/scale that learned skill into a band.
@@ -718,16 +721,16 @@ public static class ComputerAI
         dist = 0f;
         ballId = 0;
 
-        GameObject[] balls = GameObject.FindGameObjectsWithTag("Ball");
-        if (balls == null || balls.Length == 0)
+        LiveBallRegistry.CopyLiveGameObjects(liveBallBuffer);
+        if (liveBallBuffer.Count == 0)
             return false;
 
         // Rank candidates, then weighted-random pick so clones don't all hunt the same ball
-        var candidates = new List<(GameObject go, Vector3 pos, Vector3 vel, float score, int id)>(balls.Length);
+        var candidates = new List<(GameObject go, Vector3 pos, Vector3 vel, float score, int id)>(liveBallBuffer.Count);
 
-        for (int i = 0; i < balls.Length; i++)
+        for (int i = 0; i < liveBallBuffer.Count; i++)
         {
-            GameObject go = balls[i];
+            GameObject go = liveBallBuffer[i];
             if (go == null)
                 continue;
 
@@ -758,10 +761,11 @@ public static class ComputerAI
             }
 
             // Prefer sticking with previously committed ball sometimes
-            if (personality.committedBallId != 0 && go.GetInstanceID() == personality.committedBallId)
+            int ballEntityId = go.GetEntityId().GetHashCode();
+            if (personality.committedBallId != 0 && ballEntityId == personality.committedBallId)
                 score += Mathf.Lerp(8f, 2f, skill);
 
-            candidates.Add((go, pos, vel, score, go.GetInstanceID()));
+            candidates.Add((go, pos, vel, score, ballEntityId));
         }
 
         if (candidates.Count == 0)
@@ -963,20 +967,32 @@ public static class ComputerAI
         }
     }
 
+    /// <summary>Public aim helper for specialty kits (Iyolit candles, etc.).</summary>
+    public static bool TryGetAimPoint(Player player, Transform body, out Vector3 aim)
+    {
+        aim = body != null ? body.position : Vector3.zero;
+        if (player == null || body == null)
+            return false;
+        if (!TryGetThreat(body, player.facing, out _, out Vector3 ballPos, out _))
+            return false;
+        aim = ballPos;
+        return true;
+    }
+
     static bool TryGetThreat(Transform paddle, Facing facing, out Rigidbody ballRb, out Vector3 ballPos, out Vector3 ballVel)
     {
         ballRb = null;
         ballPos = Vector3.zero;
         ballVel = Vector3.zero;
 
-        GameObject[] balls = GameObject.FindGameObjectsWithTag("Ball");
-        if (balls == null || balls.Length == 0)
+        LiveBallRegistry.CopyLiveGameObjects(liveBallBuffer);
+        if (liveBallBuffer.Count == 0)
             return false;
 
         float bestScore = float.NegativeInfinity;
-        for (int i = 0; i < balls.Length; i++)
+        for (int i = 0; i < liveBallBuffer.Count; i++)
         {
-            GameObject go = balls[i];
+            GameObject go = liveBallBuffer[i];
             if (go == null)
                 continue;
 

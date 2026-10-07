@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class TicPlayerMove : MonoBehaviour
 {
+#pragma warning disable CS0414 // Kept for commented Tic plunger move logic below
     float canMove = 1;
+    float ltime = 0;
+    float rtime = 0;
+    float ctime = 0;
+    float bumperDistance = 0;
+#pragma warning restore CS0414
     PlayerGrab pg;
 
     public int lMove = 0;
@@ -15,11 +21,6 @@ public class TicPlayerMove : MonoBehaviour
     public GameObject leftObj;
     public GameObject centerObj;
 
-    float ltime = 0;
-    float rtime = 0;
-    float ctime = 0;
-
-    float bumperDistance = 0;
     Vector3 cStart;
 
     public float rotAmountL = 0;

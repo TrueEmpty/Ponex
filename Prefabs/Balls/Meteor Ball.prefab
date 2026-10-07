@@ -17,8 +17,9 @@ GameObject:
   - component: {fileID: 546720525859228101}
   - component: {fileID: 3150989512654699879}
   - component: {fileID: 3799171798203947597}
+  - component: {fileID: 7200000000000000004}
   m_Layer: 8
-  m_Name: Illusion Ball (Unfinished will show a copy that does no damage)
+  m_Name: Meteor Ball
   m_TagString: Ball
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -31,13 +32,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4093283886100061384}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.04, y: -2.59, z: 10}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
+  m_LocalScale: {x: 0.32, y: 0.32, z: 0.32}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5965051793757859021
 MeshFilter:
@@ -60,18 +61,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ball:
-    name: Speed Ball
+    name: Meteor Ball
     prefab: {fileID: 4093283886100061384}
     selection: {fileID: 0}
     color: {r: 1, g: 0, b: 0, a: 1}
-    startSpeed: 3
-    maxSpeed: 8
+    startSpeed: 1.0
+    minSpeed: 1.0
+    maxSpeed: 4.0
     speedIncrease: 1.25
     damage: 1
   anchor: {fileID: 4093283886100061384}
   futureColisionPoints: []
   documentColisions: 0
   tolorance: 0.5
+  timeTillReset: 8
   ttR: 0
   ballReady: 0
   checkStuck: 1
@@ -121,10 +124,15 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 90e419607d9130c4c85daa31334259f2, type: 2}
+  - {fileID: 2100000, guid: 17889900aa11bb22cc33dd44ee55ff66, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -142,9 +150,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &546720525859228101
 SphereCollider:
@@ -154,9 +164,17 @@ SphereCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4093283886100061384}
   m_Material: {fileID: 13400000, guid: d2574cbe9d6477341ae7e9b079ce4175, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &3150989512654699879
@@ -166,10 +184,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4093283886100061384}
-  serializedVersion: 2
+  serializedVersion: 5
   m_Mass: 10
-  m_Drag: 0
-  m_AngularDrag: 0
+  m_LinearDamping: 0
+  m_AngularDamping: 0
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -187,3 +216,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f42726b3d9c92d249b052255e6dbda13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7200000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4093283886100061384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37301c9331243ab45a4cb3e036231b8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startScale: 0.32
+  popScale: 1.65
+  growPerBounce: 0.12
+  shardCount: 10
+  shardScale: 0.18
+  shardSpeed: 6
+  shardLifetime: 4

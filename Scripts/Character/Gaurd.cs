@@ -18,7 +18,9 @@ public class Gaurd : MonoBehaviour
     bool savedByPawns = false;
 
     [SerializeField]
+#pragma warning disable CS0414 // Inspector AI-thought debug
     Thought thought = Thought.Nothing;
+#pragma warning restore CS0414
 
     // Start is called before the first frame update
     void Start()
@@ -82,12 +84,15 @@ public class Gaurd : MonoBehaviour
                     baseDamage = tbI.ball.damage;
                 }
 
-                int lost = pg.player.ApplyGoalDamage(baseDamage, collision.gameObject.GetInstanceID());
+                int lost = pg.player.ApplyGoalDamage(baseDamage, collision.gameObject.GetEntityId().GetHashCode());
 
                 if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null)
                     tpG.player.RecordDamageDealt(lost);
 
                 pawns.RemoveAll(pawn => pawn == null);
+
+                if (pg.player.currentHealth <= 1 && CharacterCreationManager.IsActive)
+                    return;
 
                 if (pg.player.currentHealth <= 0)
                 {

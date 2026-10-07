@@ -71,7 +71,8 @@ public class NariMove : MonoBehaviour
 
         if (pg.player.CanMove)
         {
-            OnDash();
+            if (pg.player.CanDash)
+                OnDash();
             OnMove();
         }
 
@@ -88,8 +89,8 @@ public class NariMove : MonoBehaviour
     }
 
     float TargetSpeed => dashing
-        ? pg.player.movementSpeed + dashSpeedBonus
-        : pg.player.movementSpeed;
+        ? pg.player.EffectiveMovementSpeed + dashSpeedBonus
+        : pg.player.EffectiveMovementSpeed;
 
     void OnDash()
     {
@@ -122,7 +123,7 @@ public class NariMove : MonoBehaviour
     {
         dashing = false;
         dashTimer = 0f;
-        trueSpeed = pg.player.movementSpeed;
+        trueSpeed = pg.player.EffectiveMovementSpeed;
         ClearDashParticles();
     }
 

@@ -52,6 +52,8 @@ public class PortraitClicked : MonoBehaviour
         cpuLevelButton = CpuDifficultyButton.Ensure(holder, attachedIndex, font);
     }
 
+    string lastPortraitKey;
+
     void Update()
     {
         Player p = db.players.Find(x => x.index == attachedIndex);
@@ -59,11 +61,22 @@ public class PortraitClicked : MonoBehaviour
         if (p == null)
         {
             Destroy(gameObject);
+            return;
         }
-        else
-        {
-            LoadPortrait(p);
-        }
+
+        // Skip full rebuild when nothing visible changed
+        string key = PortraitKey(p);
+        if (key == lastPortraitKey)
+            return;
+        lastPortraitKey = key;
+        LoadPortrait(p);
+    }
+
+    string PortraitKey(Player p)
+    {
+        return p.index + "|" + p.name + "|" + (p.computer ? 1 : 0) + "|" + p.cpuDifficulty + "|"
+            + (p.characterSelected ? 1 : 0) + "|" + (p.wantRandomCharacter ? 1 : 0) + "|"
+            + p.skinColorIndex + "|" + (p.nickName ?? "");
     }
 
     void LoadPortrait(Player p)

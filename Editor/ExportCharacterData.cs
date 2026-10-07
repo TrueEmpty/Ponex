@@ -14,7 +14,7 @@ public static class ExportCharacterData
     [MenuItem("Tools/Ponex/Export Characters To ScriptableObjects")]
     public static void Export()
     {
-        Database db = Object.FindFirstObjectByType<Database>();
+        Database db = Object.FindAnyObjectByType<Database>();
         if (db == null)
         {
             EditorUtility.DisplayDialog("Export Characters", "No Database found in the open scene.", "OK");
