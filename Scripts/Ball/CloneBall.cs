@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,41 +15,42 @@ public class CloneBall : MonoBehaviour
 
     public GameObject cloneBallChild;
 
-    public List<GameObject> cloneChildren;
+    public List<GameObject> cloneChildren = new List<GameObject>();
 
     [Range(0, 1)]
     public float cloneChance = .25f;
     float clonetimer = 0;
 
-    // Start is called before the first frame update
+    void Awake()
+    {
+        if (cloneChildren == null)
+            cloneChildren = new List<GameObject>();
+    }
+
     void Start()
     {
         db = Database.instance;
         bI = GetComponent<BallInfo>();
 
-        if(bI.projectionOn)
+        if (cloneChildren == null)
+            cloneChildren = new List<GameObject>();
+
+        if (bI != null && bI.projectionOn)
         {
-            GameObject[] allBalls = GameObject.FindGameObjectsWithTag("Ball");
             int cbC = 0;
-
-            foreach (GameObject aB in allBalls)
+            for (int i = 0; i < LiveBallRegistry.Count; i++)
             {
-                if (aB != gameObject)
+                BallInfo gbI = LiveBallRegistry.GetAt(i);
+                if (gbI == null || gbI.gameObject == gameObject || gbI.ball == null)
+                    continue;
+                if (gbI.ball.name != "Clone Ball" && gbI.ball.name != "Mimic Ball")
+                    continue;
+
+                cbC++;
+                if (cbC >= maxCloneBalls)
                 {
-                    BallInfo gbI = aB.GetComponent<BallInfo>();
-
-                    if (gbI != null)
-                    {
-                        if (gbI.ball.name == "Clone Ball")
-                        {
-                            cbC++;
-
-                            if (cbC >= maxCloneBalls)
-                            {
-                                Destroy(gameObject);
-                            }
-                        }
-                    }
+                    Destroy(gameObject);
+                    return;
                 }
             }
 
@@ -58,91 +58,108 @@ public class CloneBall : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (db.gameStart && bI.ballReady && bI.projectionOn)
+        if (db == null || bI == null || !db.gameStart || !bI.ballReady || !bI.projectionOn)
+            return;
+
+        if (cloneChildren == null)
+            cloneChildren = new List<GameObject>();
+
+        // Pop clones off
+        if (popTimer > popMainTimer.z)
         {
-            //Pop clones off
-            if (popTimer > popMainTimer.z)
+            for (int i = cloneChildren.Count - 1; i >= 0; i--)
             {
-                if(cloneChildren.Count > 0)
+                GameObject child = cloneChildren[i];
+                if (child == null)
                 {
-                    for(int i = cloneChildren.Count - 1; i >= 0; i--)
-                    {
-                        if(cloneChildren[i].transform.localScale.x > sizeRange.y)
-                        {
-                            GameObject ncb = Instantiate(bI.ball.prefab);
-                            ncb.transform.localScale = cloneChildren[i].transform.localScale;
-
-                            BallInfo nBI = ncb.GetComponent<BallInfo>();
-
-                            if(nBI != null)
-                            {
-                                nBI.ball = new Ball(bI.ball);
-                                nBI.ballReady = true;
-                            }
-
-                            Destroy(cloneChildren[i]);
-                            cloneChildren.RemoveAt(i);
-                        }
-                    }
+                    cloneChildren.RemoveAt(i);
+                    continue;
                 }
 
-                popMainTimer.z = Random.Range(popMainTimer.x, popMainTimer.y);
-                popTimer = 0;
-            }
+                if (child.transform.localScale.x <= sizeRange.y)
+                    continue;
 
-            //Create Clone
-            if(clonetimer > 1)
-            {
-                if(cloneChance >= Random.Range(0f,1f))
+                GameObject spawnPrefab = bI.ball != null ? bI.ball.prefab : null;
+                if (spawnPrefab == null)
                 {
-                    if(cloneChildren.Count < maxClones)
-                    {
-                        GameObject cC = Instantiate(cloneBallChild);
-                        cC.transform.parent = transform;
-                        cC.transform.localScale = Vector3.one * sizeRange.x;
-                        float randomX = Random.Range(-1f, 1f);
-                        float randomY = Random.Range(-1f, 1f);
-
-                        float totalSum = Mathf.Abs(randomX) + Mathf.Abs(randomY);
-
-                        float percentX = Mathf.Abs(randomX) / totalSum;
-                        float percentY = Mathf.Abs(randomY) / totalSum;
-
-                        float trueX = transform.localScale.x * percentX;
-                        float trueY = transform.localScale.y * percentY;
-
-                        if(randomX < 0)
-                        {
-                            trueX *= -1;
-                        }
-
-                        if(randomY < 0)
-                        {
-                            trueY *= -1;
-                        }
-
-                        cC.transform.localPosition = new Vector3(trueX, trueY, 0);
-
-                        SizeOverTime sot = cC.GetComponent<SizeOverTime>();
-
-                        if(sot != null)
-                        {
-                            sot.growthRate = Random.Range(growthRange.x, growthRange.y);
-                            sot.growthRange = new Vector2(sizeRange.x,sizeRange.z);
-                        }
-
-                        cloneChildren.Add(cC);
-                    }
+                    Destroy(child);
+                    cloneChildren.RemoveAt(i);
+                    continue;
                 }
 
-                clonetimer = 0;
+                GameObject ncb = Instantiate(spawnPrefab);
+                ncb.transform.position = child.transform.position;
+                ncb.transform.localScale = child.transform.localScale;
+
+                BallInfo nBI = ncb.GetComponent<BallInfo>();
+                if (nBI != null && bI.ball != null)
+                {
+                    nBI.ball = new Ball(bI.ball);
+                    nBI.ballReady = true;
+                    nBI.matchSlot = -1;
+                    nBI.projectionOn = true;
+                    nBI.anchor = ncb;
+                }
+
+                // Strip Mimic so popped children don't keep transforming
+                MimicBall mimic = ncb.GetComponent<MimicBall>();
+                if (mimic != null)
+                    Destroy(mimic);
+
+                Destroy(child);
+                cloneChildren.RemoveAt(i);
             }
 
-            popTimer += Time.deltaTime;
-            clonetimer += Time.deltaTime;
+            popMainTimer.z = Random.Range(popMainTimer.x, popMainTimer.y);
+            popTimer = 0;
         }
+
+        // Create Clone
+        if (clonetimer > 1)
+        {
+            if (cloneBallChild != null
+                && cloneChance >= Random.Range(0f, 1f)
+                && cloneChildren.Count < maxClones)
+            {
+                GameObject cC = Instantiate(cloneBallChild);
+                cC.transform.SetParent(transform, false);
+                cC.transform.localScale = Vector3.one * sizeRange.x;
+                float randomX = Random.Range(-1f, 1f);
+                float randomY = Random.Range(-1f, 1f);
+
+                float totalSum = Mathf.Abs(randomX) + Mathf.Abs(randomY);
+                if (totalSum < 0.0001f)
+                    totalSum = 1f;
+
+                float percentX = Mathf.Abs(randomX) / totalSum;
+                float percentY = Mathf.Abs(randomY) / totalSum;
+
+                float trueX = transform.localScale.x * percentX;
+                float trueY = transform.localScale.y * percentY;
+
+                if (randomX < 0)
+                    trueX *= -1;
+                if (randomY < 0)
+                    trueY *= -1;
+
+                cC.transform.localPosition = new Vector3(trueX, trueY, 0);
+
+                SizeOverTime sot = cC.GetComponent<SizeOverTime>();
+                if (sot != null)
+                {
+                    sot.growthRate = Random.Range(growthRange.x, growthRange.y);
+                    sot.growthRange = new Vector2(sizeRange.x, sizeRange.z);
+                }
+
+                cloneChildren.Add(cC);
+            }
+
+            clonetimer = 0;
+        }
+
+        popTimer += Time.deltaTime;
+        clonetimer += Time.deltaTime;
     }
 }

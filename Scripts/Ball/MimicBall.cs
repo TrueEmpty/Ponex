@@ -152,9 +152,23 @@ public class MimicBall : MonoBehaviour
                 break;
             case "Clone Ball":
                 CloneBall clone = gameObject.AddComponent<CloneBall>();
+                if (clone.cloneChildren == null)
+                    clone.cloneChildren = new List<GameObject>();
                 CloneBall donor = null;
                 if (target.prefab != null)
                     donor = target.prefab.GetComponent<CloneBall>();
+                if (donor == null && db != null && db.balls != null)
+                {
+                    for (int i = 0; i < db.balls.Count; i++)
+                    {
+                        Ball b = db.balls[i];
+                        if (b == null || b.prefab == null || b.name != "Clone Ball")
+                            continue;
+                        donor = b.prefab.GetComponent<CloneBall>();
+                        if (donor != null)
+                            break;
+                    }
+                }
                 if (donor != null)
                 {
                     clone.popMainTimer = donor.popMainTimer;
