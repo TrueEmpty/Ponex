@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,19 +9,14 @@ public class Field_Info : MonoBehaviour
     Database db;
     MenuManager mM;
 
-    private void Awake()
+    void Awake()
     {
         if (instance != null)
-        {
             Destroy(this);
-        }
         else
-        {
             instance = this;
-        }
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         db = Database.instance;
@@ -31,43 +25,34 @@ public class Field_Info : MonoBehaviour
         LoadField();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     void Preload()
     {
-        int fs = field.size;
+        int fs = field != null ? field.size : 0;
+        float play = fs + 10;
+        if (db != null && db.FieldPlaySize > 0.01f)
+            play = db.FieldPlaySize;
 
-        //Move to correct spot
-        Vector3 pos = transform.position;
-        pos.z = fs + 10;
-        transform.position = pos;
-
-        //Add Out of Bounds
         for (int i = 0; i < 4; i++)
         {
             GameObject oob = Instantiate(db.outofBounds);
             oob.transform.parent = transform;
 
-            Vector3 oobLoc = new Vector3(0, ((fs+10) / 2) + 1, 0);
-            Vector3 oobScale = new Vector3((fs + 10) + 3, 1, 1);
+            Vector3 oobLoc = new Vector3(0, (play / 2f) + 1f, 0);
+            Vector3 oobScale = new Vector3(play + 3f, 1f, 1f);
 
             switch (i)
             {
-                case 1://Right
-                    oobLoc = new Vector3(((fs + 10) / 2) + 1, 0, 0);
-                    oobScale = new Vector3(1, (fs + 10) + 3, 1);
+                case 1:
+                    oobLoc = new Vector3((play / 2f) + 1f, 0f, 0f);
+                    oobScale = new Vector3(1f, play + 3f, 1f);
                     break;
-                case 2://Down
-                    oobLoc = new Vector3(0, -(((fs + 10) / 2) + 1), 0);
-                    oobScale = new Vector3((fs + 10) + 3, 1, 1);
+                case 2:
+                    oobLoc = new Vector3(0f, -((play / 2f) + 1f), 0f);
+                    oobScale = new Vector3(play + 3f, 1f, 1f);
                     break;
-                case 3://Left
-                    oobLoc = new Vector3(-(((fs + 10) / 2) + 1), 0, 0);
-                    oobScale = new Vector3(1, (fs + 10) + 3, 1);
+                case 3:
+                    oobLoc = new Vector3(-((play / 2f) + 1f), 0f, 0f);
+                    oobScale = new Vector3(1f, play + 3f, 1f);
                     break;
             }
 
@@ -75,82 +60,116 @@ public class Field_Info : MonoBehaviour
             oob.transform.localScale = oobScale;
         }
 
-        //Add Background
         GameObject background = Instantiate(db.background);
+        background.name = "Background";
         background.transform.parent = transform;
         background.transform.localPosition = new Vector3(0, 0, .5f);
 
         Renderer bRen = background.GetComponent<Renderer>();
-
-        if (bRen != null)
+        if (bRen != null && field != null)
         {
-            bRen.material.color = field.backgroundColor;
-            bRen.material.SetFloat("_Metallic", field.backgroundMatallic);
-            bRen.material.SetFloat("_Smoothness", field.backgroundSmoothness);
-
-            if (field.backgroundMaterial != null)
+            // Fully clear bg (Deep Harbor uses water terrain instead)
+            if (field.backgroundColor.a < 0.05f)
             {
-                bRen.material.shaderKeywords = new string[1] { "_NORMALMAP" };
-                bRen.material.SetTexture("_NORMALMAP", field.backgroundMaterial);
-                bRen.material.SetTextureScale("_NORMALMAP", field.tilling);
+                bRen.enabled = false;
+                background.SetActive(false);
+            }
+            else
+            {
+                FieldTextureFactory.ApplyAlbedo(
+                    bRen,
+                    field.backgroundMaterial,
+                    field.backgroundColor,
+                    field.backgroundMatallic,
+                    field.backgroundSmoothness);
+                if (field.backgroundMaterial != null)
+                    bRen.material.mainTextureScale = field.tilling;
             }
         }
     }
 
     public void LoadField()
     {
-        //Add all Parts
-        if (field.parts.Count > 0)
+        if (field == null || field.parts == null || field.parts.Count == 0)
+            return;
+
+        GameSettings.EnsureLoaded();
+        string menuTitle = "";
+        if (mM != null)
         {
-            for(int i = 0; i < field.parts.Count; i++)
-            {
-                Part p = new Part(field.parts[i]);
+            MenuClass open = mM.GetOpenMenu(true);
+            if (open != null && open.title != null)
+                menuTitle = open.title.ToLowerInvariant();
+        }
 
-                if (p.prefab != null && p.spawned == null)
-                {
-                    //Create Part
-                    GameObject go = Instantiate(p.prefab);
-                    go.transform.parent = transform;
+        for (int i = 0; i < field.parts.Count; i++)
+        {
+            Part p = new Part(field.parts[i]);
+            if (p.prefab == null || p.spawned != null)
+                continue;
 
-                    //Set Spawned Go's
-                    field.parts[i].spawned = go;
-                    p.spawned = go;
+            bool isHazard = p.isHazard
+                || (p.type != null && (p.type.Equals("Hazard", System.StringComparison.OrdinalIgnoreCase)
+                    || p.type.Equals("Hazards", System.StringComparison.OrdinalIgnoreCase)));
 
-                    //Set Scale
-                    go.transform.localScale = p.size;
-                    go.transform.localPosition = p.position;
-                    go.transform.localEulerAngles = p.rotation;
+            // Skip hazard templates entirely when hazards are off
+            if (isHazard && !GameSettings.HazardsEnabled && menuTitle != "createmode")
+                continue;
 
-                    //Add Material
-                    Renderer pRen = go.GetComponent<Renderer>();
+            GameObject go = Instantiate(p.prefab);
+            go.transform.parent = transform;
 
-                    if (pRen != null)
-                    {
-                        pRen.material.color = p.material_Color;
-                        pRen.material.SetFloat("_Metallic", p.material_Matallic);
-                        pRen.material.SetFloat("_Smoothness", p.material_Smoothness);
+            field.parts[i].spawned = go;
+            // Keep flags on the live PartInfo copy
+            p.isHazard = field.parts[i].isHazard || isHazard;
+            p.tangible = field.parts[i].tangible;
+            p.spawnRange = field.parts[i].spawnRange;
+            p.spawned = go;
 
-                        if(p.material != null)
-                        {
-                            pRen.material.shaderKeywords = new string[1] { "_NORMALMAP"};
-                            pRen.material.SetTexture("_NORMALMAP", p.material);
-                        }
-                    }
+            go.transform.localScale = p.size;
+            go.transform.localPosition = p.position;
+            go.transform.localEulerAngles = p.rotation;
 
-                    //Add Scripts
-                    if (mM.GetOpenMenu(true).title.ToLower() != "createMode" && p.type.ToLower().Trim() == "spawn")
-                    {
-                        go.SetActive(false);
-                    }
+            Renderer pRen = go.GetComponent<Renderer>();
+            if (pRen != null)
+                FieldTextureFactory.ApplyAlbedo(pRen, p.material, p.material_Color, p.material_Matallic, p.material_Smoothness);
 
-                    PartInfo pI = go.GetComponent<PartInfo>();
+            string typeLower = p.type != null ? p.type.ToLowerInvariant().Trim() : "";
+            if (menuTitle != "createmode" && typeLower == "spawn")
+                go.SetActive(false);
 
-                    if (pI != null)
-                    {
-                        pI.part = p;
-                    }                  
-                }
-            }
+            // Hazards stay dormant until FieldHazardSpawner places them
+            if (isHazard)
+                go.SetActive(false);
+
+            PartInfo pI = go.GetComponent<PartInfo>();
+            if (pI == null)
+                pI = go.AddComponent<PartInfo>();
+            pI.part = p;
+
+            // Sync authored flags onto field.parts[i] for the spawner
+            field.parts[i].isHazard = p.isHazard;
+            field.parts[i].tangible = p.tangible;
+            field.parts[i].spawnRange = p.spawnRange;
+
+            AttachEffectBehaviours(go, p);
+        }
+    }
+
+    void AttachEffectBehaviours(GameObject go, Part p)
+    {
+        if (go == null || p == null)
+            return;
+        string n = p.name != null ? p.name.ToLowerInvariant() : "";
+        if (n.Contains("water") || n.Contains("tide") || n.Contains("ocean"))
+        {
+            if (go.GetComponent<AnimatedWater>() == null)
+                go.AddComponent<AnimatedWater>();
+        }
+        else if (n.Contains("paver") || n.Contains("courtyard") || n.Contains("nuoryn"))
+        {
+            if (go.GetComponent<CourtyardPavers>() == null)
+                go.AddComponent<CourtyardPavers>();
         }
     }
 
@@ -158,23 +177,20 @@ public class Field_Info : MonoBehaviour
     {
         field.parts.Clear();
 
-        if(transform.childCount > 0)
+        if (transform.childCount > 0)
         {
-            for(int i = 0; i < transform.childCount; i++)
+            for (int i = 0; i < transform.childCount; i++)
             {
                 PartInfo pI = transform.GetChild(i).GetComponent<PartInfo>();
+                if (pI == null || pI.part == null)
+                    continue;
 
-                if(pI != null)
-                {
-                    Part p = new(pI.part);
-
-                    p.position = pI.transform.localPosition;
-                    p.rotation = pI.transform.localRotation.eulerAngles;
-                    p.size = pI.transform.localScale;
-
-                    p.spawned = null;
-                    field.parts.Add(p);
-                }
+                Part p = new Part(pI.part);
+                p.position = pI.transform.localPosition;
+                p.rotation = pI.transform.localRotation.eulerAngles;
+                p.size = pI.transform.localScale;
+                p.spawned = null;
+                field.parts.Add(p);
             }
         }
     }

@@ -46,8 +46,8 @@ MonoBehaviour:
     rotationOffset: {x: 0, y: 0, z: 0}
   selector: {fileID: 0}
   playerInfo: {fileID: 0}
-  superName: 
-  superDescription: 
+  superName: Forge
+  superDescription: Forges clay and earth to regain power or build stronger
   portraitColor: {r: 1, g: 0.5176471, b: 0, a: 1}
   portrait: {fileID: 2800000, guid: 9466b501947ab0546b4762a9d7a02843, type: 3}
   icon: {fileID: 2800000, guid: 58a2ea0176cf2f44c87d54db5ab3a9e1, type: 3}

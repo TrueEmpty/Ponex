@@ -30,6 +30,8 @@ public class UniversalCollisionDetector : MonoBehaviour
     static readonly Collider[] overlapBuffer = new Collider[48];
     Vector3 lastSyncPos;
     bool hasLastSyncPos;
+    bool movedThisFrame;
+    float nextIdleValidate;
 
     void Awake()
     {
@@ -58,13 +60,28 @@ public class UniversalCollisionDetector : MonoBehaviour
         if (myColliders == null || myColliders.Length == 0)
             return;
 
-        // Only sync physics when the cursor actually moved
+        // Only sync / query when the cursor moved — idle selectors skip physics work
         Vector3 pos = transform.position;
-        if (!hasLastSyncPos || (pos - lastSyncPos).sqrMagnitude > 0.0001f)
+        movedThisFrame = !hasLastSyncPos || (pos - lastSyncPos).sqrMagnitude > 0.0004f;
+        if (!movedThisFrame && trackedColliders.Count == 0)
+            return;
+
+        if (movedThisFrame)
         {
             Physics.SyncTransforms();
             lastSyncPos = pos;
             hasLastSyncPos = true;
+        }
+        else if (trackedColliders.Count > 0)
+        {
+            // Validate exits while idle, but not every frame
+            if (Time.unscaledTime < nextIdleValidate)
+                return;
+            nextIdleValidate = Time.unscaledTime + 0.1f;
+        }
+        else
+        {
+            return;
         }
 
         currentFrameColliders.Clear();
@@ -98,15 +115,17 @@ public class UniversalCollisionDetector : MonoBehaviour
                 if (other is MeshCollider meshOther && !meshOther.convex)
                     continue;
 
-                bool overlapping = Physics.ComputePenetration(
-                    mine, mine.transform.position, mine.transform.rotation,
-                    other, other.transform.position, other.transform.rotation,
-                    out _, out _
-                );
-
-                // Thin UI colliders (e.g. z=1 boxes) can sit flush; also accept bounds overlap
-                if (!overlapping && mine.bounds.Intersects(other.bounds))
-                    overlapping = true;
+                // UI cursors: AABB is enough and far cheaper than ComputePenetration
+                bool overlapping = mine.bounds.Intersects(other.bounds);
+                if (!overlapping
+                    && !(mine is BoxCollider && other is BoxCollider))
+                {
+                    overlapping = Physics.ComputePenetration(
+                        mine, mine.transform.position, mine.transform.rotation,
+                        other, other.transform.position, other.transform.rotation,
+                        out _, out _
+                    );
+                }
 
                 if (overlapping)
                 {

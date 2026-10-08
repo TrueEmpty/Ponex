@@ -52,11 +52,28 @@ public class PortraitClicked : MonoBehaviour
         cpuLevelButton = CpuDifficultyButton.Ensure(holder, attachedIndex, font);
     }
 
-    string lastPortraitKey;
+    int lastPortraitHash;
+    float nextPortraitScan;
 
     void Update()
     {
-        Player p = db.players.Find(x => x.index == attachedIndex);
+        if (db == null || db.players == null)
+            return;
+
+        // Portraits don't need a Find every frame
+        if (Time.unscaledTime < nextPortraitScan && lastPortraitHash != 0)
+            return;
+        nextPortraitScan = Time.unscaledTime + 0.12f;
+
+        Player p = null;
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            if (db.players[i] != null && db.players[i].index == attachedIndex)
+            {
+                p = db.players[i];
+                break;
+            }
+        }
 
         if (p == null)
         {
@@ -64,19 +81,27 @@ public class PortraitClicked : MonoBehaviour
             return;
         }
 
-        // Skip full rebuild when nothing visible changed
-        string key = PortraitKey(p);
-        if (key == lastPortraitKey)
+        int hash = PortraitHash(p);
+        if (hash == lastPortraitHash)
             return;
-        lastPortraitKey = key;
+        lastPortraitHash = hash;
         LoadPortrait(p);
     }
 
-    string PortraitKey(Player p)
+    static int PortraitHash(Player p)
     {
-        return p.index + "|" + p.name + "|" + (p.computer ? 1 : 0) + "|" + p.cpuDifficulty + "|"
-            + (p.characterSelected ? 1 : 0) + "|" + (p.wantRandomCharacter ? 1 : 0) + "|"
-            + p.skinColorIndex + "|" + (p.nickName ?? "");
+        unchecked
+        {
+            int h = p.index;
+            h = h * 31 + (p.name != null ? p.name.GetHashCode() : 0);
+            h = h * 31 + (p.computer ? 1 : 0);
+            h = h * 31 + (int)p.cpuDifficulty;
+            h = h * 31 + (p.characterSelected ? 1 : 0);
+            h = h * 31 + (p.wantRandomCharacter ? 1 : 0);
+            h = h * 31 + p.skinColorIndex;
+            h = h * 31 + (p.nickName != null ? p.nickName.GetHashCode() : 0);
+            return h;
+        }
     }
 
     void LoadPortrait(Player p)

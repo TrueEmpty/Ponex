@@ -30,8 +30,13 @@ public class Database : MonoBehaviour
     public int[] ballSlots = new int[] { -1, -1, -1, -1, -1 };
 
     int fieldSize = 0;
-    /// <summary>Current match playfield width (field.size + 10). 0 before a match starts.</summary>
+    /// <summary>Current match playfield depth/plane (framed Z). 0 before a match starts.</summary>
     public float FieldPlaySize => fieldSize;
+
+    public void SetFieldPlaySize(float size)
+    {
+        fieldSize = Mathf.Max(1, Mathf.RoundToInt(size));
+    }
 
     public GameObject outofBounds;
     public GameObject background;
@@ -118,7 +123,9 @@ public class Database : MonoBehaviour
             EnsureBallSlots();
             LoadCharactersFromAssets();
             LoadMatchPrefs();
-            // Before ControllerLink.Start (-200) so Character Creation can claim pads
+        GameSettings.EnsureLoaded();
+        FieldCatalog.EnsureRegistered(this);
+        // Before ControllerLink.Start (-200) so Character Creation can claim pads
             CharacterCreationManager.EnsureExists();
             TrainingManager.EnsureExists();
         }
@@ -153,6 +160,9 @@ public class Database : MonoBehaviour
         BackButtonClick.EnsureAll();
         TrainingManager.EnsureExists();
         CharacterCreationManager.EnsureExists();
+        GameSettings.EnsureLoaded();
+        // Purge generic levels again in case scene serialization re-added them
+        FieldCatalog.EnsureRegistered(this);
     }
 
     public void EnsureBallSlotsPublic() => EnsureBallSlots();
@@ -1466,6 +1476,15 @@ public class Database : MonoBehaviour
             fI.field = field;
             yield return null;
             Physics.SyncTransforms(); // walls ready for lifeline raycasts
+
+            // Fit Z so top/bottom walls meet the camera frustum (keep Test Zone as-is)
+            float framed = FieldCameraFit.Apply(fSpawned.transform, Camera.main, fieldSize);
+            SetFieldPlaySize(framed);
+            yield return null;
+            Physics.SyncTransforms();
+
+            // Hazards (wagons, towers, floating logs, …) — skipped when Options → Hazards is off
+            FieldHazardSpawner.SpawnForField(fSpawned.transform, field);
             #endregion
 
             #region Add Players

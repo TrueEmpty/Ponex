@@ -8593,6 +8593,9 @@ MonoBehaviour:
       canMove: 0
       setPos: 1
       canBeBorder: 0
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8610,6 +8613,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8627,6 +8633,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8644,6 +8653,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8661,6 +8673,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8678,6 +8693,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8695,6 +8713,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8712,6 +8733,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8729,6 +8753,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8746,6 +8773,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8763,6 +8793,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8780,6 +8813,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8797,6 +8833,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8814,6 +8853,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8831,6 +8873,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8848,6 +8893,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8865,6 +8913,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8882,6 +8933,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8899,6 +8953,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8916,6 +8973,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8933,6 +8993,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8950,6 +9013,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8967,6 +9033,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -8984,6 +9053,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9001,6 +9073,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9018,6 +9093,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9035,6 +9113,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9052,6 +9133,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9069,6 +9153,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9086,6 +9173,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9103,6 +9193,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9120,6 +9213,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9137,6 +9233,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9154,6 +9253,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9171,6 +9273,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9188,6 +9293,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9205,6 +9313,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9222,6 +9333,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9239,6 +9353,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9256,6 +9373,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Wall
       type: Wall
@@ -9273,6 +9393,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     portrait: {fileID: 2800000, guid: 6d2e90a68985c4f4b865c9f3b836cf9a, type: 3}
     icon: {fileID: 2800000, guid: 6d2e90a68985c4f4b865c9f3b836cf9a, type: 3}
@@ -9302,6 +9425,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9319,6 +9445,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9336,6 +9465,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9353,6 +9485,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9370,6 +9505,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9387,6 +9525,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9404,6 +9545,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9421,6 +9565,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9438,6 +9585,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9455,6 +9605,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9472,6 +9625,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9489,6 +9645,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9506,6 +9665,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9523,6 +9685,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9540,6 +9705,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9557,6 +9725,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9574,6 +9745,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9591,6 +9765,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9608,6 +9785,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9625,6 +9805,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9642,6 +9825,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9659,6 +9845,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9676,6 +9865,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9693,6 +9885,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9710,6 +9905,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9727,6 +9925,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9744,6 +9945,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9761,6 +9965,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9778,6 +9985,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9795,6 +10005,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9812,6 +10025,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9829,6 +10045,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9846,6 +10065,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9863,6 +10085,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9880,6 +10105,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9897,6 +10125,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9914,6 +10145,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9931,6 +10165,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9948,6 +10185,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9965,6 +10205,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9982,6 +10225,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -9999,6 +10245,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10016,6 +10265,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10033,6 +10285,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10050,6 +10305,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10067,6 +10325,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10084,6 +10345,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10101,6 +10365,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10118,6 +10385,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10135,6 +10405,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10152,6 +10425,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10169,6 +10445,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10186,6 +10465,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10203,6 +10485,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10220,6 +10505,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10237,6 +10525,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10254,6 +10545,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10271,6 +10565,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10288,6 +10585,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10305,6 +10605,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10322,6 +10625,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10339,6 +10645,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10356,6 +10665,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10373,6 +10685,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10390,6 +10705,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10407,6 +10725,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10424,6 +10745,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10441,6 +10765,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10458,6 +10785,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10475,6 +10805,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10492,6 +10825,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10509,6 +10845,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10526,6 +10865,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10543,6 +10885,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10560,6 +10905,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10577,6 +10925,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10594,6 +10945,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10611,6 +10965,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10628,6 +10985,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10645,6 +11005,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10662,6 +11025,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10679,6 +11045,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10696,6 +11065,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10713,6 +11085,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10730,6 +11105,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10747,6 +11125,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10764,6 +11145,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10781,6 +11165,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10798,6 +11185,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10815,6 +11205,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10832,6 +11225,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10849,6 +11245,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10866,6 +11265,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10883,6 +11285,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10900,6 +11305,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10917,6 +11325,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10934,6 +11345,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10951,6 +11365,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10968,6 +11385,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -10985,6 +11405,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11002,6 +11425,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11019,6 +11445,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11036,6 +11465,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11053,6 +11485,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11070,6 +11505,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11087,6 +11525,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11104,6 +11545,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11121,6 +11565,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11138,6 +11585,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11155,6 +11605,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11172,6 +11625,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11189,6 +11645,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11206,6 +11665,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11223,6 +11685,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11240,6 +11705,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11257,6 +11725,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11274,6 +11745,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11291,6 +11765,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11308,6 +11785,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11325,6 +11805,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11342,6 +11825,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11359,6 +11845,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11376,6 +11865,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11393,6 +11885,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11410,6 +11905,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11427,6 +11925,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11444,6 +11945,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11461,6 +11965,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11478,6 +11985,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11495,6 +12005,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11512,6 +12025,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11529,6 +12045,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11546,6 +12065,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11563,6 +12085,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11580,6 +12105,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11597,6 +12125,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11614,6 +12145,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11631,6 +12165,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11648,6 +12185,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11665,6 +12205,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11682,6 +12225,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11699,6 +12245,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11716,6 +12265,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     - name: Log
       type: Wall
@@ -11733,6 +12285,9 @@ MonoBehaviour:
       canMove: 1
       setPos: 0
       canBeBorder: 1
+      isHazard: 0
+      tangible: 0
+      spawnRange: {x: 0, y: 0}
       spawned: {fileID: 0}
     portrait: {fileID: 2800000, guid: c6518a307b62d4f42bb8b12dc4326c9f, type: 3}
     icon: {fileID: 2800000, guid: c6518a307b62d4f42bb8b12dc4326c9f, type: 3}
@@ -11759,6 +12314,9 @@ MonoBehaviour:
     canMove: 0
     setPos: 1
     canBeBorder: 0
+    isHazard: 0
+    tangible: 0
+    spawnRange: {x: 0, y: 0}
     spawned: {fileID: 0}
   - name: Wall
     type: Wall
@@ -11776,6 +12334,9 @@ MonoBehaviour:
     canMove: 1
     setPos: 0
     canBeBorder: 1
+    isHazard: 0
+    tangible: 0
+    spawnRange: {x: 0, y: 0}
     spawned: {fileID: 0}
   balls:
   - name: Basic Ball
@@ -11826,7 +12387,7 @@ MonoBehaviour:
   - name: Frost Ball
     prefab: {fileID: 4093283886100061384, guid: 97e1e392fae22d34fa4d7f3f5d673023, type: 3}
     selection: {fileID: 8011001001001001001, guid: c1a8f0e24b6d4a319e57d82c0f4b91a3, type: 3}
-    color: {r: 0.45, g: 0.85, b: 1.0, a: 1}
+    color: {r: 0.45, g: 0.85, b: 1, a: 1}
     startSpeed: 1
     minSpeed: 1
     maxSpeed: 2
@@ -11835,7 +12396,7 @@ MonoBehaviour:
   - name: Illusion Ball
     prefab: {fileID: 4093283886100061384, guid: 7fc56e5407e3016439b3f7e66dfff8a3, type: 3}
     selection: {fileID: 8022002002002002001, guid: d2b9e1f35c7e4b42af68e93d1a5c02b4, type: 3}
-    color: {r: 0.85, g: 0.45, b: 1.0, a: 1}
+    color: {r: 0.85, g: 0.45, b: 1, a: 1}
     startSpeed: 1
     minSpeed: 1
     maxSpeed: 2
@@ -11844,7 +12405,7 @@ MonoBehaviour:
   - name: Time Ball
     prefab: {fileID: 4093283886100061384, guid: 3a6d026b92a04a6428673c862272d3e6, type: 3}
     selection: {fileID: 8033003003003003001, guid: e3c0f2046d8f4c53b079fa4e2b6d13c5, type: 3}
-    color: {r: 1.0, g: 0.85, b: 0.35, a: 1}
+    color: {r: 1, g: 0.85, b: 0.35, a: 1}
     startSpeed: 1
     minSpeed: 1
     maxSpeed: 2
@@ -11871,7 +12432,7 @@ MonoBehaviour:
   - name: Burn Ball
     prefab: {fileID: 4093283886100061384, guid: 93c3d4e5f60718293a4b5c6d7e8f901a, type: 3}
     selection: {fileID: 8333003003003003001, guid: a3c3d4e5f60718293a4b5c6d7e8f901a, type: 3}
-    color: {r: 1.0, g: 0.35, b: 0.08, a: 1}
+    color: {r: 1, g: 0.35, b: 0.08, a: 1}
     startSpeed: 1
     minSpeed: 1
     maxSpeed: 2
@@ -11898,7 +12459,7 @@ MonoBehaviour:
   - name: Shape Ball
     prefab: {fileID: 4093283886100061384, guid: 96f60718293a4b5c6d7e8f901a2b3c4d, type: 3}
     selection: {fileID: 8666006006006006001, guid: a6f60718293a4b5c6d7e8f901a2b3c4d, type: 3}
-    color: {r: 1.0, g: 0.55, b: 0.12, a: 1}
+    color: {r: 1, g: 0.55, b: 0.12, a: 1}
     startSpeed: 1
     minSpeed: 1
     maxSpeed: 2
@@ -11916,13 +12477,13 @@ MonoBehaviour:
   - name: Shock Ball
     prefab: {fileID: 4093283886100061384, guid: daf5f84d701c42caa29dd4a64f02eba2, type: 3}
     selection: {fileID: 8888008008008008001, guid: 0354265c5b88496bb5ee7c0e206017ad, type: 3}
-    color: {r: 1.0, g: 0.92, b: 0.25, a: 1}
+    color: {r: 1, g: 0.92, b: 0.25, a: 1}
     startSpeed: 1
     minSpeed: 1
     maxSpeed: 2
     speedIncrease: 0.5
     damage: 1
-  - name: Explosion Ball
+  - name: Boom Ball
     prefab: {fileID: 4093283886100061384, guid: 7e3e435f6ca24bf8ba31e61e414ed903, type: 3}
     selection: {fileID: 8999009009009009001, guid: 5d41cd9119f84f1181533f426e2cbab0, type: 3}
     color: {r: 0.85, g: 0.2, b: 0.15, a: 1}
@@ -11933,8 +12494,11 @@ MonoBehaviour:
     damage: 1
   selectedField: 0
   selectedBall: 0
+  ballCount: 1
+  ballSlots: ffffffffffffffffffffffffffffffffffffffff
   outofBounds: {fileID: 8914071427876607666, guid: eba4a828b794081419df77cb391eeb56, type: 3}
   background: {fileID: 3096829665208239662, guid: 5dba1a516201950468ec2c8eec96a118, type: 3}
+  ticWingBumperPrefab: {fileID: 0}
   fieldObj: {fileID: 4013139705515357546, guid: 2c325b3d7c992064586f9867234cf568, type: 3}
   gameplayinfo: {fileID: 1387950453}
   controllers: []
@@ -11990,16 +12554,20 @@ MonoBehaviour:
     active: 0
     computer: 0
     cpuDifficulty: 0
+    cpuVariant: 0
     pso: {fileID: 0}
     spawnedPlayer: {fileID: 0}
     spawnedLifeline: {fileID: 0}
     characterSelected: 0
+    wantRandomCharacter: 0
     lastGridUpdate: 0
     gridLock: 0
     state: 
     canMove: []
     canBump: []
     canSuper: []
+    canDash: []
+    moveSpeedModifiers: []
     won: 0
     damageDealt: 0
     damageTaken: 0
@@ -12073,6 +12641,7 @@ MonoBehaviour:
   winnerScreen: 0
   mmOp: {fileID: 6677652147738950009}
   gameStart: 0
+  aiTrainingSession: 0
   extraSounds:
   - name: Selection
     sound: {fileID: 8300000, guid: 8942dc06eb43a2c44b5b869338fe8972, type: 3}
@@ -17840,6 +18409,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BallStepButton
   step: -1
   setRandom: 0
+  slotIndex: 0
+  editCount: 0
 --- !u!1 &890000300000000228
 GameObject:
   m_ObjectHideFlags: 0
@@ -18068,6 +18639,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BallStepButton
   step: 1
   setRandom: 0
+  slotIndex: 0
+  editCount: 0
 --- !u!1 &890000300000000240
 GameObject:
   m_ObjectHideFlags: 0
@@ -18296,6 +18869,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BallStepButton
   step: 0
   setRandom: 1
+  slotIndex: 0
+  editCount: 0
 --- !u!1 &890000300000000252
 GameObject:
   m_ObjectHideFlags: 0
@@ -27333,6 +27908,7 @@ MonoBehaviour:
   readyColor: {r: 0, g: 1, b: 0, a: 1}
   setPos: {x: 225, y: 175, z: 25}
   slots: []
+  heldPlayerIndex: -1
 --- !u!114 &8746646436969574613
 MonoBehaviour:
   m_ObjectHideFlags: 0

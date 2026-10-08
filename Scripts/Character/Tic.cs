@@ -267,6 +267,15 @@ public class Tic : MonoBehaviour
             rightHeld = pg.inp.right;
         }
 
+        if(pg.player.facing == Facing.Down)
+        {
+            bool lh = rightHeld;
+            bool rh = leftHeld;
+
+            leftHeld = lh;
+            rightHeld = rh;
+        }
+
         float dt = Time.deltaTime;
         leftAngle = MoveAngle(leftAngle, leftHeld ? flipAngle : 0f, leftHeld ? flipUpSpeed : flipDownSpeed, dt);
         rightAngle = MoveAngle(rightAngle, rightHeld ? flipAngle : 0f, rightHeld ? flipUpSpeed : flipDownSpeed, dt);

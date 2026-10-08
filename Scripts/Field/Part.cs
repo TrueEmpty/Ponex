@@ -32,6 +32,18 @@ public class Part
     public bool setPos = false;
     public bool canBeBorder = false;
 
+    /// <summary>When true, Options → Hazards can suppress this part.</summary>
+    public bool isHazard = false;
+
+    /// <summary>
+    /// Tangible hazards use <see cref="spawnRange"/> (random each load).
+    /// Intangible (!tangible) keep authored position/rotation every time.
+    /// </summary>
+    public bool tangible = false;
+
+    /// <summary>Half-extents of random XY offset around <see cref="position"/> when tangible.</summary>
+    public Vector2 spawnRange = Vector2.zero;
+
     public GameObject spawned;
 
     public Part()
@@ -66,6 +78,9 @@ public class Part
         canMove = p.canMove;
         setPos = p.setPos;
         canBeBorder = p.canBeBorder;
+        isHazard = p.isHazard;
+        tangible = p.tangible;
+        spawnRange = p.spawnRange;
 
         spawned = p.spawned;
     }

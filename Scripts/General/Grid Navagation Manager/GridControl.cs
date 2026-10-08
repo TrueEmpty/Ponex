@@ -54,71 +54,89 @@ public class GridControl : MonoBehaviour
         orderValue = OrderValue();
     }
 
+    int lastFcRebuildForGrid = -1;
+    Color lastOutlineApplied = new Color(-1f, -1f, -1f, -1f);
+    bool lastSelectedState;
+
     // Update is called once per frame
     void Update()
     {
         ControlsInGroup();
-        GetGridSize();
+
+        // Only recompute grid layout when the control list actually changed
+        if (fcRebuildCounter != lastFcRebuildForGrid)
+        {
+            GetGridSize();
+            lastFcRebuildForGrid = fcRebuildCounter;
+        }
         CurrentPosition();
 
-        if (IsSelected())
+        bool selected = IsSelected();
+        if (ol == null)
+            return;
+
+        if (selected)
         {
-            if(ol != null)
+            Color eC = Color.clear;
+
+            for (int i = 0; i < playersInControl.Count; i++)
             {
-                Color eC = Color.clear;
+                int p = playersInControl[i];
+                bool pass = true;
 
-                for(int i = 0; i < playersInControl.Count; i++)
+                if (basedOnPlayerState)
                 {
-                    int p = playersInControl[i];
-                    bool pass = true;
-
-                    if(basedOnPlayerState)
+                    if (p >= 0 && p < db.players.Count)
                     {
-                        if(p >= 0 && p < db.players.Count)
-                        {
-                            if (db.players[p].state != group)
-                            {
-                                pass = false;
-                            }
-                        }
-                        else if(p != -10)
-                        {
+                        if (db.players[p].state != group)
                             pass = false;
-                        }
                     }
-
-                    if(p >= 0 && p < db.playerColors.Count && pass)
+                    else if (p != -10)
                     {
-                        if(eC == Color.clear)
-                        {
-                            eC = db.playerColors[p].color;
-                        }
-                        else
-                        {
-                            eC = Color.Lerp(eC, db.playerColors[p].color, .5f);
-                        }
-                    }
-                    else if (p == -10)
-                    {
-                        eC = db.apColor;
+                        pass = false;
                     }
                 }
 
-                eC.a = 1;
-                ol.effectColor = eC;
+                if (p >= 0 && p < db.playerColors.Count && pass)
+                {
+                    if (eC == Color.clear)
+                        eC = db.playerColors[p].color;
+                    else
+                        eC = Color.Lerp(eC, db.playerColors[p].color, .5f);
+                }
+                else if (p == -10)
+                {
+                    eC = db.apColor;
+                }
             }
 
-            //Navagate();
+            eC.a = 1f;
+            if (!lastSelectedState || !ColorsEqual(lastOutlineApplied, eC))
+            {
+                ol.effectColor = eC;
+                lastOutlineApplied = eC;
+            }
+            lastSelectedState = true;
         }
         else
         {
-            if (ol != null)
+            if (lastSelectedState || lastOutlineApplied.a > 0.01f)
             {
                 Color eC = baseEffectColor;
-                eC.a = 0;
+                eC.a = 0f;
                 ol.effectColor = eC;
+                lastOutlineApplied = eC;
             }
+            lastSelectedState = false;
         }
+    }
+
+    static bool ColorsEqual(Color a, Color b)
+    {
+        return Mathf.Abs(a.r - b.r) < 0.002f
+            && Mathf.Abs(a.g - b.g) < 0.002f
+            && Mathf.Abs(a.b - b.b) < 0.002f
+            && Mathf.Abs(a.a - b.a) < 0.002f;
     }
     
     void Navagate()
@@ -335,37 +353,79 @@ public class GridControl : MonoBehaviour
         }
     }
 
+    static readonly List<float> xAccountedScratch = new List<float>(32);
+    static readonly List<float> yAccountedScratch = new List<float>(32);
+
     void GetGridSize()
     {
         gridSize = Vector2Int.one;
 
-        if(fc.Count > 0)
+        if (fc == null || fc.Count == 0 || mm == null)
+            return;
+
+        xAccountedScratch.Clear();
+        yAccountedScratch.Clear();
+        float tol = mm.inLineTolorance;
+
+        for (int i = 0; i < fc.Count; i++)
         {
-            List<float> xAccounted = new List<float>();
-            List<float> yAccounted = new List<float>();
+            if (fc[i] == null)
+                continue;
+            float px = fc[i].position.x;
+            float py = fc[i].position.y;
 
-            for (int i = 0; i < fc.Count; i++)
+            bool hasX = false;
+            for (int x = 0; x < xAccountedScratch.Count; x++)
             {
-                if(!xAccounted.Exists(x => Mathf.Abs(x - fc[i].position.x) < mm.inLineTolorance))
+                if (Mathf.Abs(xAccountedScratch[x] - px) < tol)
                 {
-                    xAccounted.Add(fc[i].position.x);
-                }
-
-                if(!yAccounted.Exists(y => Mathf.Abs(y - fc[i].position.y) < mm.inLineTolorance))
-                {
-                    yAccounted.Add(fc[i].position.y);
+                    hasX = true;
+                    break;
                 }
             }
+            if (!hasX)
+                xAccountedScratch.Add(px);
 
-            gridSize = new Vector2Int(yAccounted.Count, xAccounted.Count);
+            bool hasY = false;
+            for (int y = 0; y < yAccountedScratch.Count; y++)
+            {
+                if (Mathf.Abs(yAccountedScratch[y] - py) < tol)
+                {
+                    hasY = true;
+                    break;
+                }
+            }
+            if (!hasY)
+                yAccountedScratch.Add(py);
         }
+
+        gridSize = new Vector2Int(yAccountedScratch.Count, xAccountedScratch.Count);
     }
+
+    int cachedSelfIndex = -2;
+    int cachedSelfIndexRebuild = -1;
 
     void CurrentPosition()
     {
-        int index = fc.FindIndex(x => x == this);
+        if (fc == null || fc.Count == 0)
+            return;
 
-        if(index >= 0 && index < fc.Count)
+        if (cachedSelfIndexRebuild != fcRebuildCounter || cachedSelfIndex < 0 || cachedSelfIndex >= fc.Count || fc[cachedSelfIndex] != this)
+        {
+            cachedSelfIndex = -1;
+            for (int i = 0; i < fc.Count; i++)
+            {
+                if (fc[i] == this)
+                {
+                    cachedSelfIndex = i;
+                    break;
+                }
+            }
+            cachedSelfIndexRebuild = fcRebuildCounter;
+        }
+
+        int index = cachedSelfIndex;
+        if (index >= 0 && gridSize.y > 0)
         {
             curPos.x = Mathf.FloorToInt(index / gridSize.y);
             curPos.y = index % gridSize.y;
@@ -379,14 +439,22 @@ public class GridControl : MonoBehaviour
 
     int cachedControlsVersion = -1;
     int cachedGroupEnabledCount = -1;
+    int fcRebuildCounter;
+    float nextGroupScanTime;
 
     void ControlsInGroup()
     {
         if (mm == null || mm.controls == null)
             return;
 
-        // Rebuild only when the menu control set changes — was FindAll+Sort every frame
+        // Throttle full scans — Count alone misses enable/disable; scanning every frame was costly
         int version = mm.controls.Count;
+        bool force = version != cachedControlsVersion || fc == null;
+        if (!force && Time.unscaledTime < nextGroupScanTime)
+            return;
+
+        nextGroupScanTime = Time.unscaledTime + 0.2f;
+
         int enabledCount = 0;
         for (int i = 0; i < mm.controls.Count; i++)
         {
@@ -395,13 +463,24 @@ public class GridControl : MonoBehaviour
                 enabledCount++;
         }
 
-        if (fc != null && version == cachedControlsVersion && enabledCount == cachedGroupEnabledCount)
+        if (!force && enabledCount == cachedGroupEnabledCount)
             return;
 
         cachedControlsVersion = version;
         cachedGroupEnabledCount = enabledCount;
-        fc = mm.controls.FindAll(x => x != null && x.group == group && x.isActiveAndEnabled);
+        if (fc == null)
+            fc = new List<GridControl>(enabledCount);
+        else
+            fc.Clear();
+
+        for (int i = 0; i < mm.controls.Count; i++)
+        {
+            GridControl c = mm.controls[i];
+            if (c != null && c.group == group && c.isActiveAndEnabled)
+                fc.Add(c);
+        }
         fc.Sort((p1, p2) => p2.OrderValue().CompareTo(p1.OrderValue()));
+        fcRebuildCounter++;
     }
 
     bool IsSelected()

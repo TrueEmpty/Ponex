@@ -70,6 +70,7 @@ MonoBehaviour:
   offset: {x: -0.95, y: -0.05, z: 0}
   ttt: 1.5
   absolutePosition: 1
+  trueOffsetBasedOnRotation: 1
 --- !u!114 &7029020689521020465
 MonoBehaviour:
   m_ObjectHideFlags: 0

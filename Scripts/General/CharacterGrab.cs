@@ -16,6 +16,8 @@ public class CharacterGrab : MonoBehaviour
     bool setup = false;
     static readonly Color RandomGray = new Color(0.4f, 0.4f, 0.4f, 1f);
     static readonly Color RandomMark = new Color(0.72f, 0.72f, 0.72f, 1f);
+    string lastSelectionKey;
+    float nextSelectionCheck;
 
     void Start()
     {
@@ -114,29 +116,65 @@ public class CharacterGrab : MonoBehaviour
         if (db == null || outline == null)
             return;
 
+        // Stagger selection refreshes — was Find+GetColor every frame × every grab
+        if (Time.unscaledTime < nextSelectionCheck)
+            return;
+        nextSelectionCheck = Time.unscaledTime + 0.1f;
+
         if (isRandom)
         {
-            Player randomHolder = db.players != null
-                ? db.players.Find(x => x != null && x.wantRandomCharacter)
-                : null;
-            if (randomHolder != null)
-                outline.effectColor = PlayerSkin.GetColor(randomHolder, db);
-            else
-                outline.effectColor = new Color(0.55f, 0.55f, 0.55f, 1f);
+            Player randomHolder = null;
+            if (db.players != null)
+            {
+                for (int i = 0; i < db.players.Count; i++)
+                {
+                    Player x = db.players[i];
+                    if (x != null && x.wantRandomCharacter)
+                    {
+                        randomHolder = x;
+                        break;
+                    }
+                }
+            }
+            string key = randomHolder != null
+                ? "r|" + randomHolder.index + "|" + randomHolder.skinColorIndex
+                : "r|none";
+            if (key == lastSelectionKey)
+                return;
+            lastSelectionKey = key;
+            outline.effectColor = randomHolder != null
+                ? PlayerSkin.GetColor(randomHolder, db)
+                : new Color(0.55f, 0.55f, 0.55f, 1f);
             return;
         }
 
         if (ch == null)
             return;
 
-        Player holder = db.players != null
-            ? db.players.Find(x => x != null && !x.wantRandomCharacter && x.name == ch.name)
-            : null;
+        Player holder = null;
+        if (db.players != null)
+        {
+            for (int i = 0; i < db.players.Count; i++)
+            {
+                Player x = db.players[i];
+                if (x != null && !x.wantRandomCharacter && x.name == ch.name)
+                {
+                    holder = x;
+                    break;
+                }
+            }
+        }
 
-        if (holder != null)
-            outline.effectColor = PlayerSkin.GetColor(holder, db);
-        else
-            outline.effectColor = ch.portraitColor;
+        string selKey = holder != null
+            ? "h|" + holder.index + "|" + holder.skinColorIndex + "|" + ch.name
+            : "h|none|" + ch.name;
+        if (selKey == lastSelectionKey)
+            return;
+        lastSelectionKey = selKey;
+
+        outline.effectColor = holder != null
+            ? PlayerSkin.GetColor(holder, db)
+            : ch.portraitColor;
     }
 
     public void OnClick(int player)

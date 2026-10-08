@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7911694328538603876}
   - component: {fileID: 8680061466883759938}
   - component: {fileID: 8660652404040454170}
+  - component: {fileID: 1606965508861295365}
   m_Layer: 0
   m_Name: Side Wall
   m_TagString: Untagged
@@ -142,6 +143,21 @@ MonoBehaviour:
   delay: 0
   targetTags:
   - Ball
+--- !u!114 &1606965508861295365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 756097340378650758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &967194698568038690
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,6 +172,7 @@ GameObject:
   - component: {fileID: 1146194785612730191}
   - component: {fileID: 2540547844239439091}
   - component: {fileID: 121922151433298050}
+  - component: {fileID: 4539902312930975407}
   m_Layer: 0
   m_Name: Side Wall
   m_TagString: Untagged
@@ -284,6 +301,21 @@ MonoBehaviour:
   delay: 0
   targetTags:
   - Ball
+--- !u!114 &4539902312930975407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 967194698568038690}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &2043027724952476262
 GameObject:
   m_ObjectHideFlags: 0
@@ -299,6 +331,7 @@ GameObject:
   - component: {fileID: 2343185220258218205}
   - component: {fileID: 5328102590151471576}
   - component: {fileID: 73187050028487406}
+  - component: {fileID: 3073319961725583590}
   m_Layer: 0
   m_Name: Plungger
   m_TagString: Untagged
@@ -454,6 +487,21 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 3
+--- !u!114 &3073319961725583590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043027724952476262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &2465632202996898536
 GameObject:
   m_ObjectHideFlags: 0
@@ -468,6 +516,7 @@ GameObject:
   - component: {fileID: 1537653016741016808}
   - component: {fileID: 8216418163060657345}
   - component: {fileID: 5477312360603909966}
+  - component: {fileID: 4774268472093646795}
   m_Layer: 0
   m_Name: Paddle
   m_TagString: Untagged
@@ -609,6 +658,21 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 3
+--- !u!114 &4774268472093646795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2465632202996898536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &2883297427518477725
 GameObject:
   m_ObjectHideFlags: 0
@@ -620,6 +684,7 @@ GameObject:
   - component: {fileID: 5516793240194324951}
   - component: {fileID: 3568390848734262914}
   - component: {fileID: 3314954117356281986}
+  - component: {fileID: 646669213498850218}
   m_Layer: 0
   m_Name: Tic Paddle Left
   m_TagString: Untagged
@@ -669,6 +734,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7faed8e303fd689408e816197cc4ce12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PassPlayerGrabToChildren
+--- !u!114 &646669213498850218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2883297427518477725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &3440906725436683538
 GameObject:
   m_ObjectHideFlags: 0
@@ -682,6 +762,7 @@ GameObject:
   - component: {fileID: 6712986953963177678}
   - component: {fileID: 3773565448940073126}
   - component: {fileID: 5723187225377955744}
+  - component: {fileID: 1265366232092732318}
   m_Layer: 0
   m_Name: Tic Ramp
   m_TagString: Untagged
@@ -796,6 +877,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerGrab
   playerIndex: -1
+--- !u!114 &1265366232092732318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3440906725436683538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &3990986139731258490
 GameObject:
   m_ObjectHideFlags: 0
@@ -809,6 +905,7 @@ GameObject:
   - component: {fileID: 5781824077929743907}
   - component: {fileID: 5091161636943731076}
   - component: {fileID: 6446384031233233292}
+  - component: {fileID: 3481738359533205087}
   m_Layer: 0
   m_Name: Top
   m_TagString: Untagged
@@ -924,6 +1021,21 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &3481738359533205087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3990986139731258490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &5059307482673715362
 GameObject:
   m_ObjectHideFlags: 0
@@ -933,6 +1045,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5359541025700128475}
+  - component: {fileID: 6335218998750515318}
   m_Layer: 0
   m_Name: Launch
   m_TagString: Untagged
@@ -960,6 +1073,21 @@ Transform:
   - {fileID: 2317997402290167852}
   m_Father: {fileID: 4468952908795504052}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6335218998750515318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5059307482673715362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &5122177653976881720
 GameObject:
   m_ObjectHideFlags: 0
@@ -1035,6 +1163,7 @@ GameObject:
   - component: {fileID: 5674978640901638252}
   - component: {fileID: 7089986707679297048}
   - component: {fileID: 7452586762047979717}
+  - component: {fileID: 6916832604365120353}
   m_Layer: 0
   m_Name: Paddle
   m_TagString: Untagged
@@ -1176,6 +1305,21 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 3
+--- !u!114 &6916832604365120353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5289147424268912455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &5995617375581303173
 GameObject:
   m_ObjectHideFlags: 0
@@ -1190,6 +1334,7 @@ GameObject:
   - component: {fileID: 1247422298408578867}
   - component: {fileID: 7885494272015528809}
   - component: {fileID: 981790018549579937}
+  - component: {fileID: 2169384682143101920}
   m_Layer: 0
   m_Name: Side Wall
   m_TagString: Untagged
@@ -1315,6 +1460,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SetBallOwnerOnTagHit
+  delay: 0
+  targetTags:
+  - Ball
+--- !u!114 &2169384682143101920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5995617375581303173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   delay: 0
   targetTags:
   - Ball
@@ -1472,6 +1632,7 @@ GameObject:
   - component: {fileID: 5558871249412103434}
   - component: {fileID: 8121041230916445828}
   - component: {fileID: 742040706498343193}
+  - component: {fileID: 7346541276741243694}
   m_Layer: 0
   m_Name: Tic Paddle Right
   m_TagString: Untagged
@@ -1521,6 +1682,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7faed8e303fd689408e816197cc4ce12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PassPlayerGrabToChildren
+--- !u!114 &7346541276741243694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7056455106054315142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &7492311220308887913
 GameObject:
   m_ObjectHideFlags: 0
@@ -1535,6 +1711,7 @@ GameObject:
   - component: {fileID: 8099569741987496137}
   - component: {fileID: 7133567672938001957}
   - component: {fileID: 2134502156915270037}
+  - component: {fileID: 5719176766678361674}
   m_Layer: 0
   m_Name: Launch Zone
   m_TagString: Untagged
@@ -1601,6 +1778,7 @@ MonoBehaviour:
   owner: {fileID: 5206308631117849756}
   emptyStackHeight: 0.55
   stackGap: 0.08
+  maxFitFraction: 0.85
 --- !u!114 &7133567672938001957
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1629,6 +1807,21 @@ MonoBehaviour:
   delay: 0
   targetTags:
   - Ball
+--- !u!114 &5719176766678361674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7492311220308887913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball
 --- !u!1 &8543198580730822383
 GameObject:
   m_ObjectHideFlags: 0
@@ -1642,6 +1835,7 @@ GameObject:
   - component: {fileID: 888385097789399784}
   - component: {fileID: 6550003353041430697}
   - component: {fileID: 3653473362029470134}
+  - component: {fileID: 1283182563138745542}
   m_Layer: 0
   m_Name: Tic Ramp
   m_TagString: Untagged
@@ -1756,3 +1950,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerGrab
   playerIndex: -1
+--- !u!114 &1283182563138745542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8543198580730822383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76630c67ca4611f4c9381202ff475684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delay: 0
+  targetTags:
+  - Ball

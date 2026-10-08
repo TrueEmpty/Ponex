@@ -31,6 +31,11 @@ public class PlayerSelectorObj : MonoBehaviour
 
     public int cpuControl = -1;
 
+    bool lastControllingCpu;
+    int lastCpuControlShown = int.MinValue;
+    Sprite lastCircleSprite;
+    float nextCpuSelectCheck;
+
     void Awake()
     {
         db = Database.instance;
@@ -325,8 +330,6 @@ public class PlayerSelectorObj : MonoBehaviour
                     if (hittingCpuLevel && hit.GetComponent<PortraitClicked>() != null)
                         continue;
 
-                    Debug.Log(hit.name);
-
                     if (cooldown)
                     {
                         // Short Press
@@ -347,12 +350,24 @@ public class PlayerSelectorObj : MonoBehaviour
 
     void ControllingUI()
     {
-        text.enabled = ControllingCPU();
-        text.text = "CPU " + (cpuControl + 1);
-
-        if (circle != null)
+        bool controlling = ControllingCPU();
+        if (text != null && (controlling != lastControllingCpu || cpuControl != lastCpuControlShown))
         {
-            circle.sprite = (ControllingCPU()) ? db.playerColors[^1].sprite : pC.sprite;
+            text.enabled = controlling;
+            if (controlling)
+                text.text = "CPU " + (cpuControl + 1);
+            lastControllingCpu = controlling;
+            lastCpuControlShown = cpuControl;
+        }
+
+        if (circle != null && db != null && pC != null && db.playerColors != null && db.playerColors.Count > 0)
+        {
+            Sprite want = controlling ? db.playerColors[^1].sprite : pC.sprite;
+            if (want != lastCircleSprite)
+            {
+                circle.sprite = want;
+                lastCircleSprite = want;
+            }
         }
     }
 
@@ -386,53 +401,63 @@ public class PlayerSelectorObj : MonoBehaviour
 
     void CPUSelections()
     {
-        Player p = db.players.Find(x => x.index == pI);
+        if (db == null || db.players == null)
+            return;
+        // Character-select CPU handoff does not need per-frame scanning
+        if (Time.unscaledTime < nextCpuSelectCheck)
+            return;
+        nextCpuSelectCheck = Time.unscaledTime + 0.15f;
 
-        if (p != null)
+        Player p = null;
+        for (int i = 0; i < db.players.Count; i++)
         {
-            if(p.characterSelected)
+            if (db.players[i] != null && db.players[i].index == pI)
             {
-                if (cpuControl < 0)
+                p = db.players[i];
+                break;
+            }
+        }
+        if (p == null || !p.characterSelected)
+            return;
+
+        if (cpuControl < 0)
+        {
+            for (int i = 0; i < db.players.Count; i++)
+            {
+                Player c = db.players[i];
+                if (c != null && c.computer && !c.characterSelected)
                 {
-                    //Check for new not selected cpu
-
-                    //if there is a computer that still needs to be locked in then set the player to that computer to select for them
-                    Player c = db.players.Find(x => !x.characterSelected && x.computer);
-
-                    if (c != null)
-                    {
+                    if (p.pso != null)
                         p.pso.cpuControl = c.index;
-                    }
-                }
-                else
-                {
-                    Player f = db.players.Find(x => x.index == cpuControl);
-
-                    if (f != null)
-                    {
-                        if (f.characterSelected)
-                        {
-                            cpuControl = -1;
-                        }
-                    }
-                    else
-                    {
-                        cpuControl = -1;
-                    }
+                    break;
                 }
             }
+        }
+        else
+        {
+            Player f = null;
+            for (int i = 0; i < db.players.Count; i++)
+            {
+                if (db.players[i] != null && db.players[i].index == cpuControl)
+                {
+                    f = db.players[i];
+                    break;
+                }
+            }
+            if (f == null || f.characterSelected)
+                cpuControl = -1;
         }
     }
 
     void CollisionEntered(Collider other)
     {
-        Debug.Log(other.gameObject.name + " Entered Collision");
-        other.SendMessage("OnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
+        if (other != null)
+            other.SendMessage("OnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
     }
 
     void CollisionExited(Collider other)
     {
-        Debug.Log(other.gameObject.name + " Left Collision");
-        other.SendMessage("OnUnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
+        if (other != null)
+            other.SendMessage("OnUnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
     }
 }
