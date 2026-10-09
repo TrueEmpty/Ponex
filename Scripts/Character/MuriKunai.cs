@@ -25,6 +25,7 @@ public class MuriKunai : MonoBehaviour
     float nextBlink;
     float aimT = 0.5f;
     bool aimRight = true;
+    bool waitingRelease;
     readonly List<MuriKunaiProjectile> active = new List<MuriKunaiProjectile>(4);
 
     public Vector3 ThrowDirection { get; private set; } = Vector3.up;
@@ -66,6 +67,12 @@ public class MuriKunai : MonoBehaviour
         TickAim(Time.deltaTime);
         if (Database.instance != null && !Database.instance.gameStart)
             return;
+        if (waitingRelease)
+        {
+            if (AnyActionHeld())
+                return;
+            waitingRelease = false;
+        }
         HandleThrow();
         HandleBlink();
     }
@@ -113,6 +120,8 @@ public class MuriKunai : MonoBehaviour
 
     void HandleThrow()
     {
+        if (waitingRelease)
+            return;
         if (Time.time < nextThrow || SlotsLeft() <= 0 || FlyingCount() > 0)
             return;
         if (kunaiPrefab == null)
@@ -142,14 +151,17 @@ public class MuriKunai : MonoBehaviour
         if (pg.player.super != null)
             pg.player.super.Spend(1f);
         nextThrow = Time.time + throwCooldown;
+        LockUntilRelease();
     }
 
     void HandleBlink()
     {
+        if (waitingRelease)
+            return;
         List<MuriKunaiProjectile> stuck = StuckList();
         if (stuck.Count == 0)
             return;
-        if (pg.player.computer && Time.time < nextBlink)
+        if (Time.time < nextBlink)
             return;
 
         bool up = pg.inp.tf_up;
@@ -183,6 +195,22 @@ public class MuriKunai : MonoBehaviour
         if (move != null)
             move.PlaceOnBestSupport();
         nextBlink = Time.time + 0.22f;
+        LockUntilRelease();
+    }
+
+    void LockUntilRelease()
+    {
+        if (pg != null && pg.player != null && pg.player.computer)
+            return;
+        waitingRelease = true;
+    }
+
+    bool AnyActionHeld()
+    {
+        if (pg == null || pg.player == null || pg.player.computer)
+            return false;
+        Inputs i = pg.inp;
+        return i.up || i.down || i.left || i.right || i.superHeld;
     }
 
     MuriKunaiProjectile SelectBlink(List<MuriKunaiProjectile> stuck, bool up, bool left, bool right)
