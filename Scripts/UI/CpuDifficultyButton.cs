@@ -192,6 +192,7 @@ public class CpuDifficultyButton : MonoBehaviour
         if (diff == ComputerAI.CpuDifficulty.Training && !TrainingManager.IsActive)
         {
             ComputerAI.SetDifficulty(p, ComputerAI.CpuDifficulty.Easy);
+            ComputerAI.AssignMatchBrain(p);
             diff = ComputerAI.CpuDifficulty.Easy;
         }
 
@@ -326,6 +327,7 @@ public class CpuDifficultyButton : MonoBehaviour
             ComputerAI.SetDifficulty(p, PlayableLevels[next]);
         }
 
+        ComputerAI.AssignMatchBrain(p);
         pressed = true;
         Refresh();
     }

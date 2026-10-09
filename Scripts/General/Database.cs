@@ -475,7 +475,7 @@ public class Database : MonoBehaviour
         }
 
         p.computer = true;
-        p.cpuDifficulty = ComputerAI.CpuDifficulty.Easy;
+        ComputerAI.ApplyRecommendedDifficulty(p);
         return true;
     }
 

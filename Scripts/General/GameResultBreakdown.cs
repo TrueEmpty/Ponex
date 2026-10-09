@@ -181,7 +181,7 @@ public class GameResultBreakdown : MonoBehaviour
         float axisY = move != null ? move.value.y : 0f;
 
         if (Mathf.Abs(axisY) > 0.01f)
-            curPos.y += axisY * scrollspeed * 20f * Time.deltaTime;
+            curPos.y += axisY * scrollspeed * 10f * Time.deltaTime;
 
         if (curPos.y < 0)
             curPos.y = 0;

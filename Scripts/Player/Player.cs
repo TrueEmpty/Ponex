@@ -195,7 +195,11 @@ public class Player
         if (p == null)
             return;
 
+        string previousName = name;
         name = p.name;
+
+        if (computer && previousName != p.name)
+            ComputerAI.ApplyRecommendedDifficulty(this);
 
         currentHealth = p.maxHealth;
         maxHealth = p.maxHealth;

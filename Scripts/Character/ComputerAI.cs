@@ -6,7 +6,8 @@ using UnityEngine;
 /// <summary>
 /// Shared computer-player brain: continuous tracking, persistent per-character learning,
 /// difficulty bands (Training / Easy–Impossible), and multiple style variants per level.
-/// Learning always updates the active variant Profile; difficulty shapes runtime use.
+/// Training learns the character's true skill, then assigns Easy–Impossible brains from how it played.
+/// Lobby level picks shape that learned brain with that level's tuning.
 /// </summary>
 public static class ComputerAI
 {
@@ -39,8 +40,8 @@ public static class ComputerAI
     }
 
     /// <summary>
-    /// Match difficulty. Training uses the learned profile directly (best for practice).
-    /// Easy–Impossible clamp/scale that learned skill into a band.
+    /// Match difficulty. Training records raw play and assigns a recommended lobby level.
+    /// Easy–Impossible clamp that learned skill into a brain of the selected level.
     /// </summary>
     public enum CpuDifficulty
     {
@@ -102,6 +103,17 @@ public static class ComputerAI
     class SaveData
     {
         public List<Profile> profiles = new List<Profile>();
+        public List<CharacterGrade> grades = new List<CharacterGrade>();
+    }
+
+    /// <summary>Per-character difficulty certified from Training (and refreshed after lobby play).</summary>
+    [Serializable]
+    public class CharacterGrade
+    {
+        public string characterName = "";
+        public int recommendedDifficulty = (int)CpuDifficulty.Easy;
+        public float lastScore;
+        public int samples;
     }
 
     public struct Decision
@@ -123,6 +135,7 @@ public static class ComputerAI
     }
 
     static readonly Dictionary<string, Profile> profiles = new Dictionary<string, Profile>();
+    static readonly Dictionary<string, CharacterGrade> grades = new Dictionary<string, CharacterGrade>();
     static readonly Dictionary<int, float> bumpCooldown = new Dictionary<int, float>();
     static readonly Dictionary<int, float> superCooldown = new Dictionary<int, float>();
     static readonly Dictionary<int, float> dashCooldown = new Dictionary<int, float>();
@@ -199,8 +212,9 @@ public static class ComputerAI
     }
 
     /// <summary>
-    /// Pick a style variant for this match (prefers least-played among VariantsPerLevel).
-    /// Call once per computer player at match start.
+    /// Pick a style variant for this match. Prefers trained Training variants so lobby
+    /// levels use a real brain, then rotates the least-used style at the selected level.
+    /// Call once per computer player at match start or when the CPU level changes.
     /// </summary>
     public static void AssignMatchBrain(Player player)
     {
@@ -211,26 +225,42 @@ public static class ComputerAI
         string charName = string.IsNullOrEmpty(player.name) ? "global" : player.name;
         CpuDifficulty diff = GetDifficulty(player);
 
-        int bestVariant = 0;
+        bool anyTrained = false;
+        for (int v = 0; v < VariantsPerLevel; v++)
+        {
+            if (HasLearned(TryGetProfile(charName, CpuDifficulty.Training, v)))
+                anyTrained = true;
+        }
+
         int bestPlayed = int.MaxValue;
         List<int> ties = new List<int>();
 
         for (int v = 0; v < VariantsPerLevel; v++)
         {
-            Profile p = GetOrCreateProfile(charName, diff, v);
-            if (p.matchesPlayed < bestPlayed)
+            Profile band = GetOrCreateProfile(charName, diff, v);
+            int played = band.matchesPlayed;
+            if (diff != CpuDifficulty.Training)
             {
-                bestPlayed = p.matchesPlayed;
+                Profile train = TryGetProfile(charName, CpuDifficulty.Training, v);
+                if (anyTrained && !HasLearned(train))
+                    played += 100000;
+                else if (HasLearned(train))
+                    played = train.matchesPlayed;
+            }
+
+            if (played < bestPlayed)
+            {
+                bestPlayed = played;
                 ties.Clear();
                 ties.Add(v);
             }
-            else if (p.matchesPlayed == bestPlayed)
+            else if (played == bestPlayed)
             {
                 ties.Add(v);
             }
         }
 
-        bestVariant = ties.Count > 0
+        int bestVariant = ties.Count > 0
             ? ties[UnityEngine.Random.Range(0, ties.Count)]
             : UnityEngine.Random.Range(0, VariantsPerLevel);
 
@@ -258,15 +288,48 @@ public static class ComputerAI
         return list;
     }
 
+    static Profile TryGetProfile(string characterName, CpuDifficulty difficulty, int variant)
+    {
+        string key = ProfileKey(characterName, difficulty, variant);
+        return profiles.TryGetValue(key, out Profile profile) ? profile : null;
+    }
+
+    static bool HasLearned(Profile p)
+    {
+        return p != null && (p.matchesPlayed > 0 || p.paddleHits > 0 || p.goalsAgainst > 0);
+    }
+
     static Profile GetOrCreateProfile(string characterName, CpuDifficulty difficulty, int variant)
     {
         string key = ProfileKey(characterName, difficulty, variant);
         if (!profiles.TryGetValue(key, out Profile profile))
         {
-            profile = CreateSeededProfile(characterName, difficulty, variant, null);
+            Profile migrateFrom = null;
+            if (difficulty != CpuDifficulty.Training)
+            {
+                Profile train = TryGetProfile(characterName, CpuDifficulty.Training, variant);
+                if (HasLearned(train))
+                    migrateFrom = train;
+            }
+            profile = CreateSeededProfile(characterName, difficulty, variant, migrateFrom);
             profiles[key] = profile;
         }
         return profile;
+    }
+
+    /// <summary>
+    /// Authoritative learned stats: Training profile when that variant has been practiced,
+    /// otherwise the selected difficulty's profile.
+    /// </summary>
+    static Profile GetLearnedSource(Player player)
+    {
+        EnsureLoaded();
+        string charName = player != null && !string.IsNullOrEmpty(player.name) ? player.name : "global";
+        int variant = player != null ? Mathf.Clamp(player.cpuVariant, 0, VariantsPerLevel - 1) : 0;
+        Profile training = TryGetProfile(charName, CpuDifficulty.Training, variant);
+        if (HasLearned(training))
+            return training;
+        return GetProfile(player);
     }
 
     static Profile CreateSeededProfile(string characterName, CpuDifficulty difficulty, int variant, Profile migrateFrom)
@@ -406,14 +469,21 @@ public static class ComputerAI
     }
 
     /// <summary>
-    /// Learned profile shaped by the player's CpuDifficulty + variant for this match.
+    /// Learned Training brain shaped by the player's selected CpuDifficulty.
+    /// Easy–Impossible always play in that level's band; Training uses raw learned skill.
     /// </summary>
     public static RuntimeBrain GetRuntimeBrain(Player player)
     {
-        Profile profile = GetProfile(player);
-        CpuDifficulty difficulty = GetDifficulty(player);
-        DifficultyTuning tune = GetTuning(difficulty);
+        Profile profile = GetLearnedSource(player);
+        return ShapeBrain(profile, GetDifficulty(player));
+    }
 
+    static RuntimeBrain ShapeBrain(Profile profile, CpuDifficulty difficulty)
+    {
+        if (profile == null)
+            profile = CreateSeededProfile("global", difficulty, 0, null);
+
+        DifficultyTuning tune = GetTuning(difficulty);
         float learned = Mathf.Clamp(profile.skill, MinSkill, MaxSkill);
         float skill = learned;
         if (difficulty != CpuDifficulty.Training)
@@ -1153,19 +1223,71 @@ public static class ComputerAI
         return Thought.Nothing;
     }
 
-    // ----- Learning (always writes to the active character|difficulty|variant Profile) -----
+    // ----- Learning (writes Training as source of truth, plus the active level profile) -----
+
+    static void ForEachLearningProfile(Player player, Action<Profile> apply)
+    {
+        if (player == null || apply == null)
+            return;
+
+        Profile active = GetProfile(player);
+        apply(active);
+
+        CpuDifficulty diff = GetDifficulty(player);
+        if (diff != CpuDifficulty.Training)
+        {
+            string charName = string.IsNullOrEmpty(player.name) ? "global" : player.name;
+            int variant = Mathf.Clamp(player.cpuVariant, 0, VariantsPerLevel - 1);
+            Profile training = GetOrCreateProfile(charName, CpuDifficulty.Training, variant);
+            if (training != active)
+                apply(training);
+        }
+    }
+
+    static void ApplyPaddleHit(Profile p)
+    {
+        p.paddleHits++;
+        p.skill = Mathf.MoveTowards(p.skill, MaxSkill, 0.004f);
+        p.interceptLead = Mathf.Clamp(p.interceptLead + 0.002f, 0.2f, 1.1f);
+        p.deadZone = Mathf.Clamp(p.deadZone - 0.0015f, 0.1f, 1.2f);
+    }
+
+    static void ApplyGoalDamage(Profile p, int amount)
+    {
+        p.goalsAgainst++;
+        p.skill = Mathf.MoveTowards(p.skill, MaxSkill, 0.012f * amount);
+        p.interceptLead = Mathf.Clamp(p.interceptLead + 0.025f * amount, 0.2f, 1.2f);
+        p.deadZone = Mathf.Clamp(p.deadZone - 0.035f * amount, 0.1f, 1.2f);
+        p.aggression = Mathf.Clamp(p.aggression + 0.012f * amount, 0.05f, MaxAggression);
+        p.centerPull = Mathf.Clamp(p.centerPull - 0.01f, 0.05f, 0.5f);
+    }
+
+    static void ApplyMatchResult(Profile p, bool won)
+    {
+        p.matchesPlayed++;
+        if (won)
+        {
+            p.wins++;
+            p.skill = Mathf.MoveTowards(p.skill, MaxSkill, 0.045f);
+            p.aggression = Mathf.Clamp(p.aggression + 0.015f, 0.05f, MaxAggression);
+        }
+        else
+        {
+            p.losses++;
+            p.skill = Mathf.MoveTowards(p.skill, MaxSkill, 0.03f);
+            p.interceptLead = Mathf.Clamp(p.interceptLead + 0.04f, 0.2f, 1.2f);
+            p.deadZone = Mathf.Clamp(p.deadZone - 0.045f, 0.1f, 1.2f);
+            p.aggression = Mathf.Clamp(p.aggression + 0.02f, 0.05f, MaxAggression);
+        }
+    }
 
     public static void OnPaddleHitBall(Player player)
     {
         if (player == null || !player.computer)
             return;
 
-        Profile p = GetProfile(player);
-        p.paddleHits++;
-        p.skill = Mathf.MoveTowards(p.skill, MaxSkill, 0.004f);
-        p.interceptLead = Mathf.Clamp(p.interceptLead + 0.002f, 0.2f, 1.1f);
-        p.deadZone = Mathf.Clamp(p.deadZone - 0.0015f, 0.1f, 1.2f);
-        MaybeAutosave(p);
+        ForEachLearningProfile(player, ApplyPaddleHit);
+        MaybeAutosave(null);
     }
 
     public static void OnTookGoalDamage(Player player, int amount)
@@ -1173,13 +1295,7 @@ public static class ComputerAI
         if (player == null || !player.computer || amount <= 0)
             return;
 
-        Profile p = GetProfile(player);
-        p.goalsAgainst++;
-        p.skill = Mathf.MoveTowards(p.skill, MaxSkill, 0.012f * amount);
-        p.interceptLead = Mathf.Clamp(p.interceptLead + 0.025f * amount, 0.2f, 1.2f);
-        p.deadZone = Mathf.Clamp(p.deadZone - 0.035f * amount, 0.1f, 1.2f);
-        p.aggression = Mathf.Clamp(p.aggression + 0.012f * amount, 0.05f, MaxAggression);
-        p.centerPull = Mathf.Clamp(p.centerPull - 0.01f, 0.05f, 0.5f);
+        ForEachLearningProfile(player, p => ApplyGoalDamage(p, amount));
         Save();
     }
 
@@ -1190,6 +1306,7 @@ public static class ComputerAI
 
         EnsureLoaded();
         bool anyComputer = false;
+        bool fromTraining = TrainingManager.IsActive;
 
         for (int i = 0; i < players.Count; i++)
         {
@@ -1198,28 +1315,139 @@ public static class ComputerAI
                 continue;
 
             anyComputer = true;
-            Profile p = GetProfile(player);
-            p.matchesPlayed++;
+            ForEachLearningProfile(player, p => ApplyMatchResult(p, player.won));
 
-            if (player.won)
+            if (fromTraining || GetDifficulty(player) == CpuDifficulty.Training)
             {
-                p.wins++;
-                p.skill = Mathf.MoveTowards(p.skill, MaxSkill, 0.045f);
-                p.aggression = Mathf.Clamp(p.aggression + 0.015f, 0.05f, MaxAggression);
-            }
-            else
-            {
-                p.losses++;
-                // Losses sharpen intercept more so the same variant improves at its level
-                p.skill = Mathf.MoveTowards(p.skill, MaxSkill, 0.03f);
-                p.interceptLead = Mathf.Clamp(p.interceptLead + 0.04f, 0.2f, 1.2f);
-                p.deadZone = Mathf.Clamp(p.deadZone - 0.045f, 0.1f, 1.2f);
-                p.aggression = Mathf.Clamp(p.aggression + 0.02f, 0.05f, MaxAggression);
+                PromoteTrainingToPlayableLevels(player);
+                UpdateCharacterGrade(player);
             }
         }
 
         if (anyComputer)
             Save();
+    }
+
+    static void CopyLearnedPlayStats(Profile from, Profile to)
+    {
+        if (from == null || to == null || from == to)
+            return;
+
+        to.skill = from.skill;
+        to.aggression = from.aggression;
+        to.interceptLead = from.interceptLead;
+        to.deadZone = from.deadZone;
+        to.centerPull = from.centerPull;
+        to.paddleHits = from.paddleHits;
+        to.goalsAgainst = from.goalsAgainst;
+    }
+
+    /// <summary>
+    /// Write the Training variant into every lobby difficulty so Easy–Impossible
+    /// each have a stored brain of that level (style from Training, band applied at runtime).
+    /// </summary>
+    static void PromoteTrainingToPlayableLevels(Player player)
+    {
+        if (player == null || string.IsNullOrEmpty(player.name))
+            return;
+
+        int variant = Mathf.Clamp(player.cpuVariant, 0, VariantsPerLevel - 1);
+        Profile train = GetOrCreateProfile(player.name, CpuDifficulty.Training, variant);
+        if (!HasLearned(train))
+            return;
+
+        for (int d = (int)CpuDifficulty.Easy; d <= (int)CpuDifficulty.Impossible; d++)
+            CopyLearnedPlayStats(train, GetOrCreateProfile(player.name, (CpuDifficulty)d, variant));
+    }
+
+    static float GradeScore(Profile p)
+    {
+        if (p == null)
+            return MinSkill;
+
+        float skill = Mathf.Clamp(p.skill, MinSkill, MaxSkill);
+        if (p.matchesPlayed < 2)
+            return skill;
+
+        float winRate = (p.wins + p.losses) > 0 ? p.wins / (float)Mathf.Max(1, p.wins + p.losses) : 0.5f;
+        int contact = p.paddleHits + p.goalsAgainst * 2;
+        float saveRate = contact > 0 ? p.paddleHits / (float)contact : 0.5f;
+        float winSkill = Mathf.Lerp(MinSkill, MaxSkill, winRate);
+        float saveSkill = Mathf.Lerp(MinSkill, MaxSkill, saveRate);
+        return skill * 0.65f + winSkill * 0.25f + saveSkill * 0.10f;
+    }
+
+    public static CpuDifficulty GradeDifficulty(Profile p)
+    {
+        float score = GradeScore(p);
+        if (score < 0.38f)
+            return CpuDifficulty.Easy;
+        if (score < 0.52f)
+            return CpuDifficulty.Normal;
+        if (score < 0.70f)
+            return CpuDifficulty.Hard;
+        if (score < 0.85f)
+            return CpuDifficulty.Expert;
+        return CpuDifficulty.Impossible;
+    }
+
+    static void UpdateCharacterGrade(Player player)
+    {
+        if (player == null || string.IsNullOrEmpty(player.name))
+            return;
+
+        int variant = Mathf.Clamp(player.cpuVariant, 0, VariantsPerLevel - 1);
+        Profile train = GetOrCreateProfile(player.name, CpuDifficulty.Training, variant);
+        CpuDifficulty assigned = GradeDifficulty(train);
+
+        if (!grades.TryGetValue(player.name, out CharacterGrade grade) || grade == null)
+        {
+            grade = new CharacterGrade { characterName = player.name };
+            grades[player.name] = grade;
+        }
+
+        grade.recommendedDifficulty = (int)assigned;
+        grade.lastScore = GradeScore(train);
+        grade.samples = train.matchesPlayed;
+    }
+
+    public static bool TryGetRecommendedDifficulty(string characterName, out CpuDifficulty difficulty)
+    {
+        EnsureLoaded();
+        difficulty = CpuDifficulty.Easy;
+        if (string.IsNullOrEmpty(characterName))
+            return false;
+        if (!grades.TryGetValue(characterName, out CharacterGrade grade) || grade == null)
+            return false;
+        if (grade.samples <= 0)
+            return false;
+
+        difficulty = (CpuDifficulty)Mathf.Clamp(
+            grade.recommendedDifficulty,
+            (int)CpuDifficulty.Easy,
+            (int)CpuDifficulty.Impossible);
+        if (difficulty == CpuDifficulty.Training)
+            difficulty = CpuDifficulty.Easy;
+        return true;
+    }
+
+    /// <summary>
+    /// Stamp a CPU with the difficulty Training assigned for this character.
+    /// No-op during an AI Training session (those matches stay on Training).
+    /// </summary>
+    public static void ApplyRecommendedDifficulty(Player player)
+    {
+        if (player == null || !player.computer)
+            return;
+        if (TrainingManager.IsActive)
+            return;
+
+        if (TryGetRecommendedDifficulty(player.name, out CpuDifficulty recommended))
+            player.cpuDifficulty = recommended;
+        else if (player.cpuDifficulty == CpuDifficulty.Training)
+            player.cpuDifficulty = CpuDifficulty.Easy;
+
+        AssignMatchBrain(player);
     }
 
     static int autosaveCounter;
@@ -1251,6 +1479,7 @@ public static class ComputerAI
     public static void Load()
     {
         profiles.Clear();
+        grades.Clear();
         try
         {
             if (!File.Exists(SavePath))
@@ -1258,7 +1487,21 @@ public static class ComputerAI
 
             string json = File.ReadAllText(SavePath);
             SaveData data = JsonUtility.FromJson<SaveData>(json);
-            if (data?.profiles == null)
+            if (data == null)
+                return;
+
+            if (data.grades != null)
+            {
+                for (int g = 0; g < data.grades.Count; g++)
+                {
+                    CharacterGrade grade = data.grades[g];
+                    if (grade == null || string.IsNullOrEmpty(grade.characterName))
+                        continue;
+                    grades[grade.characterName] = grade;
+                }
+            }
+
+            if (data.profiles == null)
                 return;
 
             List<Profile> legacy = new List<Profile>();
@@ -1310,10 +1553,48 @@ public static class ComputerAI
                     profiles[seeded.key] = seeded;
                 }
             }
+
+            EnsureGradesFromTrainingProfiles();
         }
         catch (Exception e)
         {
             Debug.LogWarning("ComputerAI Load failed: " + e.Message);
+        }
+    }
+
+    static void EnsureGradesFromTrainingProfiles()
+    {
+        List<Profile> trained = new List<Profile>();
+        foreach (var kvp in profiles)
+        {
+            Profile p = kvp.Value;
+            if (p == null || string.IsNullOrEmpty(p.characterName) || !HasLearned(p))
+                continue;
+            if (p.difficulty != (int)CpuDifficulty.Training)
+                continue;
+            trained.Add(p);
+        }
+
+        for (int i = 0; i < trained.Count; i++)
+        {
+            Profile p = trained[i];
+            if (grades.TryGetValue(p.characterName, out CharacterGrade existing) && existing != null
+                && existing.samples >= p.matchesPlayed)
+                continue;
+
+            grades[p.characterName] = new CharacterGrade
+            {
+                characterName = p.characterName,
+                recommendedDifficulty = (int)GradeDifficulty(p),
+                lastScore = GradeScore(p),
+                samples = p.matchesPlayed,
+            };
+
+            for (int d = (int)CpuDifficulty.Easy; d <= (int)CpuDifficulty.Impossible; d++)
+            {
+                Profile band = GetOrCreateProfile(p.characterName, (CpuDifficulty)d, p.variant);
+                CopyLearnedPlayStats(p, band);
+            }
         }
     }
 
@@ -1345,6 +1626,8 @@ public static class ComputerAI
             SaveData data = new SaveData();
             foreach (var kvp in profiles)
                 data.profiles.Add(kvp.Value);
+            foreach (var kvp in grades)
+                data.grades.Add(kvp.Value);
 
             File.WriteAllText(SavePath, JsonUtility.ToJson(data, true));
         }
@@ -1669,6 +1952,18 @@ public static class ComputerAI
             charGaps.Sort((a, b) => a.n.CompareTo(b.n));
             for (int i = 0; i < Mathf.Min(top, charGaps.Count); i++)
                 lines.Add(charGaps[i].label + ":" + charGaps[i].n);
+
+            List<string> assigned = new List<string>();
+            for (int i = 0; i < roster.Count; i++)
+            {
+                Characters c = roster[i];
+                if (c == null || string.IsNullOrEmpty(c.name))
+                    continue;
+                if (TryGetRecommendedDifficulty(c.name, out CpuDifficulty rec))
+                    assigned.Add(c.name + "=" + rec);
+            }
+            if (assigned.Count > 0)
+                lines.Add("Lv " + string.Join(",", assigned));
         }
 
         for (int n = 2; n <= 8; n++)

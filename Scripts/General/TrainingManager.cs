@@ -432,6 +432,7 @@ public class TrainingManager : MonoBehaviour
 
         ComputerAI.RecordTrainingMatchCoverage(db.players, fieldName);
         matchesCompleted++;
+        statusLine = "Match #" + matchesCompleted + " — levels: " + DescribeAssignedLevels(db.players);
 
         if (state == SessionState.StopAfterMatch)
         {
@@ -473,6 +474,22 @@ public class TrainingManager : MonoBehaviour
         if (plan == null)
             return "";
         return plan.playerCount + "P | " + plan.fieldName + " | " + string.Join(", ", plan.characterNames);
+    }
+
+    static string DescribeAssignedLevels(List<Player> players)
+    {
+        if (players == null)
+            return "";
+        List<string> bits = new List<string>();
+        for (int i = 0; i < players.Count; i++)
+        {
+            Player p = players[i];
+            if (p == null || string.IsNullOrEmpty(p.name))
+                continue;
+            if (ComputerAI.TryGetRecommendedDifficulty(p.name, out ComputerAI.CpuDifficulty rec))
+                bits.Add(p.name + "=" + rec);
+        }
+        return bits.Count > 0 ? string.Join(", ", bits) : "unrated";
     }
 
     // ─── UI ────────────────────────────────────────────────────────────
