@@ -226,7 +226,13 @@ public class Bahrue : MonoBehaviour
                 pg.player.super.amount = Mathf.Max(0f, pg.player.super.amount - chargeLossOnHit);
             }
 
-            if (lastHealth != pg.player.currentHealth)
+            for (int i = bahrueObjs.Count - 1; i >= 0; i--)
+            {
+                if (bahrueObjs[i] == null)
+                    bahrueObjs.RemoveAt(i);
+            }
+
+            if (lastHealth != pg.player.currentHealth || bahrueObjs.Count != pg.player.currentHealth)
             {
                 UpdateBahrue();
             }
@@ -257,25 +263,25 @@ public class Bahrue : MonoBehaviour
             {
                 //Run Animation at position
 
-                //Add
-                GameObject go = Instantiate(bahrueObj, holder.position + transform.up * -2.5f,transform.rotation);
+                if (bahrueObj == null || holder == null)
+                    break;
 
-                go.transform.parent = holder;
+                //Add
+                GameObject go = Instantiate(bahrueObj, holder.position + transform.up * -2.5f, transform.rotation);
+                go.transform.SetParent(holder, true);
 
                 PlayerGrab cpg = go.GetComponent<PlayerGrab>();
                 FollowPlayer fp = go.GetComponent<FollowPlayer>();
+                if (fp == null)
+                    fp = go.AddComponent<FollowPlayer>();
 
                 if (cpg != null)
-                {
                     cpg.playerIndex = pg.playerIndex;
-                }
 
-                if (fp != null)
-                {
-                    fp.playerTransform = holder;
-                    fp.offset = new Vector3(0, -3, 0);
-                    bahrueObjs.Add(fp);
-                }
+                fp.playerTransform = holder;
+                fp.offset = new Vector3(0, -3, 0);
+                fp.useStackLerp = true;
+                bahrueObjs.Add(fp);
             }
         }
 

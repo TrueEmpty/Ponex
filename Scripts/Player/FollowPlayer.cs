@@ -13,6 +13,9 @@ public class FollowPlayer : MonoBehaviour
     public bool absolutePosition = false;
     public bool trueOffsetBasedOnRotation = false;
 
+    [Tooltip("Bahrue body stacks. Slides local position to LerpOffset. Leave off for Tic.")]
+    public bool useStackLerp = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -27,29 +30,48 @@ public class FollowPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(playerTransform != null)
+        if (playerTransform == null)
+            return;
+
+        if (useStackLerp)
         {
-            Vector3 trueOffset = offset;
+            ApplyStackLerp();
+            return;
+        }
 
-            if (trueOffsetBasedOnRotation)
-            {
-                trueOffset = (playerTransform.right * offset.x) + (playerTransform.up * offset.y) + (playerTransform.forward * offset.z);
-            }
+        Vector3 trueOffset = offset;
 
-            if (absolutePosition)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, playerTransform.position + trueOffset, ttt * Time.deltaTime);
-            }
-            else
-            {
-                transform.localPosition = trueOffset;
+        if (trueOffsetBasedOnRotation)
+        {
+            trueOffset = (playerTransform.right * offset.x) + (playerTransform.up * offset.y) + (playerTransform.forward * offset.z);
+        }
 
-                if (trueOffset != lerpOffset)
-                {
-                    trueOffset = Vector3.MoveTowards(trueOffset, lerpOffset, ttt * Time.deltaTime);
-                }
+        if (absolutePosition)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, playerTransform.position + trueOffset, ttt * Time.deltaTime);
+        }
+        else
+        {
+            transform.localPosition = trueOffset;
+
+            if (trueOffset != lerpOffset)
+            {
+                trueOffset = Vector3.MoveTowards(trueOffset, lerpOffset, ttt * Time.deltaTime);
             }
         }
+    }
+
+    void ApplyStackLerp()
+    {
+        Vector3 goal = offset;
+        if ((lerpOffset - offset).sqrMagnitude > 0.0001f)
+        {
+            goal = Vector3.MoveTowards(transform.localPosition, lerpOffset, ttt * Time.deltaTime);
+            if ((goal - lerpOffset).sqrMagnitude <= 0.0001f)
+                offset = lerpOffset;
+        }
+
+        transform.localPosition = goal;
     }
 
     public void LerpOffset(Vector3 newPos,float timeToTake = 1.5f)

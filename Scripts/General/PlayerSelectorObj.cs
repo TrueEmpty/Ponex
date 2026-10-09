@@ -126,9 +126,10 @@ public class PlayerSelectorObj : MonoBehaviour
 
         int multiplier = cLink["Sprint"].isPressed ? 2 : 1;
 
+        float dt = Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
         rt.anchoredPosition += new Vector2(
-            move.x * speed * multiplier * Time.deltaTime,
-            move.y * speed * multiplier * Time.deltaTime
+            move.x * speed * multiplier * dt,
+            move.y * speed * multiplier * dt
         );
 
         float hW = width / 2;
@@ -303,9 +304,10 @@ public class PlayerSelectorObj : MonoBehaviour
                 }
             }
 
+            float clickDt = Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
             clicking +=
                 ((clickBtn.isPressed && !cooldown) ? .25f : 20)
-                * Time.deltaTime;
+                * clickDt;
 
             if (clicking > 1)
             {

@@ -103,7 +103,8 @@ public class GarmenDrive : MonoBehaviour
 
             Vector3 rotDir = PaddleWall.AbsAxes(transform.right);
             rb.linearVelocity = rotDir * moveDir * pg.player.EffectiveMovementSpeed;
-            PaddleWall.Unstick(rb, transform, hitTags);
+            // Wheels can sit inside the wall. Only the hub body should block or unstick.
+            PaddleWall.Unstick(rb, BodyTransform, hitTags);
 
             if(moveDir != 0)
             {
@@ -116,8 +117,23 @@ public class GarmenDrive : MonoBehaviour
         }
     }
 
+    Transform BodyTransform => hub != null ? hub.transform : transform;
+
     bool WallInDirection(int dir)
     {
-        return PaddleWall.WallInDirection(transform, dir, hitTags, searchLength);
+        return PaddleWall.WallInDirection(BodyTransform, dir, hitTags, BodyStopDistance());
+    }
+
+    /// <summary>Stop distance is the hub body's lateral half-size, not the wheels.</summary>
+    float BodyStopDistance()
+    {
+        Collider col = BodyTransform.GetComponent<Collider>();
+        if (col == null)
+            return searchLength;
+
+        Vector3 axis = PaddleWall.AbsAxes(transform.right);
+        Vector3 ext = col.bounds.extents;
+        float along = ext.x * Mathf.Abs(axis.x) + ext.y * Mathf.Abs(axis.y) + ext.z * Mathf.Abs(axis.z);
+        return Mathf.Max(0.15f, along + 0.04f);
     }
 }

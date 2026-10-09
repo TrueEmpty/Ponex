@@ -186,7 +186,7 @@ public class ControllerLink : MonoBehaviour
 
         if (ready > 0)
         {
-            ready -= Time.deltaTime;
+            ready -= Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
         }
         else
         {
@@ -242,7 +242,7 @@ public class ControllerLink : MonoBehaviour
                                 }
                                 else
                                 {
-                                    button.nextPulse -= Time.deltaTime;
+                                    button.nextPulse -= Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
 
                                     if (button.nextPulse <= 0)
                                     {

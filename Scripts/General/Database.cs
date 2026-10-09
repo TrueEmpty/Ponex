@@ -79,6 +79,10 @@ public class Database : MonoBehaviour
     public bool ballSelect = false;
 
     public Gametype gametype = Gametype.Vs;
+    [Tooltip("Online matches do not freeze time. The pause menu shows Forfeit instead of Reset Match.")]
+    public bool onlineMatch = false;
+    public bool pauseMenuOpen = false;
+    public bool LocalMatchPaused => pauseMenuOpen && !onlineMatch;
     public bool startingGame = false;
     public bool someoneWon = false;
     public bool winnerScreen = false;
@@ -662,10 +666,11 @@ public class Database : MonoBehaviour
     void Update()
     {
         ShowAndHidePlayerSelectors();
+        HandlePauseInput();
 
         if (gameStart)
         {
-            if (!winnerScreen)
+            if (!winnerScreen && !LocalMatchPaused)
             {
                 CheckPlayerConstrants();
                 BallCheck();
@@ -674,12 +679,274 @@ public class Database : MonoBehaviour
         }
     }
 
+    int pauseActionFrame = -1;
+    int winActionFrame = -1;
+    string lastWinAction = "";
+    Coroutine startRoutine;
+
+    bool MenuPressedThisFrame()
+    {
+        if (controllers == null)
+            return false;
+
+        for (int i = 0; i < controllers.Count; i++)
+        {
+            ControllerLink link = controllers[i];
+            if (link == null)
+                continue;
+            ControllerButtons menu = link["Menu"];
+            if (menu != null && menu.wasPressedThisFrame)
+                return true;
+        }
+
+        return false;
+    }
+
+    bool PlayingMenuOpen()
+    {
+        if (mm == null)
+            mm = MenuManager.instance;
+        if (mm == null)
+            return false;
+
+        MenuClass open = mm.GetOpenMenu(true);
+        return open != null
+            && !string.IsNullOrEmpty(open.title)
+            && open.title.Trim().Equals("Playing", StringComparison.OrdinalIgnoreCase);
+    }
+
+    void HandlePauseInput()
+    {
+        if (!MenuPressedThisFrame())
+            return;
+        if (winnerScreen || someoneWon)
+            return;
+        if (!pauseMenuOpen && !PlayingMenuOpen())
+            return;
+
+        if (pauseMenuOpen)
+            ClosePauseMenu();
+        else
+            OpenPauseMenu();
+    }
+
+    void OpenPauseMenu()
+    {
+        if (mm == null)
+            mm = MenuManager.instance;
+        if (mm == null)
+            return;
+
+        pauseMenuOpen = true;
+        if (!onlineMatch)
+            Time.timeScale = 0f;
+
+        mm.OpenMenu("Pause");
+        lastPlayerSelectorsShown = null;
+
+        if (players == null)
+            return;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i] != null)
+                players[i].state = "Pause";
+        }
+    }
+
+    void ClosePauseMenu()
+    {
+        pauseMenuOpen = false;
+        Time.timeScale = 1f;
+
+        if (mm == null)
+            mm = MenuManager.instance;
+        if (mm != null)
+            mm.RemoveMenu("Pause");
+
+        lastPlayerSelectorsShown = null;
+
+        if (players == null)
+            return;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            Player p = players[i];
+            if (p != null && p.state == "Pause")
+                p.state = "";
+        }
+    }
+
+    public void PauseButtonPressed(string action)
+    {
+        if (pauseActionFrame == Time.frameCount)
+            return;
+        pauseActionFrame = Time.frameCount;
+
+        if (string.IsNullOrEmpty(action))
+            action = "Resume";
+
+        switch (action)
+        {
+            case "Resume":
+                ClosePauseMenu();
+                break;
+            case "Reset Match":
+                ClosePauseMenu();
+                RestartCurrentMatch();
+                break;
+            case "Reset Game":
+                ClosePauseMenu();
+                ReturnToCharacterSelect();
+                break;
+            case "Forfeit":
+            case "Main Menu":
+                ClosePauseMenu();
+                LeaveMatchToMainMenu();
+                break;
+            default:
+                ClosePauseMenu();
+                break;
+        }
+    }
+
+    void HaltStartRoutine()
+    {
+        if (startRoutine != null)
+        {
+            StopCoroutine(startRoutine);
+            startRoutine = null;
+        }
+        startingGame = false;
+        gameStart = false;
+        Time.timeScale = 1f;
+    }
+
+    void DestroyLiveMatch()
+    {
+        if (players != null)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                Player p = players[i];
+                if (p == null)
+                    continue;
+                if (p.spawnedPlayer != null)
+                    Destroy(p.spawnedPlayer);
+                if (p.spawnedLifeline != null)
+                    Destroy(p.spawnedLifeline);
+                p.spawnedPlayer = null;
+                p.spawnedLifeline = null;
+            }
+        }
+
+        BallInfo[] ballsLive = FindObjectsByType<BallInfo>(FindObjectsInactive.Include);
+        for (int i = ballsLive.Length - 1; i >= 0; i--)
+        {
+            if (ballsLive[i] != null)
+                Destroy(ballsLive[i].gameObject);
+        }
+
+        Field_Info[] fieldsLive = FindObjectsByType<Field_Info>(FindObjectsInactive.Include);
+        for (int i = fieldsLive.Length - 1; i >= 0; i--)
+        {
+            if (fieldsLive[i] != null)
+                Destroy(fieldsLive[i].gameObject);
+        }
+
+        ClearAfterTheGame[] toClear = FindObjectsByType<ClearAfterTheGame>(FindObjectsInactive.Include);
+        for (int i = toClear.Length - 1; i >= 0; i--)
+        {
+            if (toClear[i] != null)
+                Destroy(toClear[i].gameObject);
+        }
+
+        ClearHolderChildren(playerInfoHolderLS);
+        ClearHolderChildren(playerInfoHolderRS);
+    }
+
+    static void ClearHolderChildren(Transform holder)
+    {
+        if (holder == null)
+            return;
+        for (int i = holder.childCount - 1; i >= 0; i--)
+            Destroy(holder.GetChild(i).gameObject);
+    }
+
+    void RestartCurrentMatch()
+    {
+        HaltStartRoutine();
+        DestroyLiveMatch();
+        ResetPlayersForNewMatch();
+        CharactersPicked("balls");
+    }
+
+    void ReturnToCharacterSelect()
+    {
+        HaltStartRoutine();
+        DestroyLiveMatch();
+        AbortCurrentMatch();
+
+        if (mm == null)
+            mm = MenuManager.instance;
+        if (mm != null)
+        {
+            if (mm.openMenu != null && mm.openMenu.Count > 1)
+                mm.BackUnitl("Character Select");
+            MenuClass open = mm.GetOpenMenu(true);
+            if (open == null || string.IsNullOrEmpty(open.title)
+                || !open.title.Trim().Equals("Character Select", StringComparison.OrdinalIgnoreCase))
+            {
+                mm.OpenMenu("Character Select");
+            }
+        }
+
+        if (players == null)
+            return;
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            Player p = players[i];
+            if (p == null)
+                continue;
+            p.characterSelected = false;
+            p.state = "Character Select";
+            p.gridLock = false;
+        }
+    }
+
+    void LeaveMatchToMainMenu()
+    {
+        HaltStartRoutine();
+        DestroyLiveMatch();
+        AbortCurrentMatch();
+
+        if (mm == null)
+            mm = MenuManager.instance;
+        if (mm == null)
+            return;
+
+        mm.openMenu.Clear();
+        mm.OpenMenu("Main Menu");
+    }
+
+    IEnumerator WaitMatchSecond()
+    {
+        float t = 0f;
+        while (t < 1f)
+        {
+            if (!LocalMatchPaused)
+                t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+    }
+
     bool? lastPlayerSelectorsShown;
 
     void ShowAndHidePlayerSelectors()
     {
-        // Hide during active match; show again on the win screen for menu navigation
-        bool show = winnerScreen || !(gameStart || startingGame);
+        // Hide during active match; show on the win screen and the pause menu
+        bool show = winnerScreen || pauseMenuOpen || !(gameStart || startingGame);
         if (lastPlayerSelectorsShown.HasValue && lastPlayerSelectorsShown.Value == show)
             return;
         lastPlayerSelectorsShown = show;
@@ -1232,6 +1499,10 @@ public class Database : MonoBehaviour
                 btn.buttonPressed = "Rematch";
             else if (n.Contains("champion"))
                 btn.buttonPressed = "Champion Select";
+            else if (n.Contains("level") || n.Contains("field"))
+                btn.buttonPressed = "Level Select";
+            else if (n.Contains("ball"))
+                btn.buttonPressed = "Ball Select";
             else if (n.Contains("main"))
                 btn.buttonPressed = "Main Menu";
         }
@@ -1239,6 +1510,11 @@ public class Database : MonoBehaviour
 
     public void WinButtonPressed(string buttonPressed)
     {
+        if (winActionFrame == Time.frameCount && lastWinAction == buttonPressed)
+            return;
+        winActionFrame = Time.frameCount;
+        lastWinAction = buttonPressed;
+
         // Stop match logic first — otherwise CheckForWinner sees destroyed
         // spawnedPlayer refs, zeros restored health, and instantly re-ends the match.
         gameStart = false;
@@ -1301,6 +1577,22 @@ public class Database : MonoBehaviour
                 break;
             case "Champion Select":
                 mm.BackUnitl("Character Select");
+                break;
+            case "Level Select":
+                if (mm != null)
+                {
+                    mm.RemoveMenu("Winners");
+                    mm.RemoveMenu("Playing");
+                    mm.OpenMenu("Field Select");
+                }
+                break;
+            case "Ball Select":
+                if (mm != null)
+                {
+                    mm.RemoveMenu("Winners");
+                    mm.RemoveMenu("Playing");
+                    mm.OpenMenu("Ball Select");
+                }
                 break;
             case "Main Menu":
                 mm.openMenu.Clear();
@@ -1440,7 +1732,9 @@ public class Database : MonoBehaviour
 
         if(startGame && !startingGame)
         {
-            StartCoroutine(StartGame());
+            if (startRoutine != null)
+                StopCoroutine(startRoutine);
+            startRoutine = StartCoroutine(StartGame());
             startingGame = true;
         }
     }
@@ -1696,7 +1990,7 @@ public class Database : MonoBehaviour
                 {
                     gameplayinfo.text = "Go!";
                 }
-                yield return new WaitForSecondsRealtime(1);
+                yield return WaitMatchSecond();
             }
 
             gameplayinfo.gameObject.SetActive(false);
@@ -1714,6 +2008,7 @@ public class Database : MonoBehaviour
         }
 
         startingGame = false;
+        startRoutine = null;
         yield return null;
     }
 

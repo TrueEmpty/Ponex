@@ -109,6 +109,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
+  ttt: 1.5
+  absolutePosition: 0
+  trueOffsetBasedOnRotation: 0
+  useStackLerp: 1
 --- !u!33 &7934371038639061387
 MeshFilter:
   m_ObjectHideFlags: 0
