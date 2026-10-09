@@ -117,10 +117,12 @@ public class NariTail : MonoBehaviour
 
                     if (tpG != null && tpG.IsLinked() && tpG.player != null)
                     {
-                        tpG.player.RecordDamageDealt(lost);
+                        tpG.player.RecordDamageDealt(lost, pG.player);
+                        tpG.player.RecordGoalScored(lost, pG.player);
                         if (tpG.player.computer)
                             ComputerAI.OnPaddleHitBall(tpG.player);
                     }
+                    pG.player.RecordGoalConceded(lost);
 
                     if (pG.player.computer)
                         ComputerAI.OnTookGoalDamage(pG.player, lost);

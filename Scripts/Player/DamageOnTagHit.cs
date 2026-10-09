@@ -75,10 +75,17 @@ public class DamageOnTagHit : MonoBehaviour
         int lost = pg.player.ApplyGoalDamage(dealt, ballId);
         lost += ApplySharedCelarusDamage(dealt, ballId);
 
+        if (lost > 0)
+            pg.player.RecordGoalConceded(lost);
+
         // Credit ball owner for the HP actually removed — keeps Dealt/Taken in sync
         if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null && !ownBall)
         {
-            tpG.player.RecordDamageDealt(lost);
+            tpG.player.RecordDamageDealt(lost, pg.player);
+            tpG.player.RecordGoalScored(lost, pg.player);
+            tpG.player.RecordLastTouchGoal();
+            if (tbI != null && tbI.ConsumeAceIfSoloHitter(tpG.playerIndex))
+                tpG.player.RecordAce();
 
             if (tpG.player.computer)
                 ComputerAI.OnPaddleHitBall(tpG.player);

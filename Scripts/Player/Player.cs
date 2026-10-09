@@ -111,16 +111,25 @@ public class Player
 
     #region Gameplay Stats
     public bool won = false;
-    public int damageDealt = 0;
-    public int damageTaken = 0;
-    public int ballHits = 0;
-    public int longestBallOwnership = 0;
-    public int highestSingleDamgeDealt = 0;
-    public int highestSingleDamageTaken = 0;
-    public int ultsUsed = 0;
-    public int numberOfDashes = 0;
-    public int afterDeathHits = 0;
-    public int afterDeathDamage = 0;
+    public MatchStats match = new MatchStats();
+
+    public int damageDealt { get => match.damageDealt; set => match.damageDealt = value; }
+    public int damageTaken { get => match.damageTaken; set => match.damageTaken = value; }
+    public int ballHits { get => match.ballHits; set => match.ballHits = value; }
+    public int longestBallOwnership { get => match.longestBallOwnership; set => match.longestBallOwnership = value; }
+    public int highestSingleDamgeDealt { get => match.highestSingleDamgeDealt; set => match.highestSingleDamgeDealt = value; }
+    public int highestSingleDamageTaken { get => match.highestSingleDamageTaken; set => match.highestSingleDamageTaken = value; }
+    public int ultsUsed { get => match.ultsUsed; set => match.ultsUsed = value; }
+    public int numberOfDashes { get => match.numberOfDashes; set => match.numberOfDashes = value; }
+    public int afterDeathHits { get => match.afterDeathHits; set => match.afterDeathHits = value; }
+    public int afterDeathDamage { get => match.afterDeathDamage; set => match.afterDeathDamage = value; }
+
+    public void ResetMatchStats()
+    {
+        if (match == null)
+            match = new MatchStats();
+        match.Reset();
+    }
     #endregion
 
     public Player()
@@ -173,6 +182,7 @@ public class Player
 
         spawnedPlayer = p.spawnedPlayer;
         spawnedLifeline = p.spawnedLifeline;
+        match = new MatchStats();
     }
 
     /// <summary>Lobby placeholder for random roster pick (portrait shows "?" until StartGame).</summary>
@@ -404,6 +414,9 @@ public class Player
             currentHealth -= amount;
             if (currentHealth < floor)
                 currentHealth = floor;
+            int leftover = amount - lost;
+            if (leftover > 0)
+                Stats.pendingOverkill += leftover;
 
             if (lost > 0)
                 RecordDamageTaken(lost);
@@ -451,7 +464,10 @@ public class Player
         {
             MuriShield shield = spawnedPlayer.GetComponent<MuriShield>();
             if (shield != null && shield.TryAbsorb())
+            {
+                RecordShieldBlock(amount);
                 return 0;
+            }
         }
 
         return Damage(amount);
@@ -459,44 +475,201 @@ public class Player
 
     public void Heal(int amount)
     {
+        if (amount <= 0)
+            return;
+        int before = currentHealth;
         Damage(-amount);
+        int gained = currentHealth - before;
+        if (gained > 0)
+            RecordHeal(gained);
     }
 
     #region Win-screen stat recording
+    MatchStats Stats
+    {
+        get
+        {
+            if (match == null)
+                match = new MatchStats();
+            return match;
+        }
+    }
+
     public void RecordDamageTaken(int amount)
     {
         if (amount <= 0)
             return;
 
-        damageTaken += amount;
-        if (amount > highestSingleDamageTaken)
-            highestSingleDamageTaken = amount;
+        MatchStats s = Stats;
+        s.damageTaken += amount;
+        if (amount > s.highestSingleDamageTaken)
+            s.highestSingleDamageTaken = amount;
+        if (currentHealth == 1)
+            s.damageTakenAtOneHp += amount;
+        if (s.lowestHpReached > currentHealth)
+            s.lowestHpReached = currentHealth;
+        s.currentUndamaged = 0f;
+
+        if (currentHealth <= 0)
+            RecordDeath(null);
     }
 
     public void RecordDamageDealt(int amount)
     {
+        RecordDamageDealt(amount, null, StatSource.Ball);
+    }
+
+    public void RecordDamageDealt(int amount, Player victim)
+    {
+        RecordDamageDealt(amount, victim, StatSource.Ball);
+    }
+
+    public void RecordDamageDealt(int amount, Player victim, StatSource source)
+    {
         if (amount <= 0)
             return;
 
-        damageDealt += amount;
-        if (amount > highestSingleDamgeDealt)
-            highestSingleDamgeDealt = amount;
-
+        MatchStats s = Stats;
+        s.damageDealt += amount;
+        if (amount > s.highestSingleDamgeDealt)
+            s.highestSingleDamgeDealt = amount;
         if (currentHealth <= 0)
-            afterDeathDamage += amount;
+            s.afterDeathDamage += amount;
+        if (currentHealth == 1)
+            s.damageDealtAtOneHp += amount;
+
+        if (source == StatSource.Ability)
+            s.abilityDamageDealt += amount;
+        else if (source == StatSource.Hazard)
+            s.hazardDamageDealt += amount;
+
+        if (victim != null && victim.currentHealth <= 0)
+            RecordKill(victim);
+    }
+
+    public void RecordGoalScored(int amount, Player victim = null)
+    {
+        if (amount <= 0)
+            return;
+        Stats.goalsScored++;
+        MatchStatTicker.NoteGoal(this, victim);
+    }
+
+    public void RecordGoalConceded(int amount)
+    {
+        if (amount <= 0)
+            return;
+        Stats.goalsConceded++;
+    }
+
+    public void RecordHazardDamageTaken(int amount)
+    {
+        if (amount <= 0)
+            return;
+        Stats.hazardDamageTaken += amount;
+    }
+
+    public void RecordKill(Player victim)
+    {
+        MatchStats s = Stats;
+        s.kills++;
+        s.currentKillStreak++;
+        if (s.currentKillStreak > s.maxKillStreak)
+            s.maxKillStreak = s.currentKillStreak;
+        if (Time.time - s.lastKillTime < 8f)
+            s.multiKills++;
+        s.lastKillTime = Time.time;
+        if (s.timeToFirstKill < 0f)
+            s.timeToFirstKill = MatchStatTicker.MatchTime;
+        if (MatchStatTicker.NoteFirstBlood(index))
+            s.firstBloods = 1;
+        if (victim != null && s.lastKilledByIndex == victim.index)
+            s.revengeKills++;
+        if (victim != null)
+        {
+            if (victim.match != null && victim.match.pendingOverkill > 0)
+            {
+                s.overkillDamage += victim.match.pendingOverkill;
+                victim.match.pendingOverkill = 0;
+            }
+            victim.RecordDeath(this);
+        }
+    }
+
+    public void RecordDeath(Player killer)
+    {
+        MatchStats s = Stats;
+        if (killer != null)
+            s.lastKilledByIndex = killer.index;
+        if (s.deathCountedThisLife)
+            return;
+        s.deathCountedThisLife = true;
+        s.deaths++;
+        s.currentKillStreak = 0;
+        s.reachedOneHpThisLife = false;
+        if (s.timeToFirstDeath < 0f)
+            s.timeToFirstDeath = MatchStatTicker.MatchTime;
+        if (s.currentLifeSeconds > 0f)
+        {
+            if (s.shortestLife < 0f || s.currentLifeSeconds < s.shortestLife)
+                s.shortestLife = s.currentLifeSeconds;
+        }
+        s.currentLifeSeconds = 0f;
     }
 
     public void RecordBallHit()
     {
-        ballHits++;
+        RecordBallHit(0f, false, false, true, false, 0, 999f);
+    }
+
+    public void RecordBallHit(float speed, bool incoming, bool isBump, bool isPaddle, bool isLifeline, int ballId, float distanceToBall)
+    {
+        MatchStats s = Stats;
+        s.ballHits++;
         if (currentHealth <= 0)
-            afterDeathHits++;
+            s.afterDeathHits++;
+        if (s.timeToFirstHit < 0f)
+            s.timeToFirstHit = MatchStatTicker.MatchTime;
+
+        if (isPaddle)
+            s.paddleHits++;
+        if (isBump)
+            s.bumpHits++;
+        if (isLifeline)
+            s.lifelineTouches++;
+        if (incoming)
+            s.ballsReturned++;
+        else
+            s.ballsRedirected++;
+        if (MatchStatTicker.IsSmash(speed))
+            s.smashHits++;
+        if (speed > s.fastestBallHit)
+            s.fastestBallHit = speed;
+        if (speed > 0.05f && (s.slowestBallHit <= 0f || speed < s.slowestBallHit))
+            s.slowestBallHit = speed;
+
+        if (ballId != 0 && ballId == s.lastHitBallId && Time.time - s.lastHitTime < 0.45f)
+            s.doubleTouches++;
+        s.lastHitBallId = ballId;
+        s.lastHitTime = Time.time;
+        s.currentRallyTouches++;
+        if (s.currentRallyTouches > s.maxRallyTouches)
+            s.maxRallyTouches = s.currentRallyTouches;
+
+        MatchStatTicker.NoteClutchSave(this, distanceToBall, speed);
     }
 
     public void RecordBallOwnershipSeconds(int seconds)
     {
         if (seconds > longestBallOwnership)
             longestBallOwnership = seconds;
+    }
+
+    public void RecordBallOwnershipTick(float dt, bool newPossession)
+    {
+        Stats.totalBallOwnership += dt;
+        if (newPossession)
+            Stats.timesGainedPossession++;
     }
 
     public void RecordUltUsed()
@@ -508,7 +681,57 @@ public class Player
     {
         numberOfDashes++;
     }
+
+    public void RecordBump()
+    {
+        Stats.bumpsUsed++;
+    }
+
+    public void RecordShieldBlock(int blockedAmount)
+    {
+        Stats.shieldBlocks++;
+        if (blockedAmount > 0)
+            Stats.damageBlocked += blockedAmount;
+    }
+
+    public void RecordHeal(int amount)
+    {
+        if (amount <= 0)
+            return;
+        Stats.healingReceived += amount;
+        Stats.damageHealed += amount;
+    }
+
+    public void RecordWallBounceAfterHit()
+    {
+        Stats.wallBouncesAfterHit++;
+        Stats.currentRallyTouches++;
+        if (Stats.currentRallyTouches > Stats.maxRallyTouches)
+            Stats.maxRallyTouches = Stats.currentRallyTouches;
+    }
+
+    public void RecordAce()
+    {
+        Stats.aces++;
+    }
+
+    public void RecordLastTouchGoal()
+    {
+        Stats.lastTouchGoals++;
+    }
+
+    public void RecordVolley()
+    {
+        Stats.volleys++;
+    }
     #endregion
+}
+
+public enum StatSource
+{
+    Ball,
+    Ability,
+    Hazard
 }
 
 [System.Serializable]

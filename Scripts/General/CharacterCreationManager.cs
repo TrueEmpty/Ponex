@@ -1274,16 +1274,7 @@ public class CharacterCreationManager : MonoBehaviour
         {
             Player p = targets[i];
             p.currentHealth = p.maxHealth;
-            p.damageDealt = 0;
-            p.damageTaken = 0;
-            p.ballHits = 0;
-            p.longestBallOwnership = 0;
-            p.highestSingleDamgeDealt = 0;
-            p.highestSingleDamageTaken = 0;
-            p.ultsUsed = 0;
-            p.numberOfDashes = 0;
-            p.afterDeathHits = 0;
-            p.afterDeathDamage = 0;
+            p.ResetMatchStats();
             p.won = false;
             FillSkill(p.bump);
             FillSkill(p.super);
@@ -1305,11 +1296,7 @@ public class CharacterCreationManager : MonoBehaviour
                 case "super": if (p.super != null) { p.super.amount = 0; } break;
                 case "dash": if (p.dash != null) { p.dash.amount = 0; } break;
                 case "match":
-                    p.damageDealt = 0;
-                    p.damageTaken = 0;
-                    p.ballHits = 0;
-                    p.ultsUsed = 0;
-                    p.numberOfDashes = 0;
+                    p.ResetMatchStats();
                     break;
             }
         }

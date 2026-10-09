@@ -741,6 +741,7 @@ public class Database : MonoBehaviour
             {
                 CheckPlayerConstrants();
                 BallCheck();
+                MatchStatTicker.Tick(this);
                 CheckForWinner();
             }
         }
@@ -1387,6 +1388,7 @@ public class Database : MonoBehaviour
 
             // AI learns from match outcome (persisted across sessions)
             ComputerAI.OnMatchEnd(players);
+            MatchStatTicker.FinalizeMatch(this);
 
             //Run Time Slow
             if (!someoneWon)
@@ -1477,19 +1479,11 @@ public class Database : MonoBehaviour
             p.state = "";
             p.winScrollTarget = null;
             p.won = false;
-            p.damageDealt = 0;
-            p.damageTaken = 0;
-            p.ballHits = 0;
-            p.longestBallOwnership = 0;
-            p.highestSingleDamgeDealt = 0;
-            p.highestSingleDamageTaken = 0;
-            p.ultsUsed = 0;
-            p.numberOfDashes = 0;
-            p.afterDeathHits = 0;
-            p.afterDeathDamage = 0;
+            p.ResetMatchStats();
             p.spawnedPlayer = null;
             p.spawnedLifeline = null;
         }
+        MatchStatTicker.Reset();
     }
 
     IEnumerator SomeoneWon()
@@ -1640,16 +1634,7 @@ public class Database : MonoBehaviour
             p.state = "";
             p.winScrollTarget = null;
             p.won = false;
-            p.damageDealt = 0;
-            p.damageTaken = 0;
-            p.ballHits = 0;
-            p.longestBallOwnership = 0;
-            p.highestSingleDamgeDealt = 0;
-            p.highestSingleDamageTaken = 0;
-            p.ultsUsed = 0;
-            p.numberOfDashes = 0;
-            p.afterDeathHits = 0;
-            p.afterDeathDamage = 0;
+            p.ResetMatchStats();
             p.spawnedPlayer = null;
             p.spawnedLifeline = null;
 
@@ -1888,16 +1873,7 @@ public class Database : MonoBehaviour
                     continue;
 
                 p.won = false;
-                p.damageDealt = 0;
-                p.damageTaken = 0;
-                p.ballHits = 0;
-                p.longestBallOwnership = 0;
-                p.highestSingleDamgeDealt = 0;
-                p.highestSingleDamageTaken = 0;
-                p.ultsUsed = 0;
-                p.numberOfDashes = 0;
-                p.afterDeathHits = 0;
-                p.afterDeathDamage = 0;
+                p.ResetMatchStats();
 
                 bool keepCreationDraft = CharacterCreationManager.IsActive
                     && p.index == 0
@@ -2127,6 +2103,7 @@ public class Database : MonoBehaviour
                     info.ballReady = true;
             }
             gameStart = true;
+            MatchStatTicker.Reset();
             yield return null;
         }
 

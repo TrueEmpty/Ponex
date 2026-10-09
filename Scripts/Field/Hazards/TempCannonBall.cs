@@ -95,7 +95,14 @@ public class TempCannonBall : MonoBehaviour
         {
             PlayerGrab pg = other.GetComponentInParent<PlayerGrab>();
             if (pg != null && pg.player != null)
-                pg.player.ApplyGoalDamage(lifelineDamage, gameObject.GetEntityId().GetHashCode());
+            {
+                int lost = pg.player.ApplyGoalDamage(lifelineDamage, gameObject.GetEntityId().GetHashCode());
+                if (lost > 0)
+                {
+                    pg.player.RecordGoalConceded(lost);
+                    pg.player.RecordHazardDamageTaken(lost);
+                }
+            }
             Destroy(gameObject);
             return;
         }

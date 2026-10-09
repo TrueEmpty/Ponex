@@ -47,6 +47,10 @@ public class BallInfo : MonoBehaviour
     PlayerGrab ownerGrab;
     int ownershipPlayerIndex = -1;
     float ownershipTimer = 0f;
+    int lastHitterIndex = -1;
+    int uniqueHitterMask;
+    int hitsSinceLifeline;
+    int wallBouncesSinceHit;
 
     void OnEnable()
     {
@@ -160,13 +164,62 @@ public class BallInfo : MonoBehaviour
             return;
         }
 
-        if (idx != ownershipPlayerIndex)
+        bool newPossession = idx != ownershipPlayerIndex;
+        if (newPossession)
         {
             ownershipPlayerIndex = idx;
             ownershipTimer = 0f;
         }
 
         ownershipTimer += Time.deltaTime;
-        db.players[idx].RecordBallOwnershipSeconds(Mathf.FloorToInt(ownershipTimer));
+        Player owner = db.players[idx];
+        if (owner == null)
+            return;
+        owner.RecordBallOwnershipSeconds(Mathf.FloorToInt(ownershipTimer));
+        owner.RecordBallOwnershipTick(Time.deltaTime, newPossession);
+    }
+
+    public void NotePlayerHit(int playerIndex)
+    {
+        if (playerIndex < 0)
+            return;
+        lastHitterIndex = playerIndex;
+        hitsSinceLifeline++;
+        if (playerIndex < 32)
+            uniqueHitterMask |= 1 << playerIndex;
+        wallBouncesSinceHit = 0;
+    }
+
+    public void NoteWallBounce()
+    {
+        if (lastHitterIndex < 0 || db == null || db.players == null)
+            return;
+        Player p = db.players.Find(x => x != null && x.index == lastHitterIndex);
+        if (p == null)
+            return;
+        p.RecordWallBounceAfterHit();
+        wallBouncesSinceHit++;
+    }
+
+    public bool ConsumeAceIfSoloHitter(int scorerIndex)
+    {
+        bool ace = lastHitterIndex == scorerIndex
+            && uniqueHitterMask != 0
+            && (uniqueHitterMask & (uniqueHitterMask - 1)) == 0;
+        ResetRallyTracking();
+        return ace;
+    }
+
+    public bool ConsumeVolley()
+    {
+        return wallBouncesSinceHit == 0 && hitsSinceLifeline > 0;
+    }
+
+    public void ResetRallyTracking()
+    {
+        uniqueHitterMask = 0;
+        hitsSinceLifeline = 0;
+        wallBouncesSinceHit = 0;
+        lastHitterIndex = -1;
     }
 }

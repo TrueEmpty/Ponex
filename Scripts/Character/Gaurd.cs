@@ -189,9 +189,14 @@ public class Gaurd : MonoBehaviour
             baseDamage = Mathf.Max(1, tbI.ball.damage);
 
         int lost = pg.player.ApplyGoalDamage(baseDamage, hit.GetEntityId().GetHashCode());
+        if (lost > 0)
+            pg.player.RecordGoalConceded(lost);
         if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null
             && tpG.playerIndex != pg.playerIndex)
-            tpG.player.RecordDamageDealt(lost);
+        {
+            tpG.player.RecordDamageDealt(lost, pg.player);
+            tpG.player.RecordGoalScored(lost, pg.player);
+        }
 
         pawns.RemoveAll(pawn => pawn == null);
 

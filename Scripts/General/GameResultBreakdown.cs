@@ -75,7 +75,12 @@ public class GameResultBreakdown : MonoBehaviour
             rt.sizeDelta = new Vector2(FourLessWidth, rt.sizeDelta.y);
 
         if (info != null)
-            height = info.GetComponent<RectTransform>().sizeDelta.y;
+        {
+            float view = info.rectTransform.rect.height;
+            if (view < 8f)
+                view = info.rectTransform.sizeDelta.y;
+            height = Mathf.Max(0f, info.preferredHeight - Mathf.Max(8f, view));
+        }
     }
 
     void UpdateInfo()
@@ -125,27 +130,9 @@ public class GameResultBreakdown : MonoBehaviour
         charName.text = p.name;
         charName.color = (p.currentHealth > 0) ? charName.color : Color.gray;
 
-        string infoOut = "Damage Dealt: " + p.damageDealt;
-        infoOut += "\n";
-        infoOut += "Damage Taken: " + p.damageTaken;
-        infoOut += "\n";
-        infoOut += "Ball Hits: " + p.ballHits;
-        infoOut += "\n";
-        infoOut += "Longest Ball Ownership: " + p.longestBallOwnership + "s";
-        infoOut += "\n";
-        infoOut += "Biggest Hit Dealt: " + p.highestSingleDamgeDealt;
-        infoOut += "\n";
-        infoOut += "Biggest Hit Taken: " + p.highestSingleDamageTaken;
-        infoOut += "\n";
-        infoOut += "Ults used: " + p.ultsUsed;
-        infoOut += "\n";
-        infoOut += "# of Dashes: " + p.numberOfDashes;
-        infoOut += "\n";
-        infoOut += "After Death Hits: " + p.afterDeathHits;
-        infoOut += "\n";
-        infoOut += "After Death Damage Dealt: " + p.afterDeathDamage;
-
-        info.text = infoOut;
+        if (p.match == null)
+            p.match = new MatchStats();
+        info.text = p.match.FormatWinScreen(p);
         portrait.texture = p.portrait;
     }
 

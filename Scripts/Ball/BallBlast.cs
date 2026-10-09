@@ -43,7 +43,11 @@ public static class BallBlast
                 victim.maxHealth = victim.currentHealth;
 
             if (owner != null)
-                owner.RecordDamageDealt(lost);
+            {
+                owner.RecordDamageDealt(lost, victim);
+                owner.RecordGoalScored(lost, victim);
+            }
+            victim.RecordGoalConceded(lost);
         }
         return lost;
     }

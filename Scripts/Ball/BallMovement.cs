@@ -134,6 +134,8 @@ public class BallMovement : MonoBehaviour
         if (tag == "Wall" || tag == "Walls" || tag == "Obstacle")
         {
             ReflectOffContact(collision);
+            if (bI != null)
+                bI.NoteWallBounce();
         }
     }
 
@@ -182,12 +184,12 @@ public class BallMovement : MonoBehaviour
         {
             case "Player":
                 SetSpeedPreservingDirection(speed * Mathf.Max(1f, bI.ball.speedIncrease * 1.2f));
-                RecordHitIfLinked(pG, true);
+                RecordHitIfLinked(pG, true, tag, false);
                 break;
 
             case "Lifeline":
                 // Mit catch/throw owns speed — don't double-boost stuck balls
-                RecordHitIfLinked(pG, false);
+                RecordHitIfLinked(pG, false, tag, false);
                 break;
 
             case "Ball":
@@ -197,7 +199,7 @@ public class BallMovement : MonoBehaviour
                 // Yuotay bat already applied directed hit force on Enter — keep that velocity
                 if (collision.gameObject.GetComponentInParent<Yuotay>() != null)
                 {
-                    RecordHitIfLinked(pG, true);
+                    RecordHitIfLinked(pG, true, tag, false);
                     break;
                 }
 
@@ -211,7 +213,7 @@ public class BallMovement : MonoBehaviour
                     bumpedSpeed = Mathf.Min(bumpedSpeed, bumpCap);
                     SetSpeedPreservingDirection(bumpedSpeed);
 
-                    RecordHitIfLinked(pG, true);
+                    RecordHitIfLinked(pG, true, tag, true);
                 }
                 break;
 
@@ -241,7 +243,7 @@ public class BallMovement : MonoBehaviour
         }
     }
 
-    void RecordHitIfLinked(PlayerGrab pG, bool notifyAi)
+    void RecordHitIfLinked(PlayerGrab pG, bool notifyAi, string tag, bool isBump)
     {
         if (pG == null || !pG.IsLinked() || db == null || db.players == null)
             return;
@@ -252,7 +254,22 @@ public class BallMovement : MonoBehaviour
         if (p == null)
             return;
 
-        p.RecordBallHit();
+        float speed = rb != null ? rb.linearVelocity.magnitude : 0f;
+        Vector3 toPaddle = p.spawnedPlayer != null
+            ? p.spawnedPlayer.transform.position - transform.position
+            : Vector3.zero;
+        toPaddle.z = 0f;
+        bool incoming = Vector3.Dot(rb != null ? rb.linearVelocity : Vector3.zero, -MatchStatTicker.IntoField(p.facing)) > 0.1f;
+        bool isPaddle = tag == "Player" || tag == "Paddle";
+        bool isLifeline = tag == "Lifeline";
+        int ballId = gameObject.GetEntityId().GetHashCode();
+        p.RecordBallHit(speed, incoming, isBump, isPaddle, isLifeline, ballId, toPaddle.magnitude);
+        if (bI != null)
+        {
+            if (bI.ConsumeVolley())
+                p.RecordVolley();
+            bI.NotePlayerHit(pG.playerIndex);
+        }
         if (notifyAi)
             ComputerAI.OnPaddleHitBall(p);
     }
