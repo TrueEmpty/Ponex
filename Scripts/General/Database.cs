@@ -2015,8 +2015,9 @@ public class Database : MonoBehaviour
                         && p.spawnedPlayer.GetComponent<Yuotay>() == null)
                     {
                         float inset = 0f;
-                        bool keepFlush = p.spawnedPlayer.GetComponent<Tic>() != null;
-                        if (!keepFlush && p.character != null)
+                        if (p.spawnedPlayer.GetComponent<Gaurd>() != null)
+                            inset = Gaurd.BallBehindGap;
+                        else if (p.spawnedPlayer.GetComponent<Tic>() == null && p.character != null)
                             inset = Mathf.Max(0f, p.character.positionOffset.y);
                         SnapFlushToHomeWall(p.spawnedPlayer.transform, p.facing, inset);
                     }

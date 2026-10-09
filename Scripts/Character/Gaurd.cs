@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class Gaurd : MonoBehaviour
 {
+    /// <summary>Gap from the wall face to Gaurd's back — one default ball (0.5) plus a little slack.</summary>
+    public const float BallBehindGap = 0.62f;
+
     Rigidbody rb;
     Database db;
     PlayerGrab pg;
@@ -26,17 +29,18 @@ public class Gaurd : MonoBehaviour
     Vector3 pinPos;
     Quaternion pinRot;
 
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        MakeImmovable();
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
         db = Database.instance;
-
-        if (rb != null)
-        {
-            rb.useGravity = false;
-            rb.interpolation = RigidbodyInterpolation.None;
-        }
+        MakeImmovable();
 
         DamageOnTagHit dmg = GetComponent<DamageOnTagHit>();
         if (dmg == null)
@@ -46,6 +50,8 @@ public class Gaurd : MonoBehaviour
 
         if (GetComponent<DestroyOnDeath>() == null)
             gameObject.AddComponent<DestroyOnDeath>();
+
+        PinCurrentPose();
     }
 
     void Update()
@@ -83,37 +89,60 @@ public class Gaurd : MonoBehaviour
         HoldStill();
     }
 
+    void LateUpdate()
+    {
+        HoldStill();
+    }
+
+    void MakeImmovable()
+    {
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
+        if (rb == null)
+            return;
+
+        rb.useGravity = false;
+        rb.isKinematic = true;
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
+
     void HoldStill()
     {
-        Player p = pg != null ? pg.player : null;
-        bool settle = db != null && db.startingGame && !db.gameStart;
-        if (!pinned || settle)
-        {
-            if (p == null)
-                return;
-            CapturePin(p);
-        }
+        if (!pinned)
+            PinCurrentPose();
+        else if (pg != null && pg.player != null)
+            pinRot = WallFacingRotation(pg.player);
 
+        if (!pinned)
+            return;
+
+        MakeImmovable();
         transform.SetPositionAndRotation(pinPos, pinRot);
         if (rb == null)
             return;
 
-        rb.isKinematic = true;
-        rb.constraints = RigidbodyConstraints.FreezeAll;
         rb.position = pinPos;
         rb.rotation = pinRot;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
     }
 
-    void CapturePin(Player p)
+    void PinCurrentPose()
     {
+        if (pinned)
+            return;
+
         Physics.SyncTransforms();
         pinPos = transform.position;
         if (db != null && db.FieldPlaySize > 0.01f)
             pinPos.z = db.FieldPlaySize;
-        pinRot = WallFacingRotation(p);
+        pinRot = WallFacingRotation(pg != null ? pg.player : null);
         pinned = true;
+        MakeImmovable();
     }
 
     static Quaternion WallFacingRotation(Player p)
@@ -129,8 +158,14 @@ public class Gaurd : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        HoldStill();
         if (collision != null)
             TryTakeBallHit(collision.gameObject);
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        HoldStill();
     }
 
     void OnTriggerEnter(Collider other)

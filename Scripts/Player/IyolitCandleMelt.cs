@@ -51,6 +51,7 @@ public class IyolitCandleMelt : MonoBehaviour
             if (superFlameGo == null && superFlame != null && wick != null)
             {
                 superFlameGo = Instantiate(superFlame, wick.position, wick.rotation);
+                superFlameGo.transform.SetParent(wick, true);
 
                 PlayerGrab cpG = superFlameGo.GetComponent<PlayerGrab>();
 

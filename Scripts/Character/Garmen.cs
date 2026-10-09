@@ -14,7 +14,8 @@ public class Garmen : MonoBehaviour
     public GameObject projectile;
     float gbC = 0;
 
-    public float cannonOffset = .07f;
+    [Tooltip("Lift from the lifeline hub so the cannon sits on the mount, not in the wall.")]
+    public float cannonOffset = 0.12f;
 
     bool lastStickBack = false;
     bool lastAiWantSuper = false;
@@ -28,11 +29,15 @@ public class Garmen : MonoBehaviour
         pg = GetComponent<PlayerGrab>();
         db = Database.instance;
         fp = GetComponent<FollowPlayer>();
+        LockCannonBody();
+        SnapToLifeline();
     }
 
     // Update is called once per frame
     void Update()
     {
+        SnapToLifeline();
+
         if (ll == null && pg != null && pg.player != null)
             ll = pg.player.spawnedLifeline;
 
@@ -86,19 +91,57 @@ public class Garmen : MonoBehaviour
         }
     }
 
+    void LockCannonBody()
+    {
+        Rigidbody body = GetComponent<Rigidbody>();
+        if (body == null)
+            return;
+        body.useGravity = false;
+        body.isKinematic = true;
+        body.interpolation = RigidbodyInterpolation.None;
+        body.constraints = RigidbodyConstraints.FreezeAll;
+        body.linearVelocity = Vector3.zero;
+        body.angularVelocity = Vector3.zero;
+    }
+
+    Transform AttachmentPoint()
+    {
+        if (ll == null)
+            return null;
+
+        GarmenDrive drive = ll.GetComponent<GarmenDrive>();
+        if (drive != null && drive.hub != null)
+            return drive.hub.transform;
+
+        Transform hub = ll.transform.Find("Hub");
+        return hub != null ? hub : ll.transform;
+    }
+
     void SnapToLifeline()
     {
         if (ll == null && pg != null && pg.player != null)
             ll = pg.player.spawnedLifeline;
         if (ll == null)
             return;
-        Vector3 pos = ll.transform.position + (ll.transform.up * cannonOffset);
-        transform.position = pos;
+
+        Transform attach = AttachmentPoint();
+        if (attach == null)
+            return;
+
+        float lift = Mathf.Max(0.1f, cannonOffset);
+        Vector3 pos = attach.position + attach.up * lift;
+        if (db != null && db.FieldPlaySize > 0.01f)
+            pos.z = db.FieldPlaySize;
+
+        LockCannonBody();
+        transform.SetPositionAndRotation(pos, ll.transform.rotation);
         Rigidbody body = GetComponent<Rigidbody>();
         if (body != null)
         {
             body.position = pos;
+            body.rotation = ll.transform.rotation;
             body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
         }
     }
 

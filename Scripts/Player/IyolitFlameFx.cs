@@ -34,6 +34,11 @@ public class IyolitFlameFx : MonoBehaviour
         PlayAll();
     }
 
+    void LateUpdate()
+    {
+        OrientAllToWick();
+    }
+
     public static void Ensure(GameObject root, Style preferred = Style.Auto)
     {
         if (root == null)
@@ -87,6 +92,47 @@ public class IyolitFlameFx : MonoBehaviour
         }
 
         PlayAll();
+        OrientAllToWick();
+    }
+
+    /// <summary>
+    /// Flame rise + sprite tip follow this object's up (into the field).
+    /// Side walls rotate 90°, top wall flips 180°.
+    /// </summary>
+    void OrientAllToWick()
+    {
+        float spriteRot = SpriteRotationForUp(transform.up);
+        ParticleSystem[] systems = GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < systems.Length; i++)
+        {
+            ParticleSystem ps = systems[i];
+            if (ps == null)
+                continue;
+
+            var main = ps.main;
+            main.gravityModifier = 0f;
+            main.startRotation = spriteRot;
+
+            var velocity = ps.velocityOverLifetime;
+            velocity.space = ParticleSystemSimulationSpace.Local;
+
+            var renderer = ps.GetComponent<ParticleSystemRenderer>();
+            if (renderer != null)
+            {
+                renderer.renderMode = ParticleSystemRenderMode.Billboard;
+                renderer.alignment = ParticleSystemRenderSpace.View;
+            }
+        }
+    }
+
+    /// <summary>View-billboard 0° = texture up is world +Y. Rotate so texture up matches wick up.</summary>
+    public static float SpriteRotationForUp(Vector3 up)
+    {
+        up.z = 0f;
+        if (up.sqrMagnitude < 0.0001f)
+            up = Vector3.up;
+        up.Normalize();
+        return Mathf.Atan2(-up.x, up.y);
     }
 
     /// <summary>
@@ -237,7 +283,8 @@ public class IyolitFlameFx : MonoBehaviour
         main.loop = true;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.scalingMode = ParticleSystemScalingMode.Hierarchy;
-        main.startRotation = 0f;
+        main.gravityModifier = 0f;
+        main.startRotation = SpriteRotationForUp(ps.transform.up);
 
         Texture2D tex;
         Color c0;
@@ -246,7 +293,6 @@ public class IyolitFlameFx : MonoBehaviour
         switch (layer)
         {
             case Style.BodyCore:
-                main.gravityModifier = -0.15f;
                 tex = texA != null ? texA : texB;
                 main.duration = 1f;
                 main.startLifetime = new ParticleSystem.MinMaxCurve(0.25f, 0.45f);
@@ -258,7 +304,6 @@ public class IyolitFlameFx : MonoBehaviour
                 break;
 
             case Style.Candle:
-                main.gravityModifier = -0.15f;
                 tex = texB != null ? texB : texA;
                 main.duration = 1.2f;
                 main.startLifetime = new ParticleSystem.MinMaxCurve(0.3f, 0.55f);
@@ -283,7 +328,6 @@ public class IyolitFlameFx : MonoBehaviour
                 break;
 
             default: // BodyAura
-                main.gravityModifier = -0.15f;
                 tex = texC != null ? texC : texEmber;
                 main.duration = 1.5f;
                 main.startLifetime = new ParticleSystem.MinMaxCurve(0.35f, 0.7f);
@@ -374,6 +418,7 @@ public class IyolitFlameFx : MonoBehaviour
         {
             renderer.renderMode = ParticleSystemRenderMode.Billboard;
             renderer.alignment = ParticleSystemRenderSpace.View;
+            renderer.flip = new Vector3(0f, 0f, 0f);
             renderer.sortMode = ParticleSystemSortMode.OldestInFront;
             renderer.minParticleSize = 0.01f;
             renderer.lengthScale = 1f;
@@ -430,9 +475,9 @@ public class IyolitFlameFx : MonoBehaviour
             new Color(1f, 0.95f, 0.5f, 1f),
             new Color(1f, 0.4f, 0.05f, 0.85f));
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.gravityModifier = -0.15f;
+        main.gravityModifier = 0f;
         main.maxParticles = 56;
-        main.startRotation = 0f;
+        main.startRotation = SpriteRotationForUp(parent.up);
 
         var emission = ps.emission;
         emission.rateOverTime = parentStyle == Style.Candle ? 22f : 16f;

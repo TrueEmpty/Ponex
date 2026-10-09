@@ -278,7 +278,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shootPoint: {fileID: 40940597105596837}
   projectile: {fileID: 6342214630637558687, guid: a320210d50f960c4d94c3bfd960745b8, type: 3}
-  cannonOffset: 0
+  cannonOffset: 0.12
   thinkTime: 0.5
   thought: 0
   chanceToDoNothing: 50

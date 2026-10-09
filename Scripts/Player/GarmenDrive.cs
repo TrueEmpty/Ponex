@@ -16,17 +16,40 @@ public class GarmenDrive : MonoBehaviour
 
     public List<string> hitTags = new List<string>();
 
+    PaddleWall.LaneLock lane;
+    float laneMin;
+    float laneMax;
+    float laneRefresh;
+    bool ignoredHomeWall;
+
     // Start is called before the first frame update
     void Start()
     {
         pg = GetComponent<PlayerGrab>();
         db = Database.instance;
         rb = GetComponent<Rigidbody>();
+        if (hitTags == null || hitTags.Count == 0)
+            hitTags = new List<string> { "Walls", "Wall", "Obstacle" };
+        if (rb != null)
+        {
+            rb.useGravity = false;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (pg != null && pg.player != null && rb != null)
+        {
+            lane.Ensure(rb, pg.player.facing);
+            if (!ignoredHomeWall)
+            {
+                PaddleWall.IgnoreHomeWallCollisions(transform, hitTags, null);
+                ignoredHomeWall = true;
+            }
+        }
+
         if(db.gameStart)
         {
             Player p = db.players[pg.playerIndex];
@@ -74,6 +97,28 @@ public class GarmenDrive : MonoBehaviour
                 }
             }
         }
+
+        ClampToWall();
+    }
+
+    void FixedUpdate()
+    {
+        ClampToWall();
+    }
+
+    void LateUpdate()
+    {
+        ClampToWall();
+    }
+
+    void ClampToWall()
+    {
+        if (rb == null || pg == null || pg.player == null)
+            return;
+
+        lane.Ensure(rb, pg.player.facing);
+        lane.Clamp(rb);
+        PaddleWall.ClampToLaneLimits(rb, transform, pg.player.facing, ref laneMin, ref laneMax, ref laneRefresh);
     }
 
     void Action()
@@ -105,6 +150,7 @@ public class GarmenDrive : MonoBehaviour
             rb.linearVelocity = rotDir * moveDir * pg.player.EffectiveMovementSpeed;
             // Wheels can sit inside the wall. Only the hub body should block or unstick.
             PaddleWall.Unstick(rb, BodyTransform, hitTags);
+            ClampToWall();
 
             if(moveDir != 0)
             {
