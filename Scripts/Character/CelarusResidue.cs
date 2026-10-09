@@ -18,6 +18,8 @@ public class CelarusResidue : MonoBehaviour
     static Texture2D starCutoutTex;
     static Texture2D starTwinkleTex;
     static bool texturesResolved;
+    static Collider[] setupOverlapBuffer = new Collider[64];
+    static readonly List<Collider> playerColliderBuffer = new List<Collider>(32);
 
     static readonly Color[] StarPalette =
     {
@@ -342,10 +344,20 @@ public class CelarusResidue : MonoBehaviour
         if (self == null)
             return;
 
-        Collider[] nearby = Physics.OverlapSphere(self.bounds.center, self.bounds.extents.magnitude + 2f);
-        for (int i = 0; i < nearby.Length; i++)
+        int nearbyCount;
+        float radius = self.bounds.extents.magnitude + 2f;
+        while ((nearbyCount = Physics.OverlapSphereNonAlloc(
+            self.bounds.center,
+            radius,
+            setupOverlapBuffer,
+            ~0,
+            QueryTriggerInteraction.Collide)) == setupOverlapBuffer.Length)
         {
-            Collider other = nearby[i];
+            setupOverlapBuffer = new Collider[setupOverlapBuffer.Length * 2];
+        }
+        for (int i = 0; i < nearbyCount; i++)
+        {
+            Collider other = setupOverlapBuffer[i];
             if (other == null || other == self)
                 continue;
             if (other.CompareTag("Ball"))
@@ -353,18 +365,35 @@ public class CelarusResidue : MonoBehaviour
             Physics.IgnoreCollision(self, other, true);
         }
 
-        PlayerGrab[] grabs = Object.FindObjectsByType<PlayerGrab>(FindObjectsInactive.Exclude);
-        for (int i = 0; i < grabs.Length; i++)
+        Database db = Database.instance;
+        if (db == null || db.players == null)
+            return;
+
+        for (int i = 0; i < db.players.Count; i++)
         {
-            PlayerGrab g = grabs[i];
-            if (g == null || g.playerIndex != playerIndex)
+            Player player = db.players[i];
+            if (player == null)
                 continue;
-            Collider[] cols = g.GetComponentsInChildren<Collider>();
-            for (int c = 0; c < cols.Length; c++)
-            {
-                if (cols[c] != null && cols[c] != self)
-                    Physics.IgnoreCollision(self, cols[c], true);
-            }
+            IgnoreMatchingPlayerRoot(self, player.spawnedPlayer, playerIndex);
+            IgnoreMatchingPlayerRoot(self, player.spawnedLifeline, playerIndex);
+        }
+    }
+
+    static void IgnoreMatchingPlayerRoot(Collider self, GameObject root, int playerIndex)
+    {
+        if (root == null)
+            return;
+        PlayerGrab rootGrab = root.GetComponentInChildren<PlayerGrab>();
+        if (rootGrab == null || rootGrab.playerIndex != playerIndex)
+            return;
+
+        playerColliderBuffer.Clear();
+        root.GetComponentsInChildren(true, playerColliderBuffer);
+        for (int i = 0; i < playerColliderBuffer.Count; i++)
+        {
+            Collider col = playerColliderBuffer[i];
+            if (col != null && col != self)
+                Physics.IgnoreCollision(self, col, true);
         }
     }
 
@@ -379,14 +408,20 @@ public class CelarusResidue : MonoBehaviour
         if (!pullToTarget)
             return;
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, pullRadius);
-        for (int i = 0; i < hits.Length; i++)
+        Vector3 residuePosition = transform.position;
+        float radiusSq = pullRadius * pullRadius;
+        for (int i = 0; i < LiveBallRegistry.Count; i++)
         {
-            Collider hit = hits[i];
-            if (hit == null || !hit.CompareTag("Ball"))
+            BallInfo info = LiveBallRegistry.GetAt(i);
+            if (info == null || info.gameObject == null || !info.gameObject.activeInHierarchy)
                 continue;
 
-            Rigidbody ballRb = hit.attachedRigidbody != null ? hit.attachedRigidbody : hit.GetComponent<Rigidbody>();
+            Collider hit = info.GetComponent<Collider>();
+            Vector3 closest = hit != null ? hit.ClosestPoint(residuePosition) : info.transform.position;
+            if ((closest - residuePosition).sqrMagnitude > radiusSq)
+                continue;
+
+            Rigidbody ballRb = info.GetComponent<Rigidbody>();
             if (ballRb == null)
                 continue;
 
@@ -399,7 +434,7 @@ public class CelarusResidue : MonoBehaviour
             float falloff = 1f - Mathf.Clamp01(dist / Mathf.Max(0.1f, pullRadius));
             ballRb.AddForce(toTarget.normalized * (pullStrength * (0.35f + 0.65f * falloff)) * Time.fixedDeltaTime, ForceMode.Acceleration);
 
-            PlayerGrab ballGrab = hit.GetComponent<PlayerGrab>();
+            PlayerGrab ballGrab = info.GetComponent<PlayerGrab>();
             if (ballGrab != null && grab != null)
                 ballGrab.playerIndex = grab.playerIndex;
         }

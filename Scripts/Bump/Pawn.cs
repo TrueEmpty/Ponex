@@ -8,6 +8,9 @@ public class Pawn : MonoBehaviour
     PlayerGrab pg;
     public int health = 1;
     Renderer ren;
+    Material material;
+    Color lastRenderedColor;
+    bool hasRenderedColor;
 
     public List<PawnEffects> effects = new List<PawnEffects>();
 
@@ -17,6 +20,8 @@ public class Pawn : MonoBehaviour
         db = Database.instance;
         pg = GetComponent<PlayerGrab>();
         ren = GetComponent<Renderer>();
+        if (ren != null)
+            material = ren.material;
     }
 
     // Update is called once per frame
@@ -24,13 +29,24 @@ public class Pawn : MonoBehaviour
     {
         if(health > 0)
         {
-            if(health - 1 < db.pawnColors.Count)
+            if (material != null)
             {
-                ren.material.color = db.pawnColors[health - 1];
-            }
-            else
-            {
-                ren.material.color = db.pawnColors[^1];
+                Color wantedColor;
+                if(health - 1 < db.pawnColors.Count)
+                {
+                    wantedColor = db.pawnColors[health - 1];
+                }
+                else
+                {
+                    wantedColor = db.pawnColors[^1];
+                }
+
+                if (!hasRenderedColor || wantedColor != lastRenderedColor)
+                {
+                    material.color = wantedColor;
+                    lastRenderedColor = wantedColor;
+                    hasRenderedColor = true;
+                }
             }
 
             //Show Effects
@@ -39,7 +55,7 @@ public class Pawn : MonoBehaviour
                 for (int i = 0; i < effects.Count; i++)
                 {
                     PawnEffects pe = effects[i];
-                    Effects e = db.effects.Find(x => x.effect == pe.effect);
+                    Effects e = FindEffect(pe.effect);
 
                     if(!pe.shown)
                     {
@@ -152,7 +168,7 @@ public class Pawn : MonoBehaviour
                     for(int i = 0; i < effects.Count; i++)
                     {                        
                         PawnEffects pe = effects[i];
-                        Effects e = db.effects.Find(x => x.effect == pe.effect);
+                        Effects e = FindEffect(pe.effect);
 
                         switch (pe.effect)
                         {
@@ -214,6 +230,17 @@ public class Pawn : MonoBehaviour
                 }
             }
         }
+    }
+
+    Effects FindEffect(Effect effect)
+    {
+        for (int i = 0; i < db.effects.Count; i++)
+        {
+            Effects candidate = db.effects[i];
+            if (candidate != null && candidate.effect == effect)
+                return candidate;
+        }
+        return null;
     }
 }
 

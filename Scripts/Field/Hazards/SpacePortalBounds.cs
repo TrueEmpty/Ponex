@@ -10,6 +10,7 @@ public class SpacePortalBounds : MonoBehaviour
     public float halfExtent = 10f;
     public float margin = 0.35f;
     readonly HashSet<int> teleportCooldown = new HashSet<int>();
+    readonly Stack<PortalGlowFade> glowPool = new Stack<PortalGlowFade>();
     ParticleSystem sharedBurst;
 
     void Start()
@@ -186,24 +187,54 @@ public class SpacePortalBounds : MonoBehaviour
 
     void SpawnWarpFx(Vector3 pos)
     {
-        // Soft translucent disc
-        GameObject disc = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        disc.name = "Portal Glow";
-        disc.transform.position = pos;
-        disc.transform.localScale = Vector3.one * 1.4f;
-        Collider col = disc.GetComponent<Collider>();
-        if (col != null)
-            Destroy(col);
-        Renderer r = disc.GetComponent<Renderer>();
-        FieldTextureFactory.ApplyTransparentGlow(r, FieldTextureFactory.PortalSoftGlow(),
-            new Color(0.55f, 0.8f, 1f, 0.4f));
-        disc.AddComponent<PortalGlowFade>();
+        PortalGlowFade glow = null;
+        while (glowPool.Count > 0 && glow == null)
+            glow = glowPool.Pop();
+
+        if (glow != null)
+        {
+            glow.gameObject.SetActive(true);
+            glow.Restart(this, pos);
+        }
+        else
+        {
+            glow = CreatePortalGlow(pos);
+        }
 
         if (sharedBurst != null)
         {
             sharedBurst.transform.position = pos;
-            sharedBurst.Play(true);
+            sharedBurst.Emit(18);
         }
+    }
+
+    PortalGlowFade CreatePortalGlow(Vector3 pos)
+    {
+        GameObject disc = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        disc.name = "Portal Glow";
+        disc.transform.SetParent(transform, true);
+        disc.transform.position = pos;
+        disc.transform.localScale = Vector3.one * 1.4f;
+        Collider col = disc.GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = false;
+            Destroy(col);
+        }
+        Renderer r = disc.GetComponent<Renderer>();
+        FieldTextureFactory.ApplyTransparentGlow(r, FieldTextureFactory.PortalSoftGlow(),
+            new Color(0.55f, 0.8f, 1f, 0.4f));
+        PortalGlowFade glow = disc.AddComponent<PortalGlowFade>();
+        glow.Restart(this, pos);
+        return glow;
+    }
+
+    public void RecycleGlow(PortalGlowFade glow)
+    {
+        if (glow == null)
+            return;
+        glow.gameObject.SetActive(false);
+        glowPool.Push(glow);
     }
 }
 
@@ -211,10 +242,26 @@ public class PortalGlowFade : MonoBehaviour
 {
     float age;
     Vector3 startScale;
+    Renderer cachedRenderer;
+    Material material;
+    SpacePortalBounds owner;
 
-    void Start()
+    public void Restart(SpacePortalBounds newOwner, Vector3 position)
     {
-        startScale = transform.localScale;
+        if (cachedRenderer == null)
+        {
+            cachedRenderer = GetComponent<Renderer>();
+            if (cachedRenderer != null)
+                material = cachedRenderer.material;
+        }
+
+        owner = newOwner;
+        age = 0f;
+        startScale = Vector3.one * 1.4f;
+        transform.position = position;
+        transform.localScale = startScale;
+        if (material != null)
+            material.color = new Color(0.55f, 0.8f, 1f, 0.4f);
     }
 
     void Update()
@@ -222,15 +269,19 @@ public class PortalGlowFade : MonoBehaviour
         age += Time.deltaTime;
         float t = age / 0.55f;
         transform.localScale = startScale * (1f + t * 0.8f);
-        Renderer r = GetComponent<Renderer>();
-        if (r != null && r.material != null)
+        if (material != null)
         {
-            Color c = r.material.color;
+            Color c = material.color;
             c.a = Mathf.Clamp01(0.4f * (1f - t));
-            r.material.color = c;
+            material.color = c;
         }
         if (age > 0.55f)
-            Destroy(gameObject);
+        {
+            if (owner != null)
+                owner.RecycleGlow(this);
+            else
+                Destroy(gameObject);
+        }
     }
 }
 

@@ -61,6 +61,10 @@ public class TicWingBumper : MonoBehaviour
     Vector3 freezePos;
     Tic hostTic;
     bool sized;
+    Collider[] leftWingColliders;
+    Collider[] rightWingColliders;
+    BallInfo cachedNearestBall;
+    float nextBallTargetRefresh;
 
     public bool IsHoldingSuper => superHolding;
     /// <summary>True once fully clear of the bay — floaty flight allowed.</summary>
@@ -87,6 +91,7 @@ public class TicWingBumper : MonoBehaviour
         ApplyNormalBumperSize();
         spikes.EnsureBuilt();
         CacheRest();
+        CacheWingColliders();
         ForceStowWings();
     }
 
@@ -496,14 +501,14 @@ public class TicWingBumper : MonoBehaviour
     {
         leftAngle = 0f;
         rightAngle = 0f;
-        SetWingActive(leftWing, false);
-        SetWingActive(rightWing, false);
+        SetWingActive(leftWing, leftWingColliders, false);
+        SetWingActive(rightWing, rightWingColliders, false);
     }
 
     void DeployWings()
     {
-        SetWingActive(leftWing, true);
-        SetWingActive(rightWing, true);
+        SetWingActive(leftWing, leftWingColliders, true);
+        SetWingActive(rightWing, rightWingColliders, true);
         if (leftWing != null)
         {
             leftWing.localScale = leftWingRestScale;
@@ -516,12 +521,23 @@ public class TicWingBumper : MonoBehaviour
         }
     }
 
-    static void SetWingActive(Transform wing, bool active)
+    void CacheWingColliders()
+    {
+        leftWingColliders = leftWing != null
+            ? leftWing.GetComponentsInChildren<Collider>(true)
+            : new Collider[0];
+        rightWingColliders = rightWing != null
+            ? rightWing.GetComponentsInChildren<Collider>(true)
+            : new Collider[0];
+    }
+
+    static void SetWingActive(Transform wing, Collider[] cols, bool active)
     {
         if (wing == null) return;
         if (wing.gameObject.activeSelf != active)
             wing.gameObject.SetActive(active);
-        Collider[] cols = wing.GetComponentsInChildren<Collider>(true);
+        if (cols == null)
+            return;
         for (int i = 0; i < cols.Length; i++)
         {
             if (cols[i] != null)
@@ -531,16 +547,26 @@ public class TicWingBumper : MonoBehaviour
 
     BallInfo FindNearestBall()
     {
-        BallInfo[] balls = FindObjectsByType<BallInfo>(FindObjectsInactive.Exclude);
+        if (Time.time < nextBallTargetRefresh
+            && cachedNearestBall != null
+            && cachedNearestBall.gameObject.activeInHierarchy
+            && cachedNearestBall.ballReady)
+        {
+            return cachedNearestBall;
+        }
+        nextBallTargetRefresh = Time.time + 0.1f;
+
         BallInfo best = null;
         float bestSq = float.MaxValue;
-        for (int i = 0; i < balls.Length; i++)
+        for (int i = 0; i < LiveBallRegistry.Count; i++)
         {
-            if (balls[i] == null || !balls[i].ballReady) continue;
-            float sq = (balls[i].transform.position - transform.position).sqrMagnitude;
-            if (sq < bestSq) { bestSq = sq; best = balls[i]; }
+            BallInfo ball = LiveBallRegistry.GetAt(i);
+            if (ball == null || !ball.gameObject.activeInHierarchy || !ball.ballReady) continue;
+            float sq = (ball.transform.position - transform.position).sqrMagnitude;
+            if (sq < bestSq) { bestSq = sq; best = ball; }
         }
-        return best;
+        cachedNearestBall = best;
+        return cachedNearestBall;
     }
 
     static Tic FindHostTic(Player wingPlayer)

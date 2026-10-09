@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4886558966712138827}
   - component: {fileID: 8255228705103046116}
   - component: {fileID: 3209536644817593196}
+  - component: {fileID: 6000000000000000001}
   - component: {fileID: 2784571473574359413}
   - component: {fileID: 496504429072206678}
   m_Layer: 3
@@ -96,6 +97,18 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 120
   m_CollisionDetection: 2
+--- !u!55 &6000000000000000001
+ConstantForce:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 545483545136210984}
+  m_Enabled: 1
+  m_Force: {x: 0, y: 0, z: 0}
+  m_RelativeForce: {x: 0, y: 0, z: 0}
+  m_Torque: {x: 0, y: 0, z: 0}
+  m_RelativeTorque: {x: 0, y: 0, z: 0}
 --- !u!114 &2784571473574359413
 MonoBehaviour:
   m_ObjectHideFlags: 0

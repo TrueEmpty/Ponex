@@ -14,6 +14,7 @@ public class PauseMenuButton : MonoBehaviour
         button = GetComponent<Button>();
         if (button != null)
             button.onClick.AddListener(Press);
+        SelectorClickable.Ensure(gameObject, 200f);
     }
 
     void OnClick(int player)

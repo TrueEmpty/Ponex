@@ -12,7 +12,12 @@ public class TicLaunchArea : MonoBehaviour
 
     readonly HashSet<TicBumper> inside = new HashSet<TicBumper>();
     readonly HashSet<Rigidbody> heldBalls = new HashSet<Rigidbody>();
+    readonly HashSet<TicBumper> currentInside = new HashSet<TicBumper>();
+    readonly HashSet<int> launchedIds = new HashSet<int>();
+    readonly List<Rigidbody> deadBodies = new List<Rigidbody>();
+    readonly List<Rigidbody> heldBallCopy = new List<Rigidbody>();
     Collider[] selfCols;
+    Collider[] overlapBuffer = new Collider[64];
 
     [Tooltip("Minimum height above the plunger tip for an empty bay stack slot.")]
     public float emptyStackHeight = 0.55f;
@@ -59,19 +64,19 @@ public class TicLaunchArea : MonoBehaviour
         Vector3 center = transform.position;
         Vector3 half = Vector3.Scale(transform.lossyScale, new Vector3(0.55f, 0.55f, 0.55f));
         float radius = Mathf.Max(half.x, half.y, half.z);
-        Collider[] hits = Physics.OverlapSphere(center, Mathf.Max(0.5f, radius), ~0, QueryTriggerInteraction.Collide);
+        int hitCount = Overlap(center, Mathf.Max(0.5f, radius));
 
-        HashSet<TicBumper> now = new HashSet<TicBumper>();
-        for (int i = 0; i < hits.Length; i++)
+        currentInside.Clear();
+        for (int i = 0; i < hitCount; i++)
         {
-            Collider c = hits[i];
+            Collider c = overlapBuffer[i];
             if (c == null)
                 continue;
 
             TicBumper bumper = c.GetComponentInParent<TicBumper>();
             if (bumper != null)
             {
-                now.Add(bumper);
+                currentInside.Add(bumper);
                 RegisterBumperPassThrough(bumper);
                 bumper.SetInLaunchArea(true, owner);
                 continue;
@@ -84,11 +89,11 @@ public class TicLaunchArea : MonoBehaviour
 
         foreach (TicBumper b in inside)
         {
-            if (b != null && !now.Contains(b))
+            if (b != null && !currentInside.Contains(b))
                 b.SetInLaunchArea(false, owner);
         }
         inside.Clear();
-        foreach (TicBumper b in now)
+        foreach (TicBumper b in currentInside)
             inside.Add(b);
     }
 
@@ -109,22 +114,21 @@ public class TicLaunchArea : MonoBehaviour
         if (heldBalls.Count == 0)
             return;
 
-        List<Rigidbody> dead = null;
+        deadBodies.Clear();
         foreach (Rigidbody rb in heldBalls)
         {
             if (rb == null)
             {
-                if (dead == null) dead = new List<Rigidbody>();
-                dead.Add(rb);
+                deadBodies.Add(rb);
                 continue;
             }
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
-        if (dead != null)
+        if (deadBodies.Count > 0)
         {
-            for (int i = 0; i < dead.Count; i++)
-                heldBalls.Remove(dead[i]);
+            for (int i = 0; i < deadBodies.Count; i++)
+                heldBalls.Remove(deadBodies[i]);
         }
     }
 
@@ -231,10 +235,10 @@ public class TicLaunchArea : MonoBehaviour
         // Also scan live overlaps for balls/bumpers not yet tracked
         Vector3 center = transform.position;
         float scanR = Mathf.Max(transform.lossyScale.magnitude * 0.6f, 1f);
-        Collider[] hits = Physics.OverlapSphere(center, scanR, ~0, QueryTriggerInteraction.Collide);
-        for (int i = 0; i < hits.Length; i++)
+        int hitCount = Overlap(center, scanR);
+        for (int i = 0; i < hitCount; i++)
         {
-            Collider c = hits[i];
+            Collider c = overlapBuffer[i];
             if (c == null || c.transform.IsChildOf(ticT))
                 continue;
             if (c.GetComponentInParent<TicBumper>() == null && !c.CompareTag("Ball"))
@@ -274,13 +278,13 @@ public class TicLaunchArea : MonoBehaviour
         Vector3 center = transform.position;
         Vector3 half = transform.lossyScale * 0.5f;
         float radius = Mathf.Max(half.x, half.y, half.z) + radiusExtra;
-        Collider[] hits = Physics.OverlapSphere(center, radius, ~0, QueryTriggerInteraction.Collide);
+        int hitCount = Overlap(center, radius);
 
-        HashSet<int> launched = new HashSet<int>();
+        launchedIds.Clear();
 
-        for (int i = 0; i < hits.Length; i++)
+        for (int i = 0; i < hitCount; i++)
         {
-            Collider c = hits[i];
+            Collider c = overlapBuffer[i];
             if (c == null)
                 continue;
 
@@ -290,7 +294,7 @@ public class TicLaunchArea : MonoBehaviour
                 if (bumper.IsFrozen)
                     continue;
                 int id = bumper.GetEntityId().GetHashCode();
-                if (!launched.Add(id))
+                if (!launchedIds.Add(id))
                     continue;
                 bumper.SetInLaunchArea(true, owner);
                 bumper.Launch(velocity);
@@ -305,7 +309,7 @@ public class TicLaunchArea : MonoBehaviour
                 continue;
 
             int bid = body.GetEntityId().GetHashCode();
-            if (!launched.Add(bid))
+            if (!launchedIds.Add(bid))
                 continue;
 
             ReleaseBall(body);
@@ -316,10 +320,12 @@ public class TicLaunchArea : MonoBehaviour
         // Held balls that overlap scan missed
         if (heldBalls.Count > 0)
         {
-            List<Rigidbody> copy = new List<Rigidbody>(heldBalls);
-            for (int i = 0; i < copy.Count; i++)
+            heldBallCopy.Clear();
+            foreach (Rigidbody body in heldBalls)
+                heldBallCopy.Add(body);
+            for (int i = 0; i < heldBallCopy.Count; i++)
             {
-                Rigidbody body = copy[i];
+                Rigidbody body = heldBallCopy[i];
                 if (body == null)
                     continue;
                 ReleaseBall(body);
@@ -327,6 +333,17 @@ public class TicLaunchArea : MonoBehaviour
                 body.angularVelocity = Vector3.zero;
             }
         }
+    }
+
+    int Overlap(Vector3 center, float radius)
+    {
+        int count;
+        while ((count = Physics.OverlapSphereNonAlloc(
+            center, radius, overlapBuffer, ~0, QueryTriggerInteraction.Collide)) == overlapBuffer.Length)
+        {
+            overlapBuffer = new Collider[overlapBuffer.Length * 2];
+        }
+        return count;
     }
 
     void OnDestroy()

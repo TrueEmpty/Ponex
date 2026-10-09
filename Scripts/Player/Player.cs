@@ -435,6 +435,14 @@ public class Player
         lastGoalDamageFrame = Time.frameCount;
         lastGoalDamageBallId = ballInstanceId;
         lastGoalDamageTime = Time.time;
+
+        if (spawnedPlayer != null)
+        {
+            MuriShield shield = spawnedPlayer.GetComponent<MuriShield>();
+            if (shield != null && shield.TryAbsorb())
+                return 0;
+        }
+
         return Damage(amount);
     }
 

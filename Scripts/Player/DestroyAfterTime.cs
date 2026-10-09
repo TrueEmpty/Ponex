@@ -1,19 +1,27 @@
 using UnityEngine;
 
-/// <summary>Destroys this GameObject after <see cref="duration"/> seconds.</summary>
-public class DestroyAfterTime : MonoBehaviour
+public abstract class TimedDestroyBehaviour : MonoBehaviour
 {
-    public float duration = 1f;
+    protected abstract float DestroyDuration { get; }
+
     float lifetime;
 
-    void Start()
+    protected virtual void Start()
     {
-        lifetime = Time.time + Mathf.Max(0.01f, duration);
+        lifetime = Time.time + DestroyDuration;
     }
 
-    void Update()
+    protected virtual void Update()
     {
         if (lifetime < Time.time)
             Destroy(gameObject);
     }
+}
+
+/// <summary>Destroys this GameObject after <see cref="duration"/> seconds.</summary>
+public class DestroyAfterTime : TimedDestroyBehaviour
+{
+    public float duration = 1f;
+
+    protected override float DestroyDuration => Mathf.Max(0.01f, duration);
 }

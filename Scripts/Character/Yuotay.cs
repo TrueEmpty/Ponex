@@ -58,6 +58,7 @@ public class Yuotay : MonoBehaviour
     bool laneReady;
     bool batWallIgnoreReady;
     Collider[] batColliders;
+    Collider[] bodyColliders;
     ComputerBrain brain;
 
     void Start()
@@ -77,6 +78,7 @@ public class Yuotay : MonoBehaviour
         // Child colliders except the root body — bat mesh pushes into walls during swings
         List<Collider> bats = new List<Collider>();
         Collider[] all = GetComponentsInChildren<Collider>(true);
+        bodyColliders = all;
         for (int i = 0; i < all.Length; i++)
         {
             if (all[i] != null && all[i].transform != transform)
@@ -97,7 +99,7 @@ public class Yuotay : MonoBehaviour
         {
             // Walls spawn with the match — ignore bat↔wall once they exist
             if (!batWallIgnoreReady)
-                IgnoreBatWallCollisions();
+                RequestBatWallCollisionIgnore();
 
             Unstick();
 
@@ -114,7 +116,7 @@ public class Yuotay : MonoBehaviour
             }
 
             // Only depenetrate the body collider — bat-into-wall must not shove Yuotay off-lane
-            PaddleWall.Unstick(rb, transform, hitTags);
+            PaddleWall.Unstick(rb, transform, hitTags, bodyColliders);
             ClampToLane(p);
 
             if (p.CanBump)
@@ -220,13 +222,21 @@ public class Yuotay : MonoBehaviour
         rb.linearVelocity = vel;
     }
 
-    void IgnoreBatWallCollisions()
+    void RequestBatWallCollisionIgnore()
     {
+        // Defer one frame so match-start wall spawners finish, then scan exactly once.
+        batWallIgnoreReady = true;
+        StartCoroutine(IgnoreBatWallCollisionsAfterSpawn());
+    }
+
+    IEnumerator IgnoreBatWallCollisionsAfterSpawn()
+    {
+        yield return new WaitForEndOfFrame();
+
         if (batColliders == null || batColliders.Length == 0)
-            return;
+            yield break;
 
         Collider[] walls = FindObjectsByType<Collider>(FindObjectsInactive.Exclude);
-        int ignored = 0;
         for (int w = 0; w < walls.Length; w++)
         {
             Collider wall = walls[w];
@@ -241,12 +251,8 @@ public class Yuotay : MonoBehaviour
                 if (bat == null)
                     continue;
                 Physics.IgnoreCollision(bat, wall, true);
-                ignored++;
             }
         }
-
-        if (ignored > 0)
-            batWallIgnoreReady = true;
     }
 
     void Unstick()

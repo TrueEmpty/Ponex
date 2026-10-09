@@ -259,10 +259,15 @@ public class CharacterCreationManager : MonoBehaviour
     /// Re-bind any ControllerLink that exists in the scene but isn't on the draft yet
     /// (covers joins that raced roster setup or failed a one-shot Start bind).
     /// </summary>
+    float nextControllerClaimAt;
+
     void ClaimUnboundControllers()
     {
         if (db == null)
             return;
+        if (Time.unscaledTime < nextControllerClaimAt)
+            return;
+        nextControllerClaimAt = Time.unscaledTime + 0.5f;
 
         ControllerLink[] links = FindObjectsByType<ControllerLink>();
         Player draft = GetDraftPlayer();

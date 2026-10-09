@@ -51,6 +51,7 @@ public static class TicWingPrefabBuilder
         rb.constraints = RigidbodyConstraints.FreezePositionZ
             | RigidbodyConstraints.FreezeRotationX
             | RigidbodyConstraints.FreezeRotationY;
+        root.AddComponent<ConstantForce>();
 
         root.AddComponent<PlayerGrab>().playerIndex = -1;
         root.AddComponent<ClearAfterTheGame>();

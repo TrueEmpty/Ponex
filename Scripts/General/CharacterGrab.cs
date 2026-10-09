@@ -14,15 +14,16 @@ public class CharacterGrab : MonoBehaviour
     ButtonInteraction bi;
 
     bool setup = false;
-    static readonly Color RandomGray = new Color(0.4f, 0.4f, 0.4f, 1f);
-    static readonly Color RandomMark = new Color(0.72f, 0.72f, 0.72f, 1f);
-    string lastSelectionKey;
+    int lastHolderIndex = int.MinValue;
+    int lastHolderSkin = int.MinValue;
     float nextSelectionCheck;
 
     void Start()
     {
         db = Database.instance;
         Setup();
+        // Spread roster refreshes across frames instead of spiking all tiles together.
+        nextSelectionCheck = Time.unscaledTime + (transform.GetSiblingIndex() % 8) * 0.0125f;
     }
 
     void Update()
@@ -61,52 +62,14 @@ public class CharacterGrab : MonoBehaviour
     {
         if (isRandom)
         {
-            background.color = RandomGray;
-            if (outline != null)
-                outline.effectColor = new Color(0.55f, 0.55f, 0.55f, 1f);
-
-            if (icon != null)
-            {
-                icon.texture = null;
-                icon.enabled = false;
-            }
-
-            if (nameText != null)
-            {
-                nameText.text = "?";
-                nameText.color = RandomMark;
-                nameText.alignment = TextAnchor.MiddleCenter;
-                nameText.resizeTextForBestFit = true;
-                nameText.resizeTextMinSize = 20;
-                nameText.resizeTextMaxSize = 72;
-
-                RectTransform rt = nameText.rectTransform;
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                rt.pivot = new Vector2(0.5f, 0.5f);
-            }
-
+            SelectorTileVisual.ApplyRandom(background, outline, icon, nameText, bi);
             setup = true;
             return;
         }
 
-        background.color = ch.portraitColor;
-        if (icon != null)
-        {
-            icon.enabled = true;
-            icon.texture = ch.icon;
-            icon.color = ch.active ? Color.white : Color.black;
-        }
-        nameText.text = ch.name;
-        nameText.color = Color.white;
-
-        if (bi != null)
-        {
-            if (ch.active) bi.Activate();
-            else bi.Deactivate();
-        }
+        SelectorTileVisual.ApplyEntry(
+            background, ch.portraitColor, icon, ch.icon, ch.active,
+            nameText, ch.name, bi);
 
         setup = true;
     }
@@ -136,12 +99,12 @@ public class CharacterGrab : MonoBehaviour
                     }
                 }
             }
-            string key = randomHolder != null
-                ? "r|" + randomHolder.index + "|" + randomHolder.skinColorIndex
-                : "r|none";
-            if (key == lastSelectionKey)
+            int holderIndex = randomHolder != null ? randomHolder.index : -1;
+            int holderSkin = randomHolder != null ? randomHolder.skinColorIndex : -1;
+            if (holderIndex == lastHolderIndex && holderSkin == lastHolderSkin)
                 return;
-            lastSelectionKey = key;
+            lastHolderIndex = holderIndex;
+            lastHolderSkin = holderSkin;
             outline.effectColor = randomHolder != null
                 ? PlayerSkin.GetColor(randomHolder, db)
                 : new Color(0.55f, 0.55f, 0.55f, 1f);
@@ -165,12 +128,12 @@ public class CharacterGrab : MonoBehaviour
             }
         }
 
-        string selKey = holder != null
-            ? "h|" + holder.index + "|" + holder.skinColorIndex + "|" + ch.name
-            : "h|none|" + ch.name;
-        if (selKey == lastSelectionKey)
+        int selectedIndex = holder != null ? holder.index : -1;
+        int selectedSkin = holder != null ? holder.skinColorIndex : -1;
+        if (selectedIndex == lastHolderIndex && selectedSkin == lastHolderSkin)
             return;
-        lastSelectionKey = selKey;
+        lastHolderIndex = selectedIndex;
+        lastHolderSkin = selectedSkin;
 
         outline.effectColor = holder != null
             ? PlayerSkin.GetColor(holder, db)

@@ -16,16 +16,23 @@ public class SetBallOwnerOnTagHit : MonoBehaviour
         pG = GetComponent<PlayerGrab>();
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other == null)
+            return;
+        TryClaim(other.gameObject, other.tag);
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
-        if (targetTags.Exists(x => x.ToLower().Trim() == collision.transform.tag.ToLower().Trim()))
+        if (TagListMatcher.Contains(targetTags, collision.transform.tag))
         {
             PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
 
             if (tpG != null && pG != null)
             {
                 // Only claim ownership of balls — never overwrite Player/Lifeline indices
-                if (collision.transform.tag.ToLower().Trim() != "ball")
+                if (!string.Equals(collision.transform.tag.Trim(), "ball", System.StringComparison.OrdinalIgnoreCase))
                     return;
 
                 if (delay > 0)
@@ -40,6 +47,20 @@ public class SetBallOwnerOnTagHit : MonoBehaviour
                 }
             }
         }
+    }
+
+    void TryClaim(GameObject hit, string tag)
+    {
+        if (!TagListMatcher.Contains(targetTags, tag))
+            return;
+        if (!string.Equals(tag.Trim(), "ball", System.StringComparison.OrdinalIgnoreCase))
+            return;
+        if (pG == null)
+            pG = GetComponent<PlayerGrab>();
+        PlayerGrab tpG = hit.GetComponent<PlayerGrab>();
+        if (tpG == null || pG == null)
+            return;
+        tpG.playerIndex = pG.playerIndex;
     }
 
     void SetTag()

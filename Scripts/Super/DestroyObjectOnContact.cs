@@ -19,7 +19,7 @@ public class DestroyObjectOnContact : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (tagHit.Exists(x=> x.ToLower().Trim() == collision.transform.tag.ToLower().Trim()))
+        if (TagListMatcher.Contains(tagHit, collision.transform.tag))
         {
             StartCoroutine(DestroyObject(selfDestroy ? gameObject : collision.gameObject,delay));
         }

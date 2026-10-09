@@ -8,6 +8,8 @@ using UnityEngine;
 /// </summary>
 public class ScaleUntilCollision : MonoBehaviour
 {
+    static readonly string[] fallbackWallTags = { "Walls", "Wall", "Obstacle" };
+
     PlayerGrab pG;
     public Vector3 scaleAmount = Vector3.one;
     public float speed = 5;
@@ -250,17 +252,10 @@ public class ScaleUntilCollision : MonoBehaviour
 
     bool TagMatches(string tag)
     {
-        if (string.IsNullOrEmpty(tag) || tags == null)
-            return false;
-        string t = tag.ToLowerInvariant().Trim();
-        for (int i = 0; i < tags.Count; i++)
-        {
-            if (string.IsNullOrEmpty(tags[i]))
-                continue;
-            if (tags[i].ToLowerInvariant().Trim() == t)
-                return true;
-        }
+        if (TagListMatcher.Contains(tags, tag))
+            return true;
+
         // Always accept common wall tags even if inspector list is incomplete
-        return t == "walls" || t == "wall" || t == "obstacle";
+        return TagListMatcher.Contains(fallbackWallTags, tag);
     }
 }

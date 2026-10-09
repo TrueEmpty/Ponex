@@ -10,7 +10,7 @@ public class ResetFlares : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (targetTags.Exists(x=> x.ToLower().Trim() == collision.transform.tag))
+        if (TagListMatcher.Contains(targetTags, collision.transform.tag))
         {
             if(script != null)
             {

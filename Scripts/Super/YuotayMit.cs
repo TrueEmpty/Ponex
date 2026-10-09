@@ -28,6 +28,10 @@ public class YuotayMit : MonoBehaviour
     float wallCoord;
     bool wallReady;
     float currentSpeed;
+    Vector3 cachedChaseTarget;
+    bool hasCachedChaseTarget;
+    float nextTargetRefreshAt;
+    const float TargetRefreshInterval = 0.05f;
 
     void Start()
     {
@@ -197,20 +201,25 @@ public class YuotayMit : MonoBehaviour
 
     bool TryGetChaseTarget(Player p, out Vector3 target)
     {
-        target = transform.position;
-        GameObject[] balls = GameObject.FindGameObjectsWithTag("Ball");
-        if (balls == null || balls.Length == 0)
-            return false;
+        if (Time.time < nextTargetRefreshAt)
+        {
+            target = cachedChaseTarget;
+            return hasCachedChaseTarget;
+        }
+
+        nextTargetRefreshAt = Time.time + TargetRefreshInterval;
+        cachedChaseTarget = transform.position;
+        hasCachedChaseTarget = false;
 
         Vector3 myPos = transform.position;
         float bestScore = float.NegativeInfinity;
-        bool found = false;
 
-        for (int i = 0; i < balls.Length; i++)
+        for (int i = 0; i < LiveBallRegistry.Count; i++)
         {
-            GameObject go = balls[i];
-            if (go == null)
+            BallInfo info = LiveBallRegistry.GetAt(i);
+            if (info == null || info.gameObject == null || !info.gameObject.activeInHierarchy)
                 continue;
+            GameObject go = info.gameObject;
 
             if (stick != null && stick.stuckObjects.Contains(go))
                 continue;
@@ -226,12 +235,13 @@ public class YuotayMit : MonoBehaviour
             if (score > bestScore)
             {
                 bestScore = score;
-                target = pos + vel * 0.18f;
-                found = true;
+                cachedChaseTarget = pos + vel * 0.18f;
+                hasCachedChaseTarget = true;
             }
         }
 
-        return found;
+        target = cachedChaseTarget;
+        return hasCachedChaseTarget;
     }
 
     /// <summary>Matches ComputerAI facing conventions (Up = bottom seat, etc.).</summary>

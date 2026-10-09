@@ -20,6 +20,8 @@ public class CpuDifficultyButton : MonoBehaviour
 
     int highlightCount;
     bool pressed;
+    float nextRefreshAt;
+    int lastRefreshHash = int.MinValue;
 
     // Player-facing levels only — Training is reserved for AI authoring, not lobby play.
     static readonly ComputerAI.CpuDifficulty[] PlayableLevels =
@@ -148,6 +150,9 @@ public class CpuDifficultyButton : MonoBehaviour
 
     void Update()
     {
+        if (Time.unscaledTime < nextRefreshAt)
+            return;
+        nextRefreshAt = Time.unscaledTime + 0.12f;
         Refresh();
     }
 
@@ -170,12 +175,19 @@ public class CpuDifficultyButton : MonoBehaviour
         if (p == null || !p.computer)
         {
             SetVisible(false);
+            lastRefreshHash = int.MinValue;
             return;
         }
 
         SetVisible(true);
 
         ComputerAI.CpuDifficulty diff = ComputerAI.GetDifficulty(p);
+        int refreshHash = attachedIndex * 31
+            + (int)diff
+            + (TrainingManager.IsActive ? 1000 : 0);
+        if (refreshHash == lastRefreshHash)
+            return;
+        lastRefreshHash = refreshHash;
 
         if (diff == ComputerAI.CpuDifficulty.Training && !TrainingManager.IsActive)
         {

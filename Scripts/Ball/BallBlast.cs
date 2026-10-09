@@ -35,8 +35,16 @@ public static class BallBlast
             return 0;
 
         int lost = victim.ApplyGoalDamage(dealt, blastId);
-        if (lost > 0 && owner != null)
-            owner.RecordDamageDealt(lost);
+        if (lost > 0)
+        {
+            // Nari's maximum health represents her remaining tail length.
+            if (!string.IsNullOrEmpty(victim.name)
+                && victim.name.Equals("Nari", System.StringComparison.OrdinalIgnoreCase))
+                victim.maxHealth = victim.currentHealth;
+
+            if (owner != null)
+                owner.RecordDamageDealt(lost);
+        }
         return lost;
     }
 
@@ -53,13 +61,12 @@ public static class BallBlast
         if (source == null)
             return;
 
-        Database db = Database.instance;
         int ownerIndex = sourceGrab != null && sourceGrab.IsLinked() ? sourceGrab.playerIndex : -1;
         int ownerTeam = -999;
         Player ownerPlayer = null;
-        if (db != null && db.players != null && ownerIndex >= 0 && ownerIndex < db.players.Count)
+        if (sourceGrab != null && sourceGrab.IsLinked())
         {
-            ownerPlayer = db.players[ownerIndex];
+            ownerPlayer = sourceGrab.player;
             if (ownerPlayer != null)
                 ownerTeam = ownerPlayer.team;
         }
@@ -91,7 +98,8 @@ public static class BallBlast
             bool isLifeline = hit.CompareTag("Lifeline")
                 || (hit.transform.parent != null && hit.transform.parent.CompareTag("Lifeline"))
                 || hit.GetComponent<DamageOnTagHit>() != null
-                || hit.GetComponent<NariTail>() != null;
+                || hit.GetComponent<NariTail>() != null
+                || hit.GetComponentInParent<NariTailUpkeep>() != null;
             if (!isLifeline)
             {
                 // Cheap parent check only when needed
@@ -100,10 +108,8 @@ public static class BallBlast
                     continue;
             }
 
-            PlayerGrab victimGrab = hit.GetComponent<PlayerGrab>();
-            if (victimGrab == null)
-                victimGrab = hit.GetComponentInParent<PlayerGrab>();
-            if (victimGrab == null || !victimGrab.IsLinked() || victimGrab.player == null)
+            PlayerGrab victimGrab = ResolveLinkedPlayerGrab(hit);
+            if (victimGrab == null || victimGrab.player == null)
                 continue;
 
             if (ownerIndex >= 0 && victimGrab.playerIndex == ownerIndex)
@@ -117,6 +123,22 @@ public static class BallBlast
         }
 
         SpawnSmokeFire(center, smokePoof != null ? smokePoof : SmokePoofPrefab, smokeScale);
+    }
+
+    /// <summary>
+    /// Finds the first linked PlayerGrab, walking past unlinked child grabs such as Nari's head.
+    /// </summary>
+    public static PlayerGrab ResolveLinkedPlayerGrab(Component source)
+    {
+        Transform current = source != null ? source.transform : null;
+        while (current != null)
+        {
+            PlayerGrab candidate = current.GetComponent<PlayerGrab>();
+            if (candidate != null && candidate.IsLinked())
+                return candidate;
+            current = current.parent;
+        }
+        return null;
     }
 
     public static void SpawnSmokeFire(Vector3 center, GameObject smokePoof, float scale)
@@ -148,7 +170,11 @@ public static class BallBlast
         GameObject fallback = new GameObject("BallBlastFX");
         fallback.transform.position = center;
         ParticleSystem ps = fallback.AddComponent<ParticleSystem>();
+        // AddComponent starts a ParticleSystem immediately because playOnAwake defaults
+        // to true. Duration cannot be changed until the system is fully stopped.
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         var main = ps.main;
+        main.playOnAwake = false;
         main.loop = false;
         main.duration = 0.45f;
         main.startLifetime = 0.7f;
@@ -157,6 +183,7 @@ public static class BallBlast
         main.startColor = new Color(1f, 0.4f, 0.1f, 0.8f);
         var emission = ps.emission;
         emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 28) });
+        ps.Play();
         Object.Destroy(fallback, 1.5f);
     }
 

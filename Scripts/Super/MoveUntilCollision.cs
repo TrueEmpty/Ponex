@@ -30,7 +30,7 @@ public class MoveUntilCollision : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (tags.Exists(x => x.ToLower().Trim() == collision.transform.tag.ToLower().Trim()))
+        if (TagListMatcher.Contains(tags, collision.transform.tag))
         {
             run = false;
         }

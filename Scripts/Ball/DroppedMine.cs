@@ -125,6 +125,10 @@ public class DroppedMine : MonoBehaviour
             return;
 
         string tag = collision.transform.tag;
+        // Ownership is independent of fuse state: every new player-owned hit
+        // replaces the previous owner, including hits after the mine is armed.
+        if (tag == "Paddle" || tag == "Player" || tag == "Ball")
+            ClaimOwnerFrom(collision.collider);
 
         if (tag == "Lifeline")
         {
@@ -140,6 +144,16 @@ public class DroppedMine : MonoBehaviour
             return;
 
         ArmFuse();
+    }
+
+    void ClaimOwnerFrom(Collider hitter)
+    {
+        if (grab == null || hitter == null)
+            return;
+
+        PlayerGrab hitterGrab = BallBlast.ResolveLinkedPlayerGrab(hitter);
+        if (hitterGrab != null)
+            grab.playerIndex = hitterGrab.playerIndex;
     }
 
     void ArmFuse()
@@ -164,7 +178,7 @@ public class DroppedMine : MonoBehaviour
             false,
             0f,
             BallBlast.SmokePoofPrefab,
-            1.6f);
+            explodeRadius * 0.65f);
 
         Destroy(gameObject);
     }

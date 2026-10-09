@@ -12,6 +12,7 @@ public class PlayerSelectorObj : MonoBehaviour
     PlayerColors pC;
 
     RectTransform rt;
+    Rigidbody rb;
     Image circle;
     Image clickimg;
 
@@ -23,9 +24,9 @@ public class PlayerSelectorObj : MonoBehaviour
     float clicking = 0;
     bool cooldown = false;
 
-   List<GameObject> overlappingTargets = new List<GameObject>();
-
     UniversalCollisionDetector ucd;
+    readonly Dictionary<Collider, SelectorTargetInfo> targetInfo =
+        new Dictionary<Collider, SelectorTargetInfo>(16);
 
     Text text;
 
@@ -35,6 +36,15 @@ public class PlayerSelectorObj : MonoBehaviour
     int lastCpuControlShown = int.MinValue;
     Sprite lastCircleSprite;
     float nextCpuSelectCheck;
+    float lastClickFill = -1f;
+    float lastLeaveFill = -1f;
+    static RectTransform cachedActiveBack;
+
+    struct SelectorTargetInfo
+    {
+        public bool isCpuDifficulty;
+        public bool isPortrait;
+    }
 
     void Awake()
     {
@@ -54,6 +64,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
         ucd = GetComponent<UniversalCollisionDetector>();
         text = transform.GetChild(1).GetComponent<Text>();
+        EnsureCursorPhysics();
 
         // Main cursor image unfills radially while holding Leave (disconnect)
         if (circle != null)
@@ -127,7 +138,8 @@ public class PlayerSelectorObj : MonoBehaviour
         int multiplier = cLink["Sprint"].isPressed ? 2 : 1;
 
         float dt = Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
-        rt.anchoredPosition += new Vector2(
+        Vector2 current = rt.anchoredPosition;
+        Vector2 next = current + new Vector2(
             move.x * speed * multiplier * dt,
             move.y * speed * multiplier * dt
         );
@@ -135,10 +147,57 @@ public class PlayerSelectorObj : MonoBehaviour
         float hW = width / 2;
         float hH = height / 2;
 
-        rt.anchoredPosition = new Vector2(
-            Mathf.Clamp(rt.anchoredPosition.x, -hW, hW),
-            Mathf.Clamp(rt.anchoredPosition.y, -hH, hH)
+        next = new Vector2(
+            Mathf.Clamp(next.x, -hW, hW),
+            Mathf.Clamp(next.y, -hH, hH)
         );
+
+        // Assigning an unchanged RectTransform still dirties its Canvas.
+        if ((next - current).sqrMagnitude > 0.000001f)
+        {
+            rt.anchoredPosition = next;
+            SyncCursorBody();
+        }
+    }
+
+    void EnsureCursorPhysics()
+    {
+        SphereCollider sphere = GetComponent<SphereCollider>();
+        if (sphere == null)
+            sphere = gameObject.AddComponent<SphereCollider>();
+        sphere.isTrigger = true;
+        sphere.radius = 25f;
+        sphere.center = Vector3.zero;
+        sphere.includeLayers = 1 << 5; // UI
+        sphere.excludeLayers = 0;
+
+        rb = GetComponent<Rigidbody>();
+        if (rb == null)
+            rb = gameObject.AddComponent<Rigidbody>();
+        rb.useGravity = false;
+        rb.isKinematic = true;
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        if (circle != null)
+            circle.raycastTarget = false;
+
+        SyncCursorBody();
+    }
+
+    void SyncCursorBody()
+    {
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
+        if (rb == null)
+            return;
+
+        Vector3 pos = transform.position;
+        if ((rb.position - pos).sqrMagnitude > 0.000001f)
+            rb.position = pos;
+        if (rb.rotation != transform.rotation)
+            rb.rotation = transform.rotation;
     }
 
     bool IsCharacterSelectOpen()
@@ -151,8 +210,8 @@ public class PlayerSelectorObj : MonoBehaviour
         if (open == null || string.IsNullOrEmpty(open.title))
             return false;
 
-        string title = open.title.Trim().ToLowerInvariant();
-        return title == "character select" || title == "characters";
+        return open.title.Equals("Character Select", StringComparison.OrdinalIgnoreCase)
+            || open.title.Equals("Characters", StringComparison.OrdinalIgnoreCase);
     }
 
     bool WasPressed(string action)
@@ -172,7 +231,7 @@ public class PlayerSelectorObj : MonoBehaviour
         if (!IsCharacterSelectOpen() || db == null || db.players == null)
             return;
 
-        Player self = db.players.Find(x => x.index == pI);
+        Player self = FindPlayer(pI);
         if (self == null)
             return;
 
@@ -200,7 +259,7 @@ public class PlayerSelectorObj : MonoBehaviour
             return;
 
         int skinPlayer = ClickPlayerIndex();
-        Player target = db.players.Find(x => x.index == skinPlayer);
+        Player target = FindPlayer(skinPlayer);
         if (target == null || target.wantRandomCharacter)
             return;
 
@@ -234,10 +293,14 @@ public class PlayerSelectorObj : MonoBehaviour
             Mathf.Clamp(rt.anchoredPosition.x, -hW, hW),
             Mathf.Clamp(rt.anchoredPosition.y, -hH, hH)
         );
+        SyncCursorBody();
     }
 
     static RectTransform FindActiveBackRect()
     {
+        if (cachedActiveBack != null && cachedActiveBack.gameObject.activeInHierarchy)
+            return cachedActiveBack;
+
         BackButtonClick[] backs = UnityEngine.Object.FindObjectsByType<BackButtonClick>(FindObjectsInactive.Exclude);
         for (int i = 0; i < backs.Length; i++)
         {
@@ -247,7 +310,10 @@ public class PlayerSelectorObj : MonoBehaviour
 
             RectTransform brt = b.GetComponent<RectTransform>();
             if (brt != null)
+            {
+                cachedActiveBack = brt;
                 return brt;
+            }
         }
 
         // Fallback: name match if EnsureAll hasn't run yet
@@ -266,7 +332,10 @@ public class PlayerSelectorObj : MonoBehaviour
 
             RectTransform brt = go.GetComponent<RectTransform>();
             if (brt != null)
+            {
+                cachedActiveBack = brt;
                 return brt;
+            }
         }
 
         return null;
@@ -316,7 +385,7 @@ public class PlayerSelectorObj : MonoBehaviour
                 for (int i = 0; i < ucd.trackedColliders.Count; i++)
                 {
                     Collider c = ucd.trackedColliders[i];
-                    if (c != null && c.GetComponent<CpuDifficultyButton>() != null)
+                    if (c != null && GetTargetInfo(c).isCpuDifficulty)
                     {
                         hittingCpuLevel = true;
                         break;
@@ -329,7 +398,7 @@ public class PlayerSelectorObj : MonoBehaviour
                         continue;
 
                     // Prefer the CPU level chip over the portrait skin cycle when both overlap
-                    if (hittingCpuLevel && hit.GetComponent<PortraitClicked>() != null)
+                    if (hittingCpuLevel && GetTargetInfo(hit).isPortrait)
                         continue;
 
                     if (cooldown)
@@ -385,7 +454,12 @@ public class PlayerSelectorObj : MonoBehaviour
             float fill = clicking;
             if (float.IsNaN(fill) || float.IsInfinity(fill))
                 fill = 0f;
-            clickimg.fillAmount = Mathf.Clamp01(fill);
+            fill = Mathf.Clamp01(fill);
+            if (Mathf.Abs(fill - lastClickFill) > 0.0001f)
+            {
+                clickimg.fillAmount = fill;
+                lastClickFill = fill;
+            }
         }
     }
 
@@ -397,8 +471,12 @@ public class PlayerSelectorObj : MonoBehaviour
         if (circle == null || cLink == null)
             return;
 
-        float progress = cLink.LeaveHoldProgress;
-        circle.fillAmount = Mathf.Clamp01(1f - progress);
+        float fill = Mathf.Clamp01(1f - cLink.LeaveHoldProgress);
+        if (Mathf.Abs(fill - lastLeaveFill) > 0.0001f)
+        {
+            circle.fillAmount = fill;
+            lastLeaveFill = fill;
+        }
     }
 
     void CPUSelections()
@@ -454,12 +532,50 @@ public class PlayerSelectorObj : MonoBehaviour
     void CollisionEntered(Collider other)
     {
         if (other != null)
+        {
+            CacheTargetInfo(other);
             other.SendMessage("OnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
+        }
     }
 
     void CollisionExited(Collider other)
     {
         if (other != null)
+        {
+            targetInfo.Remove(other);
             other.SendMessage("OnUnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
+        }
+    }
+
+    Player FindPlayer(int index)
+    {
+        if (db == null || db.players == null)
+            return null;
+
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player player = db.players[i];
+            if (player != null && player.index == index)
+                return player;
+        }
+        return null;
+    }
+
+    SelectorTargetInfo GetTargetInfo(Collider target)
+    {
+        if (!targetInfo.TryGetValue(target, out SelectorTargetInfo info))
+            info = CacheTargetInfo(target);
+        return info;
+    }
+
+    SelectorTargetInfo CacheTargetInfo(Collider target)
+    {
+        SelectorTargetInfo info = new SelectorTargetInfo
+        {
+            isCpuDifficulty = target.GetComponent<CpuDifficultyButton>() != null,
+            isPortrait = target.GetComponent<PortraitClicked>() != null
+        };
+        targetInfo[target] = info;
+        return info;
     }
 }

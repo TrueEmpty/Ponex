@@ -4,6 +4,7 @@ using UnityEngine;
 public static class FieldPartFactory
 {
     static Material sharedStandard;
+    static MaterialPropertyBlock propertyBlock;
 
     public static GameObject MakePrimitivePart(
         string name,
@@ -27,10 +28,14 @@ public static class FieldPartFactory
                 Shader s = Shader.Find("Standard");
                 sharedStandard = s != null ? new Material(s) : r.sharedMaterial;
             }
-            r.material = new Material(sharedStandard != null ? sharedStandard : r.sharedMaterial);
-            r.material.color = color;
-            r.material.SetFloat("_Metallic", 0.35f);
-            r.material.SetFloat("_Glossiness", 0.4f);
+            r.sharedMaterial = sharedStandard != null ? sharedStandard : r.sharedMaterial;
+            if (propertyBlock == null)
+                propertyBlock = new MaterialPropertyBlock();
+            propertyBlock.Clear();
+            propertyBlock.SetColor("_Color", color);
+            propertyBlock.SetFloat("_Metallic", 0.35f);
+            propertyBlock.SetFloat("_Glossiness", 0.4f);
+            r.SetPropertyBlock(propertyBlock);
         }
 
         PartInfo pi = go.GetComponent<PartInfo>();

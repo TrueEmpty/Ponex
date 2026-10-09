@@ -25,6 +25,8 @@ public class Bahrue : MonoBehaviour
     public Transform token;
     public Renderer ring;
     public Renderer emblem;
+    Material ringMaterial;
+    Material emblemMaterial;
 
     public float bumpCooldown = 2;
     float timeTillReset = 0;
@@ -51,6 +53,10 @@ public class Bahrue : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
         db = Database.instance;
+        if (ring != null)
+            ringMaterial = ring.material;
+        if (emblem != null)
+            emblemMaterial = emblem.material;
         brain = ComputerBrain.Ensure(gameObject, ComputerBrain.Mode.LanePaddle);
         if (brain != null)
         {
@@ -340,14 +346,17 @@ public class Bahrue : MonoBehaviour
         ring.gameObject.SetActive(pg.player.super.amount != 0);
         emblem.gameObject.SetActive(pg.player.super.amount != 0);
 
-        Color rC = ring.material.color;
-        Color eC = emblem.material.color;
+        if (ringMaterial != null && emblemMaterial != null)
+        {
+            Color rC = ringMaterial.color;
+            Color eC = emblemMaterial.color;
 
-        rC.a = pg.player.super.amount;
-        eC.a = pg.player.super.amount;
+            rC.a = pg.player.super.amount;
+            eC.a = pg.player.super.amount;
 
-        ring.material.color = rC;
-        emblem.material.color = eC;
+            ringMaterial.color = rC;
+            emblemMaterial.color = eC;
+        }
 
         pg.player.maxHealth = pg.player.currentHealth;
     }

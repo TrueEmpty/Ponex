@@ -17,7 +17,7 @@ public class PassEffectOnTagHit : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (tagsHit.Exists(x=> x.ToLower().Trim() == collision.transform.tag.ToLower().Trim()))
+        if (TagListMatcher.Contains(tagsHit, collision.transform.tag))
         {
             if(effect != null)
             {

@@ -31,6 +31,7 @@ public class NariMove : MonoBehaviour
     bool aiWantDash = false;
     readonly List<ParticleSystem> dashParticles = new List<ParticleSystem>();
     readonly HashSet<Transform> particleOwners = new HashSet<Transform>();
+    readonly RaycastHit[] wallHits = new RaycastHit[16];
 
     void Start()
     {
@@ -208,13 +209,27 @@ public class NariMove : MonoBehaviour
     bool WallInDirection(Vector3 mD)
     {
         float distance = (hheadCur / 2f) + 0.2f;
-        RaycastHit[] hits = Physics.RaycastAll(transform.position, mD, distance);
-        if (hits == null || hits.Length == 0)
+        int hitCount = Physics.RaycastNonAlloc(
+            transform.position, mD, wallHits, distance, ~0, QueryTriggerInteraction.UseGlobal);
+        if (hitCount == 0)
             return false;
 
-        for (int i = 0; i < hits.Length; i++)
+        if (hitCount == wallHits.Length)
         {
-            if (PaddleWall.MatchesWallTag(hits[i].transform.tag, hitTags))
+            RaycastHit[] overflow = Physics.RaycastAll(transform.position, mD, distance);
+            for (int i = 0; i < overflow.Length; i++)
+            {
+                if (overflow[i].transform != null
+                    && PaddleWall.MatchesWallTag(overflow[i].transform.tag, hitTags))
+                    return true;
+            }
+            return false;
+        }
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            if (wallHits[i].transform != null
+                && PaddleWall.MatchesWallTag(wallHits[i].transform.tag, hitTags))
                 return true;
         }
 

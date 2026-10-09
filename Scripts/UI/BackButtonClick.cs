@@ -7,20 +7,44 @@ using UnityEngine.UI;
 /// </summary>
 public class BackButtonClick : MonoBehaviour
 {
+    static readonly System.Collections.Generic.List<Transform> scanBuffer =
+        new System.Collections.Generic.List<Transform>(128);
+
     public static void EnsureAll()
     {
+        MenuManager mm = MenuManager.instance;
+        if (mm != null && mm.menus != null && mm.menus.Count > 0)
+        {
+            for (int i = 0; i < mm.menus.Count; i++)
+            {
+                MenuClass menu = mm.menus[i];
+                if (menu == null || menu.holder == null)
+                    continue;
+
+                scanBuffer.Clear();
+                menu.holder.GetComponentsInChildren(true, scanBuffer);
+                for (int t = 0; t < scanBuffer.Count; t++)
+                    Ensure(scanBuffer[t] != null ? scanBuffer[t].gameObject : null);
+            }
+            scanBuffer.Clear();
+            return;
+        }
+
+        // Fallback for isolated scenes without a MenuManager.
         GameObject[] all = FindObjectsByType<GameObject>(FindObjectsInactive.Include);
         for (int i = 0; i < all.Length; i++)
-        {
-            GameObject go = all[i];
-            if (go == null || !IsBackNamed(go.name))
-                continue;
+            Ensure(all[i]);
+    }
 
-            if (go.GetComponent<BackButtonClick>() == null)
-                go.AddComponent<BackButtonClick>();
+    static void Ensure(GameObject go)
+    {
+        if (go == null || !IsBackNamed(go.name))
+            return;
 
-            SelectorClickable.Ensure(go, 170f);
-        }
+        if (go.GetComponent<BackButtonClick>() == null)
+            go.AddComponent<BackButtonClick>();
+
+        SelectorClickable.Ensure(go, 170f);
     }
 
     static bool IsBackNamed(string n)

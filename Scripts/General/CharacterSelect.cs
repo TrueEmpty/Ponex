@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +17,7 @@ public class CharacterSelect : MonoBehaviour
     public GameObject portrait_pf;
 
     bool setup = false;
+    bool settingUp;
 
     private void Awake()
     {
@@ -40,47 +40,57 @@ public class CharacterSelect : MonoBehaviour
 
     public void Setup()
     {
-        if(!setup)
+        if (setup || settingUp)
+            return;
+        StartCoroutine(SetupRoutine());
+    }
+
+    IEnumerator SetupRoutine()
+    {
+        settingUp = true;
+
+        // Character Grabs — random (?) first, then roster. Spread construction
+        // across frames so opening Character Select does not hitch.
+        GameObject randomGo = Instantiate(characterGrab_pf, characterGrabHolder);
+        CharacterGrab randomGrab = randomGo.GetComponent<CharacterGrab>();
+        randomGrab.isRandom = true;
+        randomGrab.ch = null;
+        randomGo.name = "Character Grab (Random)";
+        randomGo.transform.SetAsFirstSibling();
+        characterGrabs.Add(randomGrab);
+
+        int spawnedThisFrame = 1;
+        for (int i = 0; i < db.characters.Count; i++)
         {
-            //Character Grabs — random (?) first, then roster
-            GameObject randomGo = Instantiate(characterGrab_pf, characterGrabHolder);
-            CharacterGrab randomGrab = randomGo.GetComponent<CharacterGrab>();
-            randomGrab.isRandom = true;
-            randomGrab.ch = null;
-            randomGo.name = "Character Grab (Random)";
-            randomGo.transform.SetAsFirstSibling();
-            characterGrabs.Add(randomGrab);
+            Characters c = db.characters[i];
+            GameObject cGo = Instantiate(characterGrab_pf, characterGrabHolder);
+            CharacterGrab cG = cGo.GetComponent<CharacterGrab>();
+            cG.ch = c;
+            characterGrabs.Add(cG);
 
-            for (int i = 0; i < db.characters.Count; i++)
+            spawnedThisFrame++;
+            if (spawnedThisFrame >= 3)
             {
-                Characters c = db.characters[i];
-
-                GameObject cGo = Instantiate(characterGrab_pf, characterGrabHolder);
-                CharacterGrab cG = cGo.GetComponent<CharacterGrab>();
-
-                cG.ch = c;
-
-                characterGrabs.Add(cG);
-            }
-
-            //Portraits
-            for (int i = 0; i < db.minPlayers; i++)
-            {
-                int pind = i;
-                if (!db.players.Exists(x=> x.index == i) && db.players.Count < db.minPlayers)
-                {
-                    pind = db.PlayerAdd(null);
-                }
-
-                GameObject pGo = Instantiate(portrait_pf, porC);
-                PortraitClicked pC = pGo.GetComponent<PortraitClicked>();
-                pC.attachedIndex = pind;
-
-                portaits.Add(pC);
+                spawnedThisFrame = 0;
+                yield return null;
             }
         }
 
+        // Portraits
+        for (int i = 0; i < db.minPlayers; i++)
+        {
+            int pind = i;
+            if (!db.players.Exists(x => x.index == i) && db.players.Count < db.minPlayers)
+                pind = db.PlayerAdd(null);
+
+            GameObject pGo = Instantiate(portrait_pf, porC);
+            PortraitClicked pC = pGo.GetComponent<PortraitClicked>();
+            pC.attachedIndex = pind;
+            portaits.Add(pC);
+        }
+
         setup = true;
+        settingUp = false;
     }
 
     // Update is called once per frame

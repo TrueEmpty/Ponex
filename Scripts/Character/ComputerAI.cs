@@ -18,6 +18,25 @@ public static class ComputerAI
 
     // Reused every AI think — avoids FindGameObjectsWithTag + GC each frame
     static readonly List<GameObject> liveBallBuffer = new List<GameObject>(32);
+    static readonly List<FreeRoamBallCandidate> freeRoamCandidateBuffer = new List<FreeRoamBallCandidate>(4);
+    static readonly List<BallComponentCache> ballComponentCache = new List<BallComponentCache>(32);
+    static readonly float[] freeRoamWeightBuffer = new float[3];
+    static readonly Vector3[] freeRoamDirectionBuffer = new Vector3[4];
+
+    struct FreeRoamBallCandidate
+    {
+        public Vector3 pos;
+        public Vector3 vel;
+        public float score;
+        public int id;
+    }
+
+    struct BallComponentCache
+    {
+        public GameObject gameObject;
+        public Rigidbody rigidbody;
+        public BallInfo info;
+    }
 
     /// <summary>
     /// Match difficulty. Training uses the learned profile directly (best for practice).
@@ -726,7 +745,7 @@ public static class ComputerAI
             return false;
 
         // Rank candidates, then weighted-random pick so clones don't all hunt the same ball
-        var candidates = new List<(GameObject go, Vector3 pos, Vector3 vel, float score, int id)>(liveBallBuffer.Count);
+        freeRoamCandidateBuffer.Clear();
 
         for (int i = 0; i < liveBallBuffer.Count; i++)
         {
@@ -734,7 +753,7 @@ public static class ComputerAI
             if (go == null)
                 continue;
 
-            Rigidbody ballRb = go.GetComponent<Rigidbody>();
+            GetBallComponents(go, out Rigidbody ballRb, out BallInfo info);
             if (ballRb == null)
                 continue;
 
@@ -747,7 +766,6 @@ public static class ComputerAI
             score += Mathf.Sin(player.index * 2.17f + i * 1.3f + personality.styleSeed * 6.28f) * 3.5f;
             score += (Roll(player) - 0.5f) * Mathf.Lerp(6f, 1.5f, skill);
 
-            BallInfo info = go.GetComponent<BallInfo>();
             if (info != null && info.futureColisionPoints != null && info.futureColisionPoints.Count > 0)
             {
                 int cpIndex = Mathf.Clamp(Mathf.FloorToInt(personality.styleSeed * info.futureColisionPoints.Count), 0, info.futureColisionPoints.Count - 1);
@@ -765,29 +783,32 @@ public static class ComputerAI
             if (personality.committedBallId != 0 && ballEntityId == personality.committedBallId)
                 score += Mathf.Lerp(8f, 2f, skill);
 
-            candidates.Add((go, pos, vel, score, ballEntityId));
+            AddTopFreeRoamCandidate(new FreeRoamBallCandidate
+            {
+                pos = pos,
+                vel = vel,
+                score = score,
+                id = ballEntityId,
+            });
         }
 
-        if (candidates.Count == 0)
+        if (freeRoamCandidateBuffer.Count == 0)
             return false;
 
-        candidates.Sort((a, b) => b.score.CompareTo(a.score));
-
         // Softmax-ish pick among top few
-        int topN = Mathf.Min(candidates.Count, 3);
+        int topN = Mathf.Min(freeRoamCandidateBuffer.Count, freeRoamWeightBuffer.Length);
         float weightSum = 0f;
-        float[] weights = new float[topN];
         for (int i = 0; i < topN; i++)
         {
-            weights[i] = Mathf.Exp(candidates[i].score * 0.15f);
-            weightSum += weights[i];
+            freeRoamWeightBuffer[i] = Mathf.Exp(freeRoamCandidateBuffer[i].score * 0.15f);
+            weightSum += freeRoamWeightBuffer[i];
         }
 
         float pick = Roll(player) * weightSum;
         int chosen = 0;
         for (int i = 0; i < topN; i++)
         {
-            pick -= weights[i];
+            pick -= freeRoamWeightBuffer[i];
             if (pick <= 0f)
             {
                 chosen = i;
@@ -796,9 +817,9 @@ public static class ComputerAI
             chosen = i;
         }
 
-        Vector3 bestPos = candidates[chosen].pos;
-        Vector3 bestVel = candidates[chosen].vel;
-        ballId = candidates[chosen].id;
+        Vector3 bestPos = freeRoamCandidateBuffer[chosen].pos;
+        Vector3 bestVel = freeRoamCandidateBuffer[chosen].vel;
+        ballId = freeRoamCandidateBuffer[chosen].id;
 
         float lead = Mathf.Lerp(0.12f, brain.interceptLead, skill) * personality.leadBias;
         float speed = Mathf.Max(bestVel.magnitude, 0.01f);
@@ -814,6 +835,26 @@ public static class ComputerAI
 
         dist = Vector3.Distance(from, target);
         return true;
+    }
+
+    static void AddTopFreeRoamCandidate(FreeRoamBallCandidate candidate)
+    {
+        int insertAt = freeRoamCandidateBuffer.Count;
+        for (int i = 0; i < freeRoamCandidateBuffer.Count; i++)
+        {
+            if (candidate.score > freeRoamCandidateBuffer[i].score)
+            {
+                insertAt = i;
+                break;
+            }
+        }
+
+        if (insertAt >= freeRoamWeightBuffer.Length)
+            return;
+
+        freeRoamCandidateBuffer.Insert(insertAt, candidate);
+        if (freeRoamCandidateBuffer.Count > freeRoamWeightBuffer.Length)
+            freeRoamCandidateBuffer.RemoveAt(freeRoamWeightBuffer.Length);
     }
 
     static Vector3 PickCardinalToward(
@@ -853,17 +894,16 @@ public static class ComputerAI
                 secondary = primary;
         }
 
-        bool Blocked(Vector3 d) => wallBlocked != null && wallBlocked(d);
-
         // Chance to take the secondary (longer) route first — exploration
-        if (secondary != primary && secondaryBiasChance > 0f && Roll(player) < secondaryBiasChance && !Blocked(secondary))
+        if (secondary != primary && secondaryBiasChance > 0f && Roll(player) < secondaryBiasChance
+            && (wallBlocked == null || !wallBlocked(secondary)))
             return secondary;
 
-        if (!Blocked(primary))
+        if (wallBlocked == null || !wallBlocked(primary))
             return primary;
-        if (secondary != primary && !Blocked(secondary))
+        if (secondary != primary && (wallBlocked == null || !wallBlocked(secondary)))
             return secondary;
-        if (!Blocked(fallback))
+        if (wallBlocked == null || !wallBlocked(fallback))
             return fallback;
 
         return PickRandomOpenDir(fallback, wallBlocked, player);
@@ -871,25 +911,29 @@ public static class ComputerAI
 
     static Vector3 PickRandomOpenDir(Vector3 preferred, Func<Vector3, bool> wallBlocked, Player player)
     {
-        Vector3[] dirs = { Vector3.up, Vector3.down, Vector3.left, Vector3.right };
+        freeRoamDirectionBuffer[0] = Vector3.up;
+        freeRoamDirectionBuffer[1] = Vector3.down;
+        freeRoamDirectionBuffer[2] = Vector3.left;
+        freeRoamDirectionBuffer[3] = Vector3.right;
+
         // Shuffle with player RNG
-        for (int i = dirs.Length - 1; i > 0; i--)
+        for (int i = freeRoamDirectionBuffer.Length - 1; i > 0; i--)
         {
             int j = GetRng(player).Next(0, i + 1);
-            Vector3 tmp = dirs[i];
-            dirs[i] = dirs[j];
-            dirs[j] = tmp;
+            Vector3 tmp = freeRoamDirectionBuffer[i];
+            freeRoamDirectionBuffer[i] = freeRoamDirectionBuffer[j];
+            freeRoamDirectionBuffer[j] = tmp;
         }
 
-        bool Blocked(Vector3 d) => wallBlocked != null && wallBlocked(d);
-
-        if (preferred.sqrMagnitude > 0.01f && !Blocked(preferred) && Roll(player) < 0.35f)
+        if (preferred.sqrMagnitude > 0.01f
+            && (wallBlocked == null || !wallBlocked(preferred))
+            && Roll(player) < 0.35f)
             return preferred;
 
-        for (int i = 0; i < dirs.Length; i++)
+        for (int i = 0; i < freeRoamDirectionBuffer.Length; i++)
         {
-            if (!Blocked(dirs[i]))
-                return dirs[i];
+            if (wallBlocked == null || !wallBlocked(freeRoamDirectionBuffer[i]))
+                return freeRoamDirectionBuffer[i];
         }
 
         return preferred.sqrMagnitude > 0.01f ? preferred : Vector3.up;
@@ -996,7 +1040,7 @@ public static class ComputerAI
             if (go == null)
                 continue;
 
-            Rigidbody rb = go.GetComponent<Rigidbody>();
+            GetBallComponents(go, out Rigidbody rb, out BallInfo info);
             if (rb == null)
                 continue;
 
@@ -1006,7 +1050,6 @@ public static class ComputerAI
             float dist = Vector3.Distance(paddle.position, pos);
             float score = toward * 100f - dist + vel.magnitude;
 
-            BallInfo info = go.GetComponent<BallInfo>();
             if (info != null && info.futureColisionPoints != null && info.futureColisionPoints.Count > 0)
             {
                 Vector3 bestCp = info.futureColisionPoints[0];
@@ -1040,6 +1083,48 @@ public static class ComputerAI
         }
 
         return ballRb != null;
+    }
+
+    static void GetBallComponents(GameObject go, out Rigidbody rb, out BallInfo info)
+    {
+        for (int i = ballComponentCache.Count - 1; i >= 0; i--)
+        {
+            BallComponentCache cached = ballComponentCache[i];
+            if (cached.gameObject == null)
+            {
+                ballComponentCache.RemoveAt(i);
+                continue;
+            }
+
+            if (cached.gameObject != go)
+                continue;
+
+            rb = cached.rigidbody;
+            info = cached.info;
+
+            // Re-query missing/destroyed components so runtime component changes remain visible.
+            if (rb == null)
+                rb = go.GetComponent<Rigidbody>();
+            if (info == null)
+                info = go.GetComponent<BallInfo>();
+
+            if (rb != cached.rigidbody || info != cached.info)
+            {
+                cached.rigidbody = rb;
+                cached.info = info;
+                ballComponentCache[i] = cached;
+            }
+            return;
+        }
+
+        rb = go.GetComponent<Rigidbody>();
+        info = go.GetComponent<BallInfo>();
+        ballComponentCache.Add(new BallComponentCache
+        {
+            gameObject = go,
+            rigidbody = rb,
+            info = info,
+        });
     }
 
     static bool IsPointOnOurSide(Facing facing, Vector3 paddlePos, Vector3 point)

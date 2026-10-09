@@ -14,7 +14,8 @@ public class ComputerBrain : MonoBehaviour
     {
         LanePaddle,
         FreeRoam,
-        Candle
+        Candle,
+        Kunai
     }
 
     public Mode mode = Mode.LanePaddle;
@@ -27,6 +28,7 @@ public class ComputerBrain : MonoBehaviour
     Database db;
     Rigidbody rb;
     IyolitMovement iyolit;
+    MuriKunai muriKunai;
 
     public ComputerAI.Decision Lane { get; private set; }
     public ComputerAI.FreeRoamDecision FreeRoam { get; private set; }
@@ -42,10 +44,13 @@ public class ComputerBrain : MonoBehaviour
         pg = GetComponent<PlayerGrab>();
         rb = GetComponent<Rigidbody>();
         iyolit = GetComponent<IyolitMovement>();
+        muriKunai = GetComponent<MuriKunai>();
         if (iyolit != null)
             mode = Mode.Candle;
         else if (GetComponent<NariMove>() != null)
             mode = Mode.FreeRoam;
+        else if (GetComponent<MuriMove>() != null)
+            mode = Mode.Kunai;
     }
 
     void Start()
@@ -74,6 +79,9 @@ public class ComputerBrain : MonoBehaviour
                 break;
             case Mode.Candle:
                 TickCandle();
+                break;
+            case Mode.Kunai:
+                TickKunai();
                 break;
         }
     }
@@ -137,6 +145,32 @@ public class ComputerBrain : MonoBehaviour
             iyolit.ActivateSuper();
     }
 
+    void TickKunai()
+    {
+        if (muriKunai == null)
+            muriKunai = GetComponent<MuriKunai>();
+
+        Thought = Thought.Nothing;
+        if (!ComputerAI.TryGetAimPoint(pg.player, transform, out Vector3 aim))
+            return;
+
+        MuriKunaiProjectile stuck = muriKunai != null ? muriKunai.ClosestStuckTo(aim) : null;
+        if (stuck != null)
+        {
+            Vector3 toKunai = stuck.transform.position - transform.position;
+            toKunai.z = 0f;
+            float ax = Mathf.Abs(toKunai.x);
+            float ay = Mathf.Abs(toKunai.y);
+            if (ax >= ay)
+                Thought = toKunai.x >= 0f ? Thought.MoveRight : Thought.MoveLeft;
+            else
+                Thought = Thought.MoveUp;
+            return;
+        }
+
+        Thought = Thought.MoveDown;
+    }
+
     /// <summary>Ensure a brain exists on a spawned player (called from Database).</summary>
     public static ComputerBrain Ensure(GameObject root, Mode preferred = Mode.LanePaddle)
     {
@@ -149,6 +183,8 @@ public class ComputerBrain : MonoBehaviour
             brain.mode = Mode.Candle;
         else if (root.GetComponent<NariMove>() != null)
             brain.mode = Mode.FreeRoam;
+        else if (root.GetComponent<MuriMove>() != null)
+            brain.mode = Mode.Kunai;
         else
             brain.mode = preferred;
         return brain;

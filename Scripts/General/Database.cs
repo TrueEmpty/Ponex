@@ -102,6 +102,9 @@ public class Database : MonoBehaviour
     const string PrefBallCount = "Ponex.BallCount";
     const string PrefBallSlot = "Ponex.BallSlot.";
     const string PrefSelectedBall = "Ponex.SelectedBall";
+    const float CharacterPrefSaveDelay = 0.75f;
+    bool characterPrefsDirty;
+    float characterPrefsSaveAt;
 
     /// <summary>Team-mode seat memory (facing / lane / team) restored when leaving VS.</summary>
     struct LobbySeatMemory
@@ -485,7 +488,21 @@ public class Database : MonoBehaviour
             return;
 
         PlayerPrefs.SetString(SelectedCharacterPref + playerIndex, characterName);
+        characterPrefsDirty = true;
+        characterPrefsSaveAt = Time.unscaledTime + CharacterPrefSaveDelay;
+    }
+
+    void FlushCharacterPrefs()
+    {
+        if (!characterPrefsDirty)
+            return;
         PlayerPrefs.Save();
+        characterPrefsDirty = false;
+    }
+
+    void OnApplicationQuit()
+    {
+        FlushCharacterPrefs();
     }
 
     /// <summary>
@@ -665,6 +682,9 @@ public class Database : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (characterPrefsDirty && Time.unscaledTime >= characterPrefsSaveAt)
+            FlushCharacterPrefs();
+
         ShowAndHidePlayerSelectors();
         HandlePauseInput();
 
@@ -1922,6 +1942,10 @@ public class Database : MonoBehaviour
                     if (!SkipPlayerSkin.ShouldSkipRoot(p.spawnedPlayer)
                         && p.spawnedPlayer.GetComponentInChildren<Field_Info>(true) == null)
                         PlayerSkin.Apply(p.spawnedPlayer, p, this);
+
+                    MuriMove muri = p.spawnedPlayer.GetComponent<MuriMove>();
+                    if (muri != null)
+                        muri.PlaceOnBestSupport();
 
                     // Fused host keeps the only lifeline (double HP already applied in Prepare)
                     if (p.lifeline != null && p.lifeline.prefabs != null)

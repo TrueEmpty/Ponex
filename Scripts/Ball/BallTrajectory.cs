@@ -81,22 +81,10 @@ public static class BallTrajectory
 
     static bool TagMatches(Collider col, List<string> tags)
     {
-        string t = col.tag;
-        for (int i = 0; i < tags.Count; i++)
-        {
-            if (t == tags[i])
-                return true;
-        }
+        if (TagListMatcher.Contains(tags, col.tag))
+            return true;
+
         Transform p = col.transform.parent;
-        if (p != null)
-        {
-            string pt = p.tag;
-            for (int i = 0; i < tags.Count; i++)
-            {
-                if (pt == tags[i])
-                    return true;
-            }
-        }
-        return false;
+        return p != null && TagListMatcher.Contains(tags, p.tag);
     }
 }

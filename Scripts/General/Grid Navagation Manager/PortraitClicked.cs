@@ -40,6 +40,7 @@ public class PortraitClicked : MonoBehaviour
         infoText = null;
 
         EnsureCpuLevelButton();
+        nextPortraitScan = Time.unscaledTime + (transform.GetSiblingIndex() % 8) * 0.015f;
     }
 
     void EnsureCpuLevelButton()

@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 1000000000000000008}
   - component: {fileID: 1000000000000000009}
   - component: {fileID: 1000000000000000010}
+  - component: {fileID: 1000000000000000011}
   m_Layer: 3
   m_Name: TicWing
   m_TagString: Paddle
@@ -70,6 +71,18 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 120
   m_CollisionDetection: 2
+--- !u!55 &1000000000000000011
+ConstantForce:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000000000000000001}
+  m_Enabled: 1
+  m_Force: {x: 0, y: 0, z: 0}
+  m_RelativeForce: {x: 0, y: 0, z: 0}
+  m_Torque: {x: 0, y: 0, z: 0}
+  m_RelativeTorque: {x: 0, y: 0, z: 0}
 --- !u!135 &1000000000000000004
 SphereCollider:
   m_ObjectHideFlags: 0

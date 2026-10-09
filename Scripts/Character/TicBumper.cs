@@ -27,9 +27,12 @@ public class TicBumper : MonoBehaviour
     public float plungerPull = 1.15f;
     [Tooltip("Seconds after a plunger launch before the bay can reclaim this bumper.")]
     public float launchGrace = 0.85f;
+    [Tooltip("Seconds after a plunger launch before local gravity resumes.")]
+    public float launchForcePause = 0.4f;
 
     PlayerGrab pg;
     public Rigidbody rb;
+    public ConstantForce constantForceComponent;
     Tic ownerTic;
     int firerIndex = -1;
     bool frozen;
@@ -37,6 +40,7 @@ public class TicBumper : MonoBehaviour
     bool hasEnteredBay;
     float freezeEnd = -1f;
     float launchGraceUntil = -1f;
+    float constantForceDisabledUntil = -1f;
     Collider[] cols;
     Phase phase = Phase.Loading;
     TicBumperSpikes spikes;
@@ -102,6 +106,10 @@ public class TicBumper : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         if (rb == null)
             rb = gameObject.AddComponent<Rigidbody>();
+        if (constantForceComponent == null)
+            constantForceComponent = GetComponent<ConstantForce>();
+        if (constantForceComponent == null)
+            constantForceComponent = gameObject.AddComponent<ConstantForce>();
         cols = GetComponentsInChildren<Collider>(true);
         rb.useGravity = false;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
@@ -125,6 +133,7 @@ public class TicBumper : MonoBehaviour
     {
         if (frozen)
         {
+            DisableConstantForce();
             if (rb != null && !rb.isKinematic)
             {
                 rb.linearVelocity = Vector3.zero;
@@ -136,11 +145,17 @@ public class TicBumper : MonoBehaviour
         }
 
         if (rb == null || rb.isKinematic)
+        {
+            DisableConstantForce();
             return;
+        }
 
         // Wing super freeze — do not overwrite with gravity / min-speed
         if (wingForm != null && wingForm.IsHoldingSuper)
+        {
+            DisableConstantForce();
             return;
+        }
 
         // Only leave Loading after we've actually been in the bay and then exited
         // (spawn starts on the side feed ramp OUTSIDE the launch trigger — must keep Loading)
@@ -151,6 +166,7 @@ public class TicBumper : MonoBehaviour
         float dt = Time.fixedDeltaTime;
         float grav = phase == Phase.Loading ? loadGravity : launchedGravity;
         gravityStrength = grav;
+        ApplyConstantForce(g, grav);
 
         Vector3 v = rb.linearVelocity;
         v.z = 0f;
@@ -164,7 +180,6 @@ public class TicBumper : MonoBehaviour
                 along = 0f;
             lateral *= lateralDampLoad;
             v = g * along + lateral;
-            v += g * grav * dt;
 
             if (ownerTic != null)
             {
@@ -189,9 +204,6 @@ public class TicBumper : MonoBehaviour
         }
         else
         {
-            // Low local gravity after plunger
-            v += g * grav * dt;
-
             // Wing form: keep ball-like floor speed until fully free of the bay
             bool wingFree = wingForm != null && wingForm.FreeFlight;
             if (wingForm == null || !wingFree)
@@ -215,6 +227,44 @@ public class TicBumper : MonoBehaviour
             v = v.normalized * maxSpeed;
 
         rb.linearVelocity = v;
+    }
+
+    void ApplyConstantForce(Vector3 gravityDirection, float acceleration)
+    {
+        if (constantForceComponent == null || rb == null)
+            return;
+
+        if (Time.time < constantForceDisabledUntil)
+        {
+            DisableConstantForce();
+            return;
+        }
+
+        constantForceComponent.force = gravityDirection * acceleration * rb.mass;
+        constantForceComponent.relativeForce = Vector3.zero;
+        constantForceComponent.torque = Vector3.zero;
+        constantForceComponent.relativeTorque = Vector3.zero;
+        constantForceComponent.enabled = true;
+    }
+
+    void DisableConstantForce()
+    {
+        if (constantForceComponent == null)
+            return;
+        constantForceComponent.force = Vector3.zero;
+        constantForceComponent.relativeForce = Vector3.zero;
+        constantForceComponent.torque = Vector3.zero;
+        constantForceComponent.relativeTorque = Vector3.zero;
+        constantForceComponent.enabled = false;
+    }
+
+    public void SuspendConstantForce(float seconds = -1f)
+    {
+        float duration = seconds >= 0f ? seconds : launchForcePause;
+        constantForceDisabledUntil = Mathf.Max(
+            constantForceDisabledUntil,
+            Time.time + Mathf.Max(0f, duration));
+        DisableConstantForce();
     }
 
     public Vector3 GravityDir()
@@ -345,6 +395,7 @@ public class TicBumper : MonoBehaviour
         rb.isKinematic = false;
         SetPhase(Phase.Launched);
         launchGraceUntil = Time.time + launchGrace;
+        SuspendConstantForce();
         worldVelocity.z = 0f;
         if (worldVelocity.magnitude < minLaunchSpeed)
             worldVelocity = worldVelocity.sqrMagnitude > 0.001f

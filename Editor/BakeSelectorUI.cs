@@ -42,6 +42,7 @@ public static class BakeSelectorUI
     {
         BakeFieldSelectPrefab();
         BakeGameplayScene();
+        BakeUiPrefabs();
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
@@ -117,6 +118,8 @@ public static class BakeSelectorUI
                     BakeBallSelect(t);
                 }
             }
+
+            BakeClickablesUnder(go.transform);
         }
 
         EditorSceneManager.MarkSceneDirty(scene);
@@ -124,6 +127,58 @@ public static class BakeSelectorUI
         if (openedTemp)
             EditorSceneManager.CloseScene(scene, true);
         Debug.Log("[BakeSelectorUI] Gameplay scene baked");
+    }
+
+    static void BakeUiPrefabs()
+    {
+        string[] folders = { "Assets/Prefabs/UIs", "Assets/Prefabs/Extra" };
+        string[] guids = AssetDatabase.FindAssets("t:Prefab", folders);
+        for (int i = 0; i < guids.Length; i++)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+            if (string.IsNullOrEmpty(path))
+                continue;
+
+            GameObject root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                BakeClickablesUnder(root.transform);
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+    }
+
+    static void BakeClickablesUnder(Transform root)
+    {
+        if (root == null)
+            return;
+
+        MonoBehaviour[] behaviours = root.GetComponentsInChildren<MonoBehaviour>(true);
+        for (int i = 0; i < behaviours.Length; i++)
+        {
+            MonoBehaviour b = behaviours[i];
+            if (b == null)
+                continue;
+
+            bool clickable = b is PauseMenuButton
+                || b is RunOnClicked
+                || b is OpenMenuOnClick
+                || b is GridControl
+                || b is BackButtonClick
+                || b is UnityEngine.UI.Button;
+            if (!clickable)
+                continue;
+
+            RectTransform rt = b.GetComponent<RectTransform>();
+            float fallback = 80f;
+            if (rt != null)
+                fallback = Mathf.Max(80f, Mathf.Max(rt.rect.width, rt.rect.height));
+            EnsureClickable(b.gameObject, fallback);
+        }
     }
 
     static int BakeFieldGrabsUnder(Transform root)

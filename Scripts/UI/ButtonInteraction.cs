@@ -45,69 +45,49 @@ public class ButtonInteraction : MonoBehaviour
 
     void LateUpdate()
     {
+        Color targetBackground = base_background;
+        Color targetOutline = base_outline;
+
         if (deactivated)
         {
-            if (background != null)
-            {
-                background.color = deactivatedColor;
-            }
-
-            if (outline != null)
-            {
-                outline.effectColor = deactivatedColor_outline;
-            }
-
+            targetBackground = deactivatedColor;
+            targetOutline = deactivatedColor_outline;
         }
         else if (pressed)
         {
-            if (background != null)
-            {
-                background.color = Color.Lerp(base_background, pressedColor, fadeAmount);
-            }
-
-            AddHighlightOutline();
+            targetBackground = Color.Lerp(base_background, pressedColor, fadeAmount);
+            targetOutline = HighlightOutlineColor();
         }
         else if (highlighted.Count > 0)
         {
-            if (background != null)
-            {
-                background.color = Color.Lerp(base_background, highlightColor, fadeAmount);
-            }
-
-            AddHighlightOutline();
+            targetBackground = Color.Lerp(base_background, highlightColor, fadeAmount);
+            targetOutline = HighlightOutlineColor();
         }
-        else
-        {
-            if (background != null)
-            {
-                background.color = base_background;
-            }
 
-            if (outline != null)
-            {
-                outline.effectColor = base_outline;
-            }
-        }
+        // Avoid dirtying the Canvas every frame when the visual state did not change.
+        if (background != null && background.color != targetBackground)
+            background.color = targetBackground;
+        if (outline != null && outline.effectColor != targetOutline)
+            outline.effectColor = targetOutline;
 
         pressed = false;
     }
 
-    void AddHighlightOutline()
+    Color HighlightOutlineColor()
     {
         Color c = Color.white;
 
-        if (outline != null)
+        if (db != null && db.playerColors != null)
         {
             foreach (int i in highlighted)
             {
-                if (i >= 0 && i < 8)
+                if (i >= 0 && i < db.playerColors.Count)
                 {
                     c = Color.Lerp(c, db.playerColors[i].color, .5f);
                 }
             }
-
-            outline.effectColor = c;
         }
+        return c;
     }
 
     public void Pressed()

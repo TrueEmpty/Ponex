@@ -15,8 +15,6 @@ public class FieldGrab : MonoBehaviour
     ButtonInteraction bi;
     bool setup;
 
-    static readonly Color RandomGray = new Color(0.4f, 0.4f, 0.4f, 1f);
-    static readonly Color RandomMark = new Color(0.72f, 0.72f, 0.72f, 1f);
     static readonly Color SelectedGreen = new Color(0.2f, 0.85f, 0.35f, 1f);
 
     void Start()
@@ -90,36 +88,7 @@ public class FieldGrab : MonoBehaviour
 
         if (isRandom)
         {
-            if (background != null)
-                background.color = RandomGray;
-
-            if (icon != null)
-            {
-                icon.texture = null;
-                icon.enabled = false;
-            }
-
-            if (nameText != null)
-            {
-                nameText.text = "?";
-                nameText.color = RandomMark;
-                nameText.alignment = TextAnchor.MiddleCenter;
-                nameText.resizeTextForBestFit = true;
-                nameText.resizeTextMinSize = 20;
-                nameText.resizeTextMaxSize = 72;
-
-                RectTransform rt = nameText.rectTransform;
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-            }
-
-            if (outline != null)
-                outline.effectColor = new Color(0.55f, 0.55f, 0.55f, 1f);
-
-            if (bi != null)
-                bi.Activate();
+            SelectorTileVisual.ApplyRandom(background, outline, icon, nameText, bi);
 
             setup = true;
             UpdateSelection();
@@ -129,27 +98,9 @@ public class FieldGrab : MonoBehaviour
         if (field == null)
             return;
 
-        if (background != null)
-            background.color = Color.white;
-
-        if (icon != null)
-        {
-            icon.enabled = true;
-            icon.texture = field.icon;
-            icon.color = field.active ? Color.white : Color.black;
-        }
-
-        if (nameText != null)
-        {
-            nameText.text = field.name;
-            nameText.color = Color.white;
-        }
-
-        if (bi != null)
-        {
-            if (field.active) bi.Activate();
-            else bi.Deactivate();
-        }
+        SelectorTileVisual.ApplyEntry(
+            background, Color.white, icon, field.icon, field.active,
+            nameText, field.name, bi);
 
         setup = true;
         UpdateSelection();
@@ -176,7 +127,7 @@ public class FieldGrab : MonoBehaviour
         if (isRandom)
         {
             bool selected = db != null && db.selectedField < 0;
-            background.color = selected ? SelectedGreen : RandomGray;
+            background.color = selected ? SelectedGreen : SelectorTileVisual.RandomBackground;
             return;
         }
 

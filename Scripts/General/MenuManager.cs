@@ -13,6 +13,11 @@ public class MenuManager : MonoBehaviour
     public List<GridControl> controls;
 
     public float inLineTolorance = 5;
+    readonly HashSet<string> visibleMenus = new HashSet<string>(StringComparer.Ordinal);
+    readonly Dictionary<string, MenuClass> menuLookup =
+        new Dictionary<string, MenuClass>(StringComparer.Ordinal);
+    readonly MenuClass noMenu = new MenuClass("...No Menu...", false, null);
+    int cachedMenuCount = -1;
 
     private void Awake()
     {
@@ -24,6 +29,8 @@ public class MenuManager : MonoBehaviour
         {
             instance = this;
         }
+
+        RebuildMenuLookup();
     }
 
     // Use this for initialization
@@ -39,7 +46,7 @@ public class MenuManager : MonoBehaviour
         //Check if menu has anything in it
         if (openMenu.Count > 0)
         {
-            List<string> curOM = new List<string>();
+            visibleMenus.Clear();
             for (int i = openMenu.Count - 1; i >= 0; i--)
             {
                 MenuClass mc = FindMenu(openMenu[i]);
@@ -52,8 +59,9 @@ public class MenuManager : MonoBehaviour
                 {
                     if (mc.holder != null)
                     {
-                        mc.holder.SetActive(true);
-                        curOM.Add(mc.title);
+                        if (!mc.holder.activeSelf)
+                            mc.holder.SetActive(true);
+                        visibleMenus.Add(mc.title);
                     }
                 }
 
@@ -71,7 +79,9 @@ public class MenuManager : MonoBehaviour
 
                 if(mC.holder != null)
                 {
-                    mC.holder.SetActive(curOM.Contains(mC.title));
+                    bool shouldBeActive = visibleMenus.Contains(mC.title);
+                    if (mC.holder.activeSelf != shouldBeActive)
+                        mC.holder.SetActive(shouldBeActive);
                 }
             }
         }
@@ -81,15 +91,16 @@ public class MenuManager : MonoBehaviour
     {
         GridControl result = null;
 
-        if(controls.Count > 0)
+        if(controls != null && controls.Count > 0)
         {
-            List<GridControl> aag = controls.FindAll(x => x.group == GetOpenMenu().title && x.isActiveAndEnabled);
-
-            if(aag.Count > 0)
+            string group = GetOpenMenu().title;
+            for (int i = 0; i < controls.Count; i++)
             {
-                aag.Sort((p1, p2) => p2.OrderValue().CompareTo(p1.OrderValue()));
-
-                result = aag[0];
+                GridControl candidate = controls[i];
+                if (candidate == null || !candidate.isActiveAndEnabled || candidate.group != group)
+                    continue;
+                if (result == null || candidate.OrderValue() > result.OrderValue())
+                    result = candidate;
             }
         }
 
@@ -98,7 +109,9 @@ public class MenuManager : MonoBehaviour
 
     public void OpenMenu(string menuName)
     {
-        if(GetOpenMenu().title != menuName && GetOpenMenu(true).title != menuName)
+        MenuClass top = GetOpenMenu();
+        MenuClass baseMenu = GetOpenMenu(true);
+        if(top.title != menuName && baseMenu.title != menuName)
         {
             openMenu.Add(menuName);
 
@@ -112,8 +125,6 @@ public class MenuManager : MonoBehaviour
         //Debug.Log("Test Remove");
         if (openMenu.Contains(menuName))
         {
-            MenuClass mC = menus.Find(x=> x.title == menuName);
-
             openMenu.Remove(menuName);
             //Will check weather it should be active or not
             DisplayCheck();
@@ -129,12 +140,7 @@ public class MenuManager : MonoBehaviour
 
         if (openMenu.Count > amount)
         {
-            for(int i = 1; i <= amount; i++)
-            {
-                RemoveMenu(openMenu[openMenu.Count - 1]);
-            }
-
-            //Will check weather it should be active or not
+            openMenu.RemoveRange(openMenu.Count - amount, amount);
             DisplayCheck();
         }
     }
@@ -196,21 +202,16 @@ public class MenuManager : MonoBehaviour
 
     public MenuClass FindMenu(string menuName)
     {
-        MenuClass mC = new MenuClass("...No Menu...", false, null);
-
-        //Check if menu with that title exist
-        if (menus.Exists(x => x.title == menuName))
-        {
-            //If it does exsit finds it
-            mC = menus.Find(x => x.title == menuName);
-        }
-
-        return mC;
+        EnsureMenuLookup();
+        if (!string.IsNullOrEmpty(menuName)
+            && menuLookup.TryGetValue(menuName, out MenuClass menu))
+            return menu;
+        return noMenu;
     }
 
     public MenuClass GetOpenMenu(bool nonOverlay = false)
     {
-        MenuClass mC = new MenuClass("...No Menu...", false, null);
+        MenuClass mC = noMenu;
 
         //Check if open menu has a count
         if (openMenu.Count > 0)
@@ -231,6 +232,33 @@ public class MenuManager : MonoBehaviour
         }
 
         return mC;
+    }
+
+    void EnsureMenuLookup()
+    {
+        int menuCount = menus != null ? menus.Count : 0;
+        if (cachedMenuCount != menuCount)
+            RebuildMenuLookup();
+    }
+
+    void RebuildMenuLookup()
+    {
+        menuLookup.Clear();
+        if (menus != null)
+        {
+            for (int i = 0; i < menus.Count; i++)
+            {
+                MenuClass menu = menus[i];
+                if (menu == null || string.IsNullOrEmpty(menu.title))
+                    continue;
+                menuLookup[menu.title] = menu;
+            }
+            cachedMenuCount = menus.Count;
+        }
+        else
+        {
+            cachedMenuCount = 0;
+        }
     }
 
 }

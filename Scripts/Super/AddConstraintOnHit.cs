@@ -35,7 +35,7 @@ public class AddConstraintOnHit : MonoBehaviour
                     if (pass)
                     {
                         //Check if to apply constraint
-                        if (hitTags.Exists(x => x.ToLower().Trim() == collision.transform.tag.ToLower().Trim()))
+                        if (TagListMatcher.Contains(hitTags, collision.transform.tag))
                         {
                             if(constrants.Count > 0)
                             {
@@ -49,7 +49,7 @@ public class AddConstraintOnHit : MonoBehaviour
                         }
 
                         //Check if to Destory
-                        if (destroyTags.Exists(x => x.ToLower().Trim() == collision.transform.tag.ToLower().Trim()))
+                        if (TagListMatcher.Contains(destroyTags, collision.transform.tag))
                         {
                             Destroy(gameObject);
                         }

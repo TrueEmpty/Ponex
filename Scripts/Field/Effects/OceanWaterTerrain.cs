@@ -17,6 +17,8 @@ public class OceanWaterTerrain : MonoBehaviour
     Vector3[] verts;
     MeshFilter mf;
     MeshRenderer mr;
+    float nextMeshUpdateTime;
+    const float MeshUpdateInterval = 1f / 30f;
 
     public static OceanWaterTerrain Create(Transform fieldRoot, float playHalf)
     {
@@ -37,6 +39,7 @@ public class OceanWaterTerrain : MonoBehaviour
         mr = gameObject.AddComponent<MeshRenderer>();
 
         mesh = new Mesh { name = "OceanWaves" };
+        mesh.MarkDynamic();
         int res = Mathf.Clamp(resolution, 16, 96);
         int count = res * res;
         baseVerts = new Vector3[count];
@@ -100,7 +103,12 @@ public class OceanWaterTerrain : MonoBehaviour
         if (mesh == null || baseVerts == null)
             return;
 
-        float t = Time.time * waveSpeed;
+        float now = Time.time;
+        if (now < nextMeshUpdateTime)
+            return;
+        nextMeshUpdateTime = now + MeshUpdateInterval;
+
+        float t = now * waveSpeed;
         for (int i = 0; i < baseVerts.Length; i++)
         {
             Vector3 b = baseVerts[i];

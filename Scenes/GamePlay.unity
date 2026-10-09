@@ -16754,6 +16754,7 @@ GameObject:
   - component: {fileID: 880000000000000037}
   - component: {fileID: 880000000000000038}
   - component: {fileID: 880000000000000039}
+  - component: {fileID: 880000000000000210}
   m_Layer: 5
   m_Name: Resume
   m_TagString: Selection
@@ -16915,6 +16916,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   action: Resume
+--- !u!65 &880000000000000210
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880000000000000032}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 200, y: 65, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &880000000000000040
 GameObject:
   m_ObjectHideFlags: 0
@@ -17009,6 +17031,7 @@ GameObject:
   - component: {fileID: 880000000000000049}
   - component: {fileID: 880000000000000050}
   - component: {fileID: 880000000000000051}
+  - component: {fileID: 880000000000000211}
   m_Layer: 5
   m_Name: Reset Match
   m_TagString: Selection
@@ -17170,6 +17193,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   action: Reset Match
+--- !u!65 &880000000000000211
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880000000000000044}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 200, y: 65, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &880000000000000052
 GameObject:
   m_ObjectHideFlags: 0
@@ -17264,6 +17308,7 @@ GameObject:
   - component: {fileID: 880000000000000061}
   - component: {fileID: 880000000000000062}
   - component: {fileID: 880000000000000063}
+  - component: {fileID: 880000000000000212}
   m_Layer: 5
   m_Name: Forfeit
   m_TagString: Selection
@@ -17425,6 +17470,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   action: Forfeit
+--- !u!65 &880000000000000212
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880000000000000056}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 200, y: 65, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &880000000000000064
 GameObject:
   m_ObjectHideFlags: 0
@@ -17519,6 +17585,7 @@ GameObject:
   - component: {fileID: 880000000000000073}
   - component: {fileID: 880000000000000074}
   - component: {fileID: 880000000000000075}
+  - component: {fileID: 880000000000000213}
   m_Layer: 5
   m_Name: Reset Game
   m_TagString: Selection
@@ -17680,6 +17747,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   action: Reset Game
+--- !u!65 &880000000000000213
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880000000000000068}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 200, y: 65, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &880000000000000076
 GameObject:
   m_ObjectHideFlags: 0
@@ -17774,6 +17862,7 @@ GameObject:
   - component: {fileID: 880000000000000085}
   - component: {fileID: 880000000000000086}
   - component: {fileID: 880000000000000087}
+  - component: {fileID: 880000000000000214}
   m_Layer: 5
   m_Name: Main Menu
   m_TagString: Selection
@@ -17935,6 +18024,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   action: Main Menu
+--- !u!65 &880000000000000214
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880000000000000080}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 200, y: 65, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &880000000000000088
 GameObject:
   m_ObjectHideFlags: 0
