@@ -38,7 +38,7 @@ MonoBehaviour:
     readyPercent: 0
   character:
     prefabs: {fileID: 5058516453889937152, guid: e3157dde18c9b8c41bbd0e3eb63513e0, type: 3}
-    positionOffset: {x: 0, y: 0.9, z: 0}
+    positionOffset: {x: 0, y: 1.9, z: 0}
     rotationOffset: {x: 0, y: 0, z: 0}
   lifeline:
     prefabs: {fileID: 0}
