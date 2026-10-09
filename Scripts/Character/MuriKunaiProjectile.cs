@@ -125,6 +125,12 @@ public class MuriKunaiProjectile : MonoBehaviour
             rb.position = pos;
             rb.rotation = rot;
 
+            if (MuriMove.IsOutsidePlayfield(pos, transform))
+            {
+                Vanish();
+                return;
+            }
+
             if (Time.time >= nextCrushCheck)
             {
                 nextCrushCheck = Time.time + 0.12f;
@@ -182,7 +188,7 @@ public class MuriKunaiProjectile : MonoBehaviour
             return;
         }
 
-        if (stick)
+        if (stick && !StartsInside(stickHit.collider, from))
         {
             StickTo(stickHit);
             return;
@@ -194,6 +200,9 @@ public class MuriKunaiProjectile : MonoBehaviour
         transform.SetPositionAndRotation(pos, rot);
         rb.position = pos;
         rb.rotation = rot;
+
+        if (MuriMove.IsOutsidePlayfield(pos, transform))
+            Vanish();
     }
 
     void OnCollisionEnter(Collision collision)
@@ -245,6 +254,9 @@ public class MuriKunaiProjectile : MonoBehaviour
         localPos = transform.localPosition;
         localRot = transform.localRotation;
         nextCrushCheck = Time.time + 0.45f;
+
+        if (MuriMove.IsOutsidePlayfield(pos, transform))
+            Vanish();
     }
 
     public void ConsumeForBlink()
@@ -292,6 +304,18 @@ public class MuriKunaiProjectile : MonoBehaviour
             return false;
         Transform t = hit.transform;
         return t == stickParent || t.IsChildOf(stickParent) || stickParent.IsChildOf(t);
+    }
+
+    static bool StartsInside(Collider other, Vector3 point)
+    {
+        if (other == null)
+            return false;
+        if (!other.bounds.Contains(point))
+            return false;
+        if (other is MeshCollider mesh && !mesh.convex)
+            return false;
+        Vector3 closest = other.ClosestPoint(point);
+        return (closest - point).sqrMagnitude < 0.0001f;
     }
 
     bool IsKunaiPart(Collider other)

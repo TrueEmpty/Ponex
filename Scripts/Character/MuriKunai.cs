@@ -181,6 +181,14 @@ public class MuriKunai : MonoBehaviour
             return;
 
         Vector3 dest = target.transform.position;
+        if (MuriMove.IsOutsidePlayfield(dest, target.transform))
+        {
+            target.ConsumeForBlink();
+            if (move != null)
+                move.RecoverIfOutOfBounds();
+            return;
+        }
+
         Vector3 n = target.StickNormal;
         if (n.sqrMagnitude < 0.0001f)
             n = move != null ? move.StandUp : Vector3.up;
@@ -193,7 +201,10 @@ public class MuriKunai : MonoBehaviour
 
         target.ConsumeForBlink();
         if (move != null)
+        {
             move.PlaceOnBestSupport();
+            move.RecoverIfOutOfBounds();
+        }
         nextBlink = Time.time + 0.22f;
         LockUntilRelease();
     }

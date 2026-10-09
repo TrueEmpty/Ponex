@@ -33,6 +33,10 @@ public class MuriMove : MonoBehaviour
     bool attached;
     bool placed;
     bool supportIsWall;
+    Vector3 spawnPos;
+    Vector3 lastSafePos;
+    bool haveSpawn;
+    bool haveSafe;
 
     static readonly Collider[] overlap = new Collider[48];
     static readonly RaycastHit[] rayHits = new RaycastHit[24];
@@ -82,6 +86,7 @@ public class MuriMove : MonoBehaviour
 
         placed = true;
         SnapZ();
+        RememberSafeIfValid();
     }
 
     void FixedUpdate()
@@ -130,6 +135,7 @@ public class MuriMove : MonoBehaviour
             RefreshSurfaceAxes(desired);
             ApplyStandRotation();
             fallVel = Vector3.zero;
+            RememberSafeIfValid();
         }
         else
         {
@@ -159,6 +165,7 @@ public class MuriMove : MonoBehaviour
         }
 
         UpdatePlayerFacing();
+        RecoverIfOutOfBounds();
     }
 
     void OnCollisionEnter(Collision collision)
@@ -304,7 +311,6 @@ public class MuriMove : MonoBehaviour
         int n = Physics.OverlapSphereNonAlloc(origin, bodyRadius * 2.4f, overlap, ~0, QueryTriggerInteraction.Ignore);
         Collider best = null;
         float bestScore = float.PositiveInfinity;
-        Vector3 sideCenter = SideCenter();
         for (int i = 0; i < n; i++)
         {
             Collider col = overlap[i];
@@ -313,8 +319,8 @@ public class MuriMove : MonoBehaviour
             if (!OnOurSide(col.bounds.center))
                 continue;
 
-            Vector3 closest = SafeClosest(col, sideCenter);
-            float score = (closest - sideCenter).sqrMagnitude;
+            Vector3 closest = SafeClosest(col, origin);
+            float score = (closest - origin).sqrMagnitude;
             if (score < bestScore)
             {
                 bestScore = score;
@@ -363,9 +369,21 @@ public class MuriMove : MonoBehaviour
     {
         hit = default;
         Vector3 inward = InwardFromFacing();
-        Vector3 from = origin + inward * 2.5f;
-        from.z = PlayZ();
         Vector3 target = SafeClosest(col, origin);
+        Vector3 from;
+        // Inside a paddle/player, ClosestPoint returns the origin. Cast from the
+        // field so we hit the real face instead of parenting to the object's center.
+        if ((target - origin).sqrMagnitude < 0.0004f)
+        {
+            from = FieldCenter();
+            from.z = PlayZ();
+            target = origin;
+        }
+        else
+        {
+            from = origin + inward * 2.5f;
+            from.z = PlayZ();
+        }
         Vector3 delta = target - from;
         float dist = delta.magnitude;
         if (dist < 0.0001f)
@@ -403,6 +421,10 @@ public class MuriMove : MonoBehaviour
             Vector3 inward = Flatten(FieldCenter() - worldPos);
             if (inward.sqrMagnitude > 0.0004f)
                 standUp = inward.normalized;
+        }
+        else if (IsFighterTransform(support))
+        {
+            // Keep the contact normal so she stays on the hit face, not the object's center.
         }
         else
         {
@@ -585,6 +607,118 @@ public class MuriMove : MonoBehaviour
         if (tag == "Ball" || tag == "Ghost" || tag == "OutOfBounds")
             return false;
         return true;
+    }
+
+    public static bool IsFighterCollider(Collider col)
+    {
+        return col != null && IsFighterTransform(col.transform);
+    }
+
+    public static bool IsFighterTransform(Transform t)
+    {
+        Transform p = t;
+        while (p != null)
+        {
+            if (p.CompareTag("Player") || p.CompareTag("Paddle"))
+                return true;
+            p = p.parent;
+        }
+        return false;
+    }
+
+    public static bool IsOutsidePlayfield(Vector3 worldPos, Transform ignoreRoot = null)
+    {
+        Database db = Database.instance;
+        float z = db != null ? db.FieldPlaySize : worldPos.z;
+        Vector3 pos = worldPos;
+        pos.z = z;
+        Vector3 center = new Vector3(0f, 0f, z);
+
+        int o = Physics.OverlapSphereNonAlloc(pos, 0.1f, overlap, ~0, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < o; i++)
+        {
+            Collider col = overlap[i];
+            if (col == null)
+                continue;
+            if (ignoreRoot != null && (col.transform == ignoreRoot || col.transform.IsChildOf(ignoreRoot)))
+                continue;
+            if (col.CompareTag("OutOfBounds"))
+                return true;
+        }
+
+        Vector3 delta = Flatten(pos - center);
+        float dist = delta.magnitude;
+        if (dist < 0.05f)
+            return false;
+
+        Vector3 dir = delta / dist;
+        int n = Physics.RaycastNonAlloc(center, dir, rayHits, dist + 0.2f, ~0, QueryTriggerInteraction.Ignore);
+        float wallDist = float.PositiveInfinity;
+        for (int i = 0; i < n; i++)
+        {
+            RaycastHit hit = rayHits[i];
+            if (hit.collider == null)
+                continue;
+            if (ignoreRoot != null && (hit.collider.transform == ignoreRoot || hit.collider.transform.IsChildOf(ignoreRoot)))
+                continue;
+            if (!IsWall(hit.collider))
+                continue;
+            if (hit.distance < wallDist)
+                wallDist = hit.distance;
+        }
+
+        return wallDist < dist - 0.12f;
+    }
+
+    void RememberSafeIfValid()
+    {
+        Vector3 p = transform.position;
+        p.z = PlayZ();
+        if (IsOutsidePlayfield(p, transform))
+            return;
+        lastSafePos = p;
+        haveSafe = true;
+        if (!haveSpawn)
+        {
+            spawnPos = p;
+            haveSpawn = true;
+        }
+    }
+
+    public void RecoverIfOutOfBounds()
+    {
+        Vector3 p = transform.position;
+        p.z = PlayZ();
+        if (!IsOutsidePlayfield(p, transform))
+            return;
+
+        if (haveSafe && !IsOutsidePlayfield(lastSafePos, transform))
+        {
+            TeleportTo(lastSafePos);
+            PlaceOnBestSupport();
+            return;
+        }
+
+        if (haveSpawn && !IsOutsidePlayfield(spawnPos, transform))
+        {
+            TeleportTo(spawnPos);
+            PlaceOnBestSupport();
+            return;
+        }
+
+        Vector3 fallback = haveSpawn ? spawnPos : SideCenter();
+        TeleportTo(fallback);
+        PlaceOnBestSupport();
+        if (IsOutsidePlayfield(transform.position, transform) && haveSafe)
+            TeleportTo(lastSafePos);
+    }
+
+    void TeleportTo(Vector3 pos)
+    {
+        pos.z = PlayZ();
+        transform.position = pos;
+        if (rb != null)
+            rb.position = pos;
     }
 
     static Vector3 Flatten(Vector3 v)
