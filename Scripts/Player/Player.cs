@@ -79,6 +79,13 @@ public class Player
     /// <summary>Tic coop: partner player index (-1 none).</summary>
     [System.NonSerialized] public int ticPartnerIndex = -1;
 
+    /// <summary>Celarus coop: this slot owns the shared moon/sun lifeline.</summary>
+    [System.NonSerialized] public bool celarusShareHost;
+    /// <summary>Celarus coop: this slot uses a partner's moon/sun (no second lifeline).</summary>
+    [System.NonSerialized] public bool celarusShareGuest;
+    /// <summary>Celarus coop: host player index (-1 none).</summary>
+    [System.NonSerialized] public int celarusShareHostIndex = -1;
+
     #region Selections
     public bool characterSelected = false;
     /// <summary>Roster "?" pick — concrete character is rolled in StartGame and again each rematch.</summary>

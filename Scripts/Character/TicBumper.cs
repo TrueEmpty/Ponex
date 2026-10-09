@@ -45,6 +45,8 @@ public class TicBumper : MonoBehaviour
     Phase phase = Phase.Loading;
     TicBumperSpikes spikes;
     TicWingBumper wingForm;
+    readonly System.Collections.Generic.List<Collider> ignoredHomeWalls = new System.Collections.Generic.List<Collider>();
+    float nextBallKickAt = -1f;
 
     public int OwnerIndex => pg != null ? pg.playerIndex : -1;
     public int FirerIndex => firerIndex;
@@ -70,6 +72,9 @@ public class TicBumper : MonoBehaviour
         pg.playerIndex = ownerIndex;
         hasEnteredBay = false;
         SetPhase(Phase.Loading);
+        FlattenChildBodies();
+        TagAsPaddle();
+        ApplyHomeWallIgnore(true);
     }
 
     /// <summary>Kick the bumper down the feed ramp toward the plunger (call right after spawn).</summary>
@@ -84,16 +89,13 @@ public class TicBumper : MonoBehaviour
         Vector3 kick = g * kickSpeed;
 
         // From a side cutout, also nudge toward the plunger / shaft center
-        Transform target = ownerTic.plunger != null ? ownerTic.plunger : ownerTic.loadPoint;
-        if (target != null)
-        {
-            Vector3 to = target.position - rb.position;
-            to.z = 0f;
-            Vector3 alongG = g * Vector3.Dot(to, g);
-            Vector3 sideways = to - alongG;
-            if (sideways.sqrMagnitude > 0.0001f)
-                kick += sideways.normalized * (kickSpeed * 0.85f);
-        }
+        Vector3 rest = ownerTic.GetBayRestPosition();
+        Vector3 to = rest - rb.position;
+        to.z = 0f;
+        Vector3 alongG = g * Vector3.Dot(to, g);
+        Vector3 sideways = to - alongG;
+        if (sideways.sqrMagnitude > 0.0001f)
+            kick += sideways.normalized * (kickSpeed * 0.85f);
 
         kick.z = 0f;
         rb.isKinematic = false;
@@ -110,6 +112,9 @@ public class TicBumper : MonoBehaviour
             constantForceComponent = GetComponent<ConstantForce>();
         if (constantForceComponent == null)
             constantForceComponent = gameObject.AddComponent<ConstantForce>();
+        FlattenChildBodies();
+        TagAsPaddle();
+        EnsureHubCollider();
         cols = GetComponentsInChildren<Collider>(true);
         rb.useGravity = false;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
@@ -157,9 +162,9 @@ public class TicBumper : MonoBehaviour
             return;
         }
 
-        // Only leave Loading after we've actually been in the bay and then exited
-        // (spawn starts on the side feed ramp OUTSIDE the launch trigger — must keep Loading)
-        if (!inLaunchArea && phase == Phase.Loading && !InLaunchGrace && hasEnteredBay)
+        // Stay Loading in the shaft even if the bay overlap flickers. Only free-fly
+        // after a plunger launch or after clearly leaving the machine.
+        if (phase == Phase.Loading && !inLaunchArea && !InLaunchGrace && hasEnteredBay && ClearlyLeftBay())
             SetPhase(Phase.Launched);
 
         Vector3 g = GravityDir();
@@ -183,23 +188,19 @@ public class TicBumper : MonoBehaviour
 
             if (ownerTic != null)
             {
-                Transform target = ownerTic.plunger != null ? ownerTic.plunger : ownerTic.loadPoint;
-                if (target != null)
-                {
-                    Vector3 toPlunger = target.position - rb.position;
-                    toPlunger.z = 0f;
-                    Vector3 alongG = g * Vector3.Dot(toPlunger, g);
-                    Vector3 sideways = toPlunger - alongG;
+                Vector3 toPlunger = ownerTic.GetBayRestPosition() - rb.position;
+                toPlunger.z = 0f;
+                Vector3 alongG = g * Vector3.Dot(toPlunger, g);
+                Vector3 sideways = toPlunger - alongG;
 
-                    // Strong lateral pull so side-ramp spawns slide into the shaft
-                    if (sideways.sqrMagnitude > 0.0001f)
-                        v += sideways.normalized * (grav * plungerPull * dt);
+                // Strong lateral pull so side-ramp spawns slide into the shaft
+                if (sideways.sqrMagnitude > 0.0001f)
+                    v += sideways.normalized * (grav * plungerPull * dt);
 
-                    // Also ease along gravity toward the plunger if we're above it on the ramp
-                    float alongTo = Vector3.Dot(toPlunger, g);
-                    if (alongTo > 0.05f)
-                        v += g * (grav * 0.35f * dt);
-                }
+                // Also ease along gravity toward the rest if we're above it on the ramp
+                float alongTo = Vector3.Dot(toPlunger, g);
+                if (alongTo > 0.05f)
+                    v += g * (grav * 0.35f * dt);
             }
         }
         else
@@ -280,6 +281,108 @@ public class TicBumper : MonoBehaviour
     {
         phase = p;
         gravityStrength = p == Phase.Loading ? loadGravity : launchedGravity;
+        ApplyHomeWallIgnore(p == Phase.Loading);
+    }
+
+    bool ClearlyLeftBay()
+    {
+        if (rb == null)
+            return false;
+        if (ownerTic == null)
+            return hasEnteredBay && !inLaunchArea;
+        Vector3 rest = ownerTic.GetBayRestPosition();
+        float along = Vector3.Dot(rb.position - rest, ownerTic.transform.up);
+        return along > 1.6f;
+    }
+
+    void FlattenChildBodies()
+    {
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
+        Rigidbody[] bodies = GetComponentsInChildren<Rigidbody>(true);
+        for (int i = 0; i < bodies.Length; i++)
+        {
+            Rigidbody child = bodies[i];
+            if (child == null || child == rb)
+                continue;
+            child.detectCollisions = false;
+            child.isKinematic = true;
+            Destroy(child);
+        }
+        cols = GetComponentsInChildren<Collider>(true);
+    }
+
+    void EnsureHubCollider()
+    {
+        if (GetComponent<Collider>() != null)
+            return;
+        SphereCollider hub = gameObject.AddComponent<SphereCollider>();
+        hub.radius = 0.22f;
+        hub.center = Vector3.zero;
+    }
+
+    void TagAsPaddle()
+    {
+        gameObject.tag = "Paddle";
+        Transform[] all = GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] != null)
+                all[i].gameObject.tag = "Paddle";
+        }
+    }
+
+    void ApplyHomeWallIgnore(bool ignore)
+    {
+        if (cols == null)
+            cols = GetComponentsInChildren<Collider>(true);
+
+        if (!ignore)
+        {
+            for (int i = 0; i < ignoredHomeWalls.Count; i++)
+            {
+                Collider wall = ignoredHomeWalls[i];
+                if (wall == null)
+                    continue;
+                for (int c = 0; c < cols.Length; c++)
+                {
+                    if (cols[c] != null)
+                        Physics.IgnoreCollision(cols[c], wall, false);
+                }
+            }
+            ignoredHomeWalls.Clear();
+            return;
+        }
+
+        if (ownerTic == null)
+            return;
+
+        Vector3 towardHome = -ownerTic.transform.up;
+        Vector3 origin = ownerTic.GetBayRestPosition();
+        Collider[] walls = Physics.OverlapSphere(origin, 2.4f, ~0, QueryTriggerInteraction.Ignore);
+        for (int w = 0; w < walls.Length; w++)
+        {
+            Collider wall = walls[w];
+            if (wall == null || wall.isTrigger)
+                continue;
+            if (wall.transform == ownerTic.transform || wall.transform.IsChildOf(ownerTic.transform))
+                continue;
+            if (wall.transform == transform || wall.transform.IsChildOf(transform))
+                continue;
+            string tag = wall.tag;
+            if (tag != "Wall" && tag != "Walls" && tag != "Obstacle")
+                continue;
+            if (Vector3.Dot(wall.bounds.center - origin, towardHome) <= 0.05f)
+                continue;
+            if (ignoredHomeWalls.Contains(wall))
+                continue;
+            ignoredHomeWalls.Add(wall);
+            for (int c = 0; c < cols.Length; c++)
+            {
+                if (cols[c] != null)
+                    Physics.IgnoreCollision(cols[c], wall, true);
+            }
+        }
     }
 
     public void SetInLaunchArea(bool inside, Tic areaOwner)
@@ -406,6 +509,7 @@ public class TicBumper : MonoBehaviour
             worldVelocity = ownerTic.transform.up * worldVelocity.magnitude;
         rb.linearVelocity = worldVelocity;
         inLaunchArea = false;
+        ApplyHomeWallIgnore(false);
     }
 
     void OnCollisionEnter(Collision collision)
@@ -421,16 +525,17 @@ public class TicBumper : MonoBehaviour
             return;
         }
 
+        Rigidbody ballRb = collision.rigidbody;
+        if (ballRb == null)
+            ballRb = collision.collider.attachedRigidbody;
+        bool isBall = collision.collider.CompareTag("Ball")
+            || (ballRb != null && ballRb.CompareTag("Ball"))
+            || collision.collider.GetComponentInParent<BallInfo>() != null
+            || collision.collider.GetComponentInParent<BallMovement>() != null;
+
         // Frozen bumper: ball hit → spike pop + knock ball away fast
         if (frozen)
         {
-            Rigidbody ballRb = collision.rigidbody;
-            if (ballRb == null)
-                ballRb = collision.collider.attachedRigidbody;
-            bool isBall = collision.collider.CompareTag("Ball")
-                || (ballRb != null && ballRb.CompareTag("Ball"))
-                || collision.collider.GetComponentInParent<BallInfo>() != null
-                || collision.collider.GetComponentInParent<BallMovement>() != null;
             if (isBall && ballRb != null)
             {
                 if (spikes == null)
@@ -442,6 +547,27 @@ public class TicBumper : MonoBehaviour
                     spikes.PopAndKnockBall(ballRb, hit);
             }
             return;
+        }
+
+        // Live bumper acts like a pinball bumper once it is in play
+        if (isBall && ballRb != null && phase == Phase.Launched && Time.time >= nextBallKickAt)
+        {
+            nextBallKickAt = Time.time + 0.12f;
+            if (spikes == null)
+                spikes = GetComponent<TicBumperSpikes>();
+            Vector3 hit = collision.contactCount > 0
+                ? collision.GetContact(0).point
+                : ballRb.position;
+            if (spikes != null)
+                spikes.PopAndKnockBall(ballRb, hit);
+            else
+            {
+                Vector3 away = ballRb.position - transform.position;
+                away.z = 0f;
+                if (away.sqrMagnitude < 0.0001f)
+                    away = Vector3.up;
+                ballRb.linearVelocity = away.normalized * Mathf.Max(10f, ballRb.linearVelocity.magnitude);
+            }
         }
 
         if (collision.contactCount <= 0 || rb == null || rb.isKinematic)

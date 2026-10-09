@@ -115,7 +115,7 @@ MonoBehaviour:
   speed: 25
   tags:
   - Walls
-  raycastOffset: {x: 0, y: 0, z: 0}
+  raycastOffset: {x: 0, y: 1.25, z: 0}
 --- !u!33 &8692406959748517570
 MeshFilter:
   m_ObjectHideFlags: 0

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,6 +45,7 @@ public class Bahrue : MonoBehaviour
     [SerializeField]
     Thought thought = Thought.Nothing;
     ComputerBrain brain;
+    PaddleWall.LaneLock lane;
 
     // Start is called before the first frame update
     void Start()
@@ -61,7 +61,7 @@ public class Bahrue : MonoBehaviour
         if (brain != null)
         {
             brain.hitTags = hitTags;
-            brain.wallStopDistance = 1f;
+            brain.wallStopDistance = 1f + PaddleWall.LineSideClearance;
         }
 
         rb.useGravity = false;
@@ -113,9 +113,17 @@ public class Bahrue : MonoBehaviour
             if (pg.player.dash != null)
                 pg.player.dash.Charge();
 
+            if (pg.player != null)
+                lane.Ensure(rb, pg.player.facing);
             // Dash/contact can overshoot soft wall stop — push out so leave-input always works
             PaddleWall.Unstick(rb, transform, hitTags);
+            lane.Clamp(rb);
         }
+    }
+
+    void FixedUpdate()
+    {
+        lane.Clamp(rb);
     }
 
     void OnMove()
@@ -217,6 +225,7 @@ public class Bahrue : MonoBehaviour
             wallDis = halfDis;
         }
 
+        wallDis += PaddleWall.LineSideClearance;
         Transform wallOrigin = holder != null ? holder : transform;
         return PaddleWall.WallInDirection(wallOrigin, dir, hitTags, wallDis);
     }

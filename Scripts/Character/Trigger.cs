@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,6 +27,8 @@ public class Trigger : MonoBehaviour
     float superDelayAmount = 0;
     public int superShots = 20;
     int superShotCount = -1;
+
+    PaddleWall.LaneLock lane;
 
     [SerializeField]
     Thought thought = Thought.Nothing;
@@ -64,8 +65,11 @@ public class Trigger : MonoBehaviour
                 rb.linearVelocity = Vector3.zero;
             }
 
+            if (pg.player != null)
+                lane.Ensure(rb, pg.player.facing);
             // Dash can overshoot soft wall stop — push out so leave-input always works
             PaddleWall.Unstick(rb, transform, hitTags);
+            lane.Clamp(rb);
 
             if (pg.player.CanBump)
             {
@@ -104,6 +108,11 @@ public class Trigger : MonoBehaviour
                 superSkill.readyPercent = superSkill.Enough() ? 1f : 0f;
             }
         }
+    }
+
+    void FixedUpdate()
+    {
+        lane.Clamp(rb);
     }
 
     void OnMove()
@@ -278,31 +287,7 @@ public class Trigger : MonoBehaviour
 
     float WallStopDistance()
     {
-        // Stop just past the mesh edge — fixed dis (1.38) left a large gap before side walls
-        return Mathf.Max(0.12f, LateralExtent() + 0.06f);
-    }
-
-    float LateralExtent()
-    {
-        Vector3 lat = PaddleWall.AbsAxes(transform.right);
-        Collider[] cols = GetComponentsInChildren<Collider>();
-        float max = 0.15f;
-        if (cols == null)
-            return max;
-
-        for (int i = 0; i < cols.Length; i++)
-        {
-            Collider col = cols[i];
-            if (col == null || !col.enabled || col.isTrigger)
-                continue;
-
-            Bounds b = col.bounds;
-            float along = Mathf.Abs(lat.x) * b.extents.x + Mathf.Abs(lat.y) * b.extents.y;
-            float centerOff = Vector3.Dot(b.center - transform.position, lat);
-            max = Mathf.Max(max, Mathf.Abs(centerOff) + along);
-        }
-
-        return max;
+        return PaddleWall.LateralStopDistance(transform);
     }
 }
 

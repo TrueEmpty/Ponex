@@ -53,13 +53,66 @@ public class Yuotay : MonoBehaviour
     [SerializeField]
     Thought thought = Thought.Nothing;
 
-    /// <summary>Locked spawn-lane coordinate (Y for Up/Down seats, X for Left/Right).</summary>
-    float laneCoord;
-    bool laneReady;
-    bool batWallIgnoreReady;
+    PaddleWall.LaneLock lane;
+    bool wallsIgnored;
+    bool mitIgnored;
     Collider[] batColliders;
     Collider[] bodyColliders;
+    Collider[] allColliders;
     ComputerBrain brain;
+    float laneMin;
+    float laneMax;
+    float laneRefresh;
+    static readonly List<string> ObstacleTags = new List<string> { "Obstacle" };
+
+    public static bool IsYuotayPlayer(Player p)
+    {
+        if (p == null)
+            return false;
+        if (!string.IsNullOrEmpty(p.name)
+            && p.name.Equals("Yuotay", System.StringComparison.OrdinalIgnoreCase))
+            return true;
+        return p.character != null && p.character.prefabs != null
+            && p.character.prefabs.GetComponent<Yuotay>() != null;
+    }
+
+    /// <summary>Two Yuotays on one wall sit side-by-side so a bat cannot spawn on top of the other and get shoved to the far wall.</summary>
+    public static void PrepareSameWallSeats(List<Player> players, float fieldPlaySize)
+    {
+        if (players == null)
+            return;
+
+        float halfGap = Mathf.Clamp(fieldPlaySize * 0.18f, 2.8f, 5f);
+
+        for (int f = 0; f < 4; f++)
+        {
+            Facing facing = (Facing)f;
+            List<Player> group = new List<Player>(2);
+            for (int i = 0; i < players.Count; i++)
+            {
+                Player p = players[i];
+                if (p == null || p.facing != facing || !IsYuotayPlayer(p))
+                    continue;
+                group.Add(p);
+            }
+            if (group.Count < 2)
+                continue;
+
+            group.Sort((a, b) =>
+            {
+                int c = a.position.CompareTo(b.position);
+                return c != 0 ? c : a.index.CompareTo(b.index);
+            });
+
+            for (int i = 0; i < group.Count; i++)
+            {
+                if (Mathf.Abs(group[i].ticWallSideOffset) > 0.01f)
+                    continue;
+                float t = group.Count == 1 ? 0.5f : i / (float)(group.Count - 1);
+                group[i].ticWallSideOffset = Mathf.Lerp(-halfGap, halfGap, t);
+            }
+        }
+    }
 
     void Start()
     {
@@ -69,22 +122,36 @@ public class Yuotay : MonoBehaviour
         brain = ComputerBrain.Ensure(gameObject, ComputerBrain.Mode.LanePaddle);
         if (brain != null)
         {
-            brain.hitTags = hitTags;
+            // Don't treat stadium segments as AI blockers — clamp handles the real ends
+            brain.hitTags = ObstacleTags;
             brain.wallStopDistance = dis;
         }
 
+        if (pg != null && pg.player != null)
+            lane.Ensure(rb, pg.player.facing);
+
         rb.useGravity = false;
+        if (GetComponent<DestroyOnDeath>() == null)
+            gameObject.AddComponent<DestroyOnDeath>();
 
         // Child colliders except the root body — bat mesh pushes into walls during swings
         List<Collider> bats = new List<Collider>();
-        Collider[] all = GetComponentsInChildren<Collider>(true);
-        bodyColliders = all;
-        for (int i = 0; i < all.Length; i++)
+        List<Collider> body = new List<Collider>();
+        allColliders = GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < allColliders.Length; i++)
         {
-            if (all[i] != null && all[i].transform != transform)
-                bats.Add(all[i]);
+            Collider c = allColliders[i];
+            if (c == null)
+                continue;
+            if (c.transform == transform)
+                body.Add(c);
+            else
+                bats.Add(c);
         }
+        bodyColliders = body.ToArray();
         batColliders = bats.ToArray();
+        IgnoreStadiumAndMit();
+        StartCoroutine(IgnoreStadiumAfterWallsSpawn());
     }
 
     void Update()
@@ -93,14 +160,17 @@ public class Yuotay : MonoBehaviour
             return;
 
         Player p = pg.player;
-        EnsureLaneLock(p);
+        lane.Ensure(rb, p.facing);
+
+        if (p.currentHealth <= 0)
+        {
+            DespawnWithMit();
+            return;
+        }
 
         if (db.gameStart && p.currentHealth > 0)
         {
-            // Walls spawn with the match — ignore bat↔wall once they exist
-            if (!batWallIgnoreReady)
-                RequestBatWallCollisionIgnore();
-
+            IgnoreStadiumAndMit();
             Unstick();
 
             if (p.CanMove)
@@ -115,9 +185,8 @@ public class Yuotay : MonoBehaviour
                 rb.linearVelocity = Vector3.zero;
             }
 
-            // Only depenetrate the body collider — bat-into-wall must not shove Yuotay off-lane
-            PaddleWall.Unstick(rb, transform, hitTags, bodyColliders);
-            ClampToLane(p);
+            PaddleWall.Unstick(rb, transform, ObstacleTags, bodyColliders);
+            ClampToSide();
 
             if (p.CanBump)
                 OnBump();
@@ -153,106 +222,59 @@ public class Yuotay : MonoBehaviour
             if (batGrip != null && batHitPoint != null)
                 batGrip.LookAt(batHitPoint);
 
-            ClampToLane(p);
-        }
-        else if (db.gameStart && p.currentHealth <= 0)
-        {
-            Unstick();
-            ClampToLane(p);
+            ClampToSide();
         }
     }
 
     void FixedUpdate()
     {
+        if (rb != null)
+            ClampToSide();
+    }
+
+    void ClampToSide()
+    {
+        lane.Clamp(rb);
         if (pg != null && pg.player != null)
-            ClampToLane(pg.player);
+            PaddleWall.ClampToLaneLimits(rb, transform, pg.player.facing, ref laneMin, ref laneMax, ref laneRefresh);
     }
 
-    void EnsureLaneLock(Player p)
+    void DespawnWithMit()
     {
-        if (p == null || rb == null)
-            return;
-
-        if (!laneReady)
+        Player p = pg != null ? pg.player : null;
+        if (p != null && p.spawnedLifeline != null)
         {
-            switch (p.facing)
-            {
-                case Facing.Left:
-                case Facing.Right:
-                    // Side seats: slide on Y only
-                    rb.constraints = RigidbodyConstraints.FreezePositionX
-                        | RigidbodyConstraints.FreezePositionZ
-                        | RigidbodyConstraints.FreezeRotation;
-                    laneCoord = rb.position.x;
-                    break;
-                default:
-                    // Top/bottom seats: slide on X only
-                    rb.constraints = RigidbodyConstraints.FreezePositionY
-                        | RigidbodyConstraints.FreezePositionZ
-                        | RigidbodyConstraints.FreezeRotation;
-                    laneCoord = rb.position.y;
-                    break;
-            }
-            laneReady = true;
+            Destroy(p.spawnedLifeline);
+            p.spawnedLifeline = null;
         }
+        Destroy(gameObject);
     }
 
-    void ClampToLane(Player p)
-    {
-        if (!laneReady || p == null || rb == null)
-            return;
-
-        Vector3 pos = rb.position;
-        Vector3 vel = rb.linearVelocity;
-
-        switch (p.facing)
-        {
-            case Facing.Left:
-            case Facing.Right:
-                pos.x = laneCoord;
-                vel.x = 0f;
-                break;
-            default:
-                pos.y = laneCoord;
-                vel.y = 0f;
-                break;
-        }
-
-        rb.position = pos;
-        rb.linearVelocity = vel;
-    }
-
-    void RequestBatWallCollisionIgnore()
-    {
-        // Defer one frame so match-start wall spawners finish, then scan exactly once.
-        batWallIgnoreReady = true;
-        StartCoroutine(IgnoreBatWallCollisionsAfterSpawn());
-    }
-
-    IEnumerator IgnoreBatWallCollisionsAfterSpawn()
+    IEnumerator IgnoreStadiumAfterWallsSpawn()
     {
         yield return new WaitForEndOfFrame();
+        wallsIgnored = false;
+        mitIgnored = false;
+        IgnoreStadiumAndMit();
+    }
 
-        if (batColliders == null || batColliders.Length == 0)
-            yield break;
+    void IgnoreStadiumAndMit()
+    {
+        if (allColliders == null)
+            allColliders = GetComponentsInChildren<Collider>(true);
 
-        Collider[] walls = FindObjectsByType<Collider>(FindObjectsInactive.Exclude);
-        for (int w = 0; w < walls.Length; w++)
+        if (!wallsIgnored)
         {
-            Collider wall = walls[w];
-            if (wall == null || wall.isTrigger)
-                continue;
-            if (!PaddleWall.MatchesWallTag(wall.tag, hitTags))
-                continue;
-
-            for (int b = 0; b < batColliders.Length; b++)
-            {
-                Collider bat = batColliders[b];
-                if (bat == null)
-                    continue;
-                Physics.IgnoreCollision(bat, wall, true);
-            }
+            PaddleWall.IgnoreBoundaryWallCollisions(transform, allColliders);
+            wallsIgnored = true;
         }
+
+        if (mitIgnored || pg == null || pg.player == null || pg.player.spawnedLifeline == null)
+            return;
+
+        Collider[] mitCols = pg.player.spawnedLifeline.GetComponentsInChildren<Collider>(true);
+        PaddleWall.IgnoreColliderSets(allColliders, mitCols);
+        mitIgnored = true;
     }
 
     void Unstick()
@@ -456,7 +478,10 @@ public class Yuotay : MonoBehaviour
 
     bool WallInDirection(int dir)
     {
-        return PaddleWall.WallInDirection(transform, dir, hitTags, dis);
+        if (pg == null || pg.player == null)
+            return false;
+        return PaddleWall.LaneEndInDirection(
+            transform, pg.player.facing, dir, ref laneMin, ref laneMax, ref laneRefresh);
     }
 
     /// <summary>
@@ -571,7 +596,7 @@ public class Yuotay : MonoBehaviour
             p.pushBack = 500 + (missing * 4500);
 
             batHitPoint.localPosition = curPos;
-            ClampToLane(p);
+            ClampToSide();
             yield return new WaitForEndOfFrame();
         }
 
@@ -579,7 +604,7 @@ public class Yuotay : MonoBehaviour
 
         p.pushBack = basePushBack;
         swinging = false;
-        ClampToLane(p);
+        ClampToSide();
         yield return null;
     }
 }

@@ -22,11 +22,33 @@ public class Pawn : MonoBehaviour
         ren = GetComponent<Renderer>();
         if (ren != null)
             material = ren.material;
+
+        if (GetComponent<DestroyOnDeath>() == null)
+            gameObject.AddComponent<DestroyOnDeath>();
+        if (GetComponent<ClearAfterTheGame>() == null)
+            gameObject.AddComponent<ClearAfterTheGame>();
+
+        RegisterWithOwner();
+    }
+
+    void RegisterWithOwner()
+    {
+        if (pg == null || !pg.IsLinked() || pg.player == null || pg.player.spawnedPlayer == null)
+            return;
+        Gaurd owner = pg.player.spawnedPlayer.GetComponent<Gaurd>();
+        if (owner != null)
+            owner.RegisterPawn(this);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (pg != null && pg.IsLinked() && pg.player != null && pg.player.currentHealth <= 0)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         if(health > 0)
         {
             if (material != null)

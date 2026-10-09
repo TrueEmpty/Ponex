@@ -210,7 +210,7 @@ public class MuriKunaiProjectile : MonoBehaviour
         if (collision == null || collision.collider == null)
             return;
         if (IsBall(collision.collider) && owner != null)
-            owner.OnKunaiHitBall();
+            owner.OnKunaiHitBall(collision.collider.GetEntityId().GetHashCode());
     }
 
     void OnTriggerEnter(Collider other)
@@ -218,7 +218,7 @@ public class MuriKunaiProjectile : MonoBehaviour
         if (other == null || IsOwner(other) || IsKunaiPart(other))
             return;
         if (IsBall(other) && owner != null)
-            owner.OnKunaiHitBall();
+            owner.OnKunaiHitBall(other.GetEntityId().GetHashCode());
         if (state == State.Flying && IsOutOfBounds(other))
             Vanish();
     }

@@ -54,6 +54,10 @@ public class PullObjectIn : MonoBehaviour
 
                         if(rb != null)
                         {
+                            OrbitBall orbitCore = pO.GetComponent<OrbitBall>();
+                            if (orbitCore != null && orbitCore.IsCelestialPullBlocked(this))
+                                continue;
+
                             Vector3 dif = transform.position - pO.transform.position;
                             int inverse = ejecting.Contains(pO) ? -1 : 1;
 

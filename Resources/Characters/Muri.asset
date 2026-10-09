@@ -19,9 +19,9 @@ MonoBehaviour:
   pushBack: 0
   ignoreFacing: 0
   bump:
-    amount: 0
-    max: 0
-    cost: 0
+    amount: 10
+    max: 10
+    cost: 999
     speed: 0
     readyPercent: 0
   super:
@@ -47,8 +47,8 @@ MonoBehaviour:
   selector: {fileID: 0}
   playerInfo: {fileID: 0}
   superName: Kunai Bind
-  superDescription: Throw up to 3 kunai, then blink to a stuck blade. Shield absorbs
-    one hit; claiming a ball restores it.
+  superDescription: Throw up to 3 kunai, then blink to a stuck blade. Shield lasts
+    10s, absorbs one hit, and a kunai-to-ball hit restores up to 3s.
   portraitColor: {r: 0.15, g: 0.55, b: 0.95, a: 1}
   portrait: {fileID: 2800000, guid: 10b08ce2089d12b47b7d7834e0efcb82, type: 3}
   icon: {fileID: 2800000, guid: 7c8d9e0f1a2b3c4d5e6f708192a3b4c5, type: 3}

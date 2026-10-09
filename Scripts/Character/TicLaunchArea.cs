@@ -61,10 +61,7 @@ public class TicLaunchArea : MonoBehaviour
 
     void RefreshContents()
     {
-        Vector3 center = transform.position;
-        Vector3 half = Vector3.Scale(transform.lossyScale, new Vector3(0.55f, 0.55f, 0.55f));
-        float radius = Mathf.Max(half.x, half.y, half.z);
-        int hitCount = Overlap(center, Mathf.Max(0.5f, radius));
+        int hitCount = OverlapBay(0.35f);
 
         currentInside.Clear();
         for (int i = 0; i < hitCount; i++)
@@ -76,6 +73,8 @@ public class TicLaunchArea : MonoBehaviour
             TicBumper bumper = c.GetComponentInParent<TicBumper>();
             if (bumper != null)
             {
+                if (!InShaft(bumper))
+                    continue;
                 currentInside.Add(bumper);
                 RegisterBumperPassThrough(bumper);
                 bumper.SetInLaunchArea(true, owner);
@@ -275,10 +274,7 @@ public class TicLaunchArea : MonoBehaviour
         if (owner == null)
             return;
 
-        Vector3 center = transform.position;
-        Vector3 half = transform.lossyScale * 0.5f;
-        float radius = Mathf.Max(half.x, half.y, half.z) + radiusExtra;
-        int hitCount = Overlap(center, radius);
+        int hitCount = OverlapBay(radiusExtra);
 
         launchedIds.Clear();
 
@@ -291,7 +287,7 @@ public class TicLaunchArea : MonoBehaviour
             TicBumper bumper = c.GetComponentInParent<TicBumper>();
             if (bumper != null)
             {
-                if (bumper.IsFrozen)
+                if (bumper.IsFrozen || !InShaft(bumper))
                     continue;
                 int id = bumper.GetEntityId().GetHashCode();
                 if (!launchedIds.Add(id))
@@ -344,6 +340,49 @@ public class TicLaunchArea : MonoBehaviour
             overlapBuffer = new Collider[overlapBuffer.Length * 2];
         }
         return count;
+    }
+
+    /// <summary>
+    /// Cover the authored launch box plus the playfield-safe plunger rest so bumpers
+    /// sitting in the shaft are still found after the cabinet is snapped flush.
+    /// </summary>
+    int OverlapBay(float radiusExtra)
+    {
+        Collider col = GetComponent<Collider>();
+        Vector3 center = col != null ? col.bounds.center : transform.position;
+        float radius = 1.25f;
+        if (col != null)
+            radius = col.bounds.extents.magnitude + Mathf.Max(0.25f, radiusExtra);
+        else
+            radius = Mathf.Max(transform.lossyScale.magnitude * 0.6f, 1.25f) + radiusExtra;
+
+        if (owner != null)
+        {
+            Vector3 rest = owner.GetBayRestPosition();
+            radius = Mathf.Max(radius, Vector3.Distance(center, rest) + 0.7f);
+            if (owner.loadPoint != null)
+                radius = Mathf.Max(radius, Vector3.Distance(center, owner.loadPoint.position) + 0.5f);
+        }
+
+        return Overlap(center, radius);
+    }
+
+    bool InShaft(TicBumper bumper)
+    {
+        if (bumper == null || owner == null)
+            return bumper != null;
+        Vector3 rest = owner.GetBayRestPosition();
+        Vector3 to = bumper.transform.position - rest;
+        to.z = 0f;
+        float along = Vector3.Dot(to, owner.transform.up);
+        float side = Mathf.Abs(Vector3.Dot(to, owner.transform.right));
+        if (along < -0.7f)
+            return false;
+        if (along > 3.4f)
+            return false;
+        if (side > 1.7f)
+            return false;
+        return true;
     }
 
     void OnDestroy()

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
 
@@ -128,6 +129,7 @@ public class Database : MonoBehaviour
         {
             instance = this;
             EnsureBallSlots();
+            EnsurePlayerColorSchemes();
             LoadCharactersFromAssets();
             LoadMatchPrefs();
         GameSettings.EnsureLoaded();
@@ -148,6 +150,7 @@ public class Database : MonoBehaviour
             LoadCharactersFromAssets();
 
         EnsureBallSlots();
+        EnsurePlayerColorSchemes();
         LoadMatchPrefs();
 
         // Remove leftover Leave UI button — disconnect is a hold input (Select / Backspace), not UI
@@ -191,6 +194,18 @@ public class Database : MonoBehaviour
 
         ballCount = Mathf.Clamp(ballCount, 1, MaxMatchBalls);
         selectedBall = ballSlots[0];
+    }
+
+    void EnsurePlayerColorSchemes()
+    {
+        if (playerColors == null)
+            return;
+
+        for (int i = 0; i < playerColors.Count; i++)
+        {
+            if (playerColors[i] != null)
+                playerColors[i].EnsureScheme();
+        }
     }
 
     public void LoadMatchPrefs()
@@ -379,6 +394,37 @@ public class Database : MonoBehaviour
             return false;
 
         return true;
+    }
+
+    /// <summary>
+    /// Humans / extra controllers may only join on Main Menu or Character Select
+    /// (plus Character Creation, which binds every pad to the draft).
+    /// </summary>
+    public bool CanAddHumanPlayer()
+    {
+        if (CharacterCreationManager.IsActive)
+            return true;
+        if (TrainingManager.instance != null && TrainingManager.instance.IsMouseOverPanel())
+            return false;
+        return !IsPastCharacterSelect();
+    }
+
+    void SyncHumanJoining()
+    {
+        PlayerInputManager pim = PlayerInputManager.instance;
+        if (pim == null)
+            return;
+
+        bool allow = CanAddHumanPlayer();
+        if (allow)
+        {
+            if (!pim.joiningEnabled)
+                pim.EnableJoining();
+        }
+        else if (pim.joiningEnabled)
+        {
+            pim.DisableJoining();
+        }
     }
 
     /// <summary>
@@ -686,6 +732,7 @@ public class Database : MonoBehaviour
             FlushCharacterPrefs();
 
         ShowAndHidePlayerSelectors();
+        SyncHumanJoining();
         HandlePauseInput();
 
         if (gameStart)
@@ -762,7 +809,12 @@ public class Database : MonoBehaviour
             Time.timeScale = 0f;
 
         mm.OpenMenu("Pause");
-        lastPlayerSelectorsShown = null;
+        if (playerSelectors != null)
+        {
+            playerSelectors.gameObject.SetActive(true);
+            EnsureSelectorsDrawOnTop();
+            lastPlayerSelectorsShown = true;
+        }
 
         if (players == null)
             return;
@@ -971,7 +1023,29 @@ public class Database : MonoBehaviour
             return;
         lastPlayerSelectorsShown = show;
         if (playerSelectors != null)
+        {
             playerSelectors.gameObject.SetActive(show);
+            if (show)
+                EnsureSelectorsDrawOnTop();
+        }
+    }
+
+    void EnsureSelectorsDrawOnTop()
+    {
+        if (playerSelectors == null)
+            return;
+
+        playerSelectors.SetAsLastSibling();
+        Canvas canvas = playerSelectors.GetComponent<Canvas>();
+        if (canvas == null)
+            canvas = playerSelectors.gameObject.AddComponent<Canvas>();
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 400;
+        // Physics triggers drive selector clicks. A GraphicRaycaster here sits over
+        // Training / other UI and steals the mouse.
+        GraphicRaycaster stolen = playerSelectors.GetComponent<GraphicRaycaster>();
+        if (stolen != null)
+            Destroy(stolen);
     }
 
     public int PlayerAdd(ControllerLink cL)
@@ -986,6 +1060,9 @@ public class Database : MonoBehaviour
             if (bound >= 0)
                 return bound;
         }
+
+        if (cL != null && !CanAddHumanPlayer())
+            return -1;
 
         // Human rejoining after Leave: take over an unbound CPU instead of spawning a duplicate
         if (cL != null && players != null)
@@ -1853,17 +1930,19 @@ public class Database : MonoBehaviour
 
             // Tic same-wall pairs: side-by-side or fused machine + wing bumper
             TicCoopLayout.Prepare(players, fieldSize);
+            Yuotay.PrepareSameWallSeats(players, fieldSize);
+            CelarusCoopLayout.Prepare(players, gametype);
 
-            // Phase 2 — spawn (hosts before wing forms so partners can find the machine)
+            // Phase 2 — spawn (hosts before wing / Celarus guests so partners can find the shared object)
             List<int> spawnOrder = new List<int>(spawnCount);
             for (int i = 0; i < spawnCount; i++)
             {
-                if (players[i] != null && !players[i].ticWingForm)
+                if (players[i] != null && !players[i].ticWingForm && !players[i].celarusShareGuest)
                     spawnOrder.Add(i);
             }
             for (int i = 0; i < spawnCount; i++)
             {
-                if (players[i] != null && players[i].ticWingForm)
+                if (players[i] != null && (players[i].ticWingForm || players[i].celarusShareGuest))
                     spawnOrder.Add(i);
             }
 
@@ -1931,6 +2010,17 @@ public class Database : MonoBehaviour
                     }
 
                     p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
+
+                    if (p.spawnedPlayer.GetComponent<MuriMove>() == null
+                        && p.spawnedPlayer.GetComponent<Yuotay>() == null)
+                    {
+                        float inset = 0f;
+                        bool keepFlush = p.spawnedPlayer.GetComponent<Tic>() != null;
+                        if (!keepFlush && p.character != null)
+                            inset = Mathf.Max(0f, p.character.positionOffset.y);
+                        SnapFlushToHomeWall(p.spawnedPlayer.transform, p.facing, inset);
+                    }
+
                     PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
                     if (pG != null)
                         pG.playerIndex = p.index;
@@ -1938,6 +2028,11 @@ public class Database : MonoBehaviour
                     // Shared CPU brain — new characters get AI intents automatically
                     if (p.computer)
                         ComputerBrain.Ensure(p.spawnedPlayer);
+
+                    if (p.spawnedPlayer.GetComponent<Gaurd>() == null
+                        && !string.IsNullOrEmpty(p.name)
+                        && p.name.Equals("Gaurd", StringComparison.OrdinalIgnoreCase))
+                        p.spawnedPlayer.AddComponent<Gaurd>();
 
                     if (!SkipPlayerSkin.ShouldSkipRoot(p.spawnedPlayer)
                         && p.spawnedPlayer.GetComponentInChildren<Field_Info>(true) == null)
@@ -1947,8 +2042,9 @@ public class Database : MonoBehaviour
                     if (muri != null)
                         muri.PlaceOnBestSupport();
 
-                    // Fused host keeps the only lifeline (double HP already applied in Prepare)
-                    if (p.lifeline != null && p.lifeline.prefabs != null)
+                    // Fused host keeps the only lifeline (double HP already applied in Prepare).
+                    // Celarus guests ride the host moon/sun — do not spawn a second lifeline.
+                    if (p.lifeline != null && p.lifeline.prefabs != null && !p.celarusShareGuest)
                     {
                         p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
                         PlaceLifelineOnWall(p.spawnedLifeline, p.facing, p.spawnedPlayer.transform.position, fRot, p.lifeline);
@@ -1976,6 +2072,8 @@ public class Database : MonoBehaviour
                 }
                 yield return null;
             }
+
+            CelarusCoopLayout.BindAfterSpawn(players);
             #endregion
 
             #region Add Ball
@@ -2079,10 +2177,11 @@ public class Database : MonoBehaviour
             rightDist = half;
         }
 
-        // Place outer capsules so their edge sits on the side walls (tiny skin only)
+        // Keep a visible gap so the barrier does not sit in the side walls
         float radius = OuterCapsuleRadius(parts[0]);
-        float leftX = -(leftDist - radius);
-        float rightX = rightDist - radius;
+        const float sideInset = 0.55f;
+        float leftX = -(leftDist - radius - sideInset);
+        float rightX = rightDist - radius - sideInset;
         if (rightX < leftX)
         {
             float mid = (leftX + rightX) * 0.5f;
@@ -2284,6 +2383,90 @@ public class Database : MonoBehaviour
             default:
                 return new Vector3(0f, 0f, fieldSize);
         }
+    }
+
+    /// <summary>
+    /// After offset math, pin the paddle to the home wall, then keep
+    /// <paramref name="intoFieldInset"/> of authored gap into the field.
+    /// </summary>
+    void SnapFlushToHomeWall(Transform paddle, Facing facing, float intoFieldInset = 0f)
+    {
+        if (paddle == null)
+            return;
+
+        Physics.SyncTransforms();
+
+        Vector3 intoField = PaddleWall.IntoField(facing);
+        Vector3 towardHome = -intoField;
+        Vector3 origin = paddle.position + intoField * 4f;
+        origin.z = paddle.position.z;
+        Vector3 fieldCenter = new Vector3(0f, 0f, paddle.position.z);
+
+        float maxDist = Mathf.Max(fieldSize * 2f, 40f);
+        RaycastHit[] hits = Physics.RaycastAll(origin, towardHome, maxDist, ~0, QueryTriggerInteraction.Ignore);
+        if (hits == null || hits.Length == 0)
+            return;
+
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        Vector3 wallPoint = Vector3.zero;
+        bool found = false;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Transform hitT = hits[i].transform;
+            if (hitT == null || hitT == paddle || hitT.IsChildOf(paddle))
+                continue;
+            string tag = hitT.tag;
+            if (tag != "Wall" && tag != "Walls" && tag != "Obstacle")
+                continue;
+
+            Vector3 candidate = hits[i].point;
+            candidate.z = paddle.position.z;
+            // Ignore the far/opposite wall (two-Yuotay and long-bat rays can overshoot)
+            if (Vector3.Dot(candidate - fieldCenter, towardHome) < 0.35f)
+                continue;
+
+            wallPoint = candidate;
+            found = true;
+            break;
+        }
+        if (!found)
+            return;
+
+        Tic tic = paddle.GetComponent<Tic>();
+        float rearExtent = 0.08f;
+        Collider[] cols = paddle.GetComponentsInChildren<Collider>();
+        Vector3 probe = paddle.position + towardHome * 20f;
+        for (int c = 0; c < cols.Length; c++)
+        {
+            Collider col = cols[c];
+            if (col == null || col.isTrigger || !col.enabled)
+                continue;
+            if (tic != null && tic.IsInteriorSpawnPart(col.transform))
+                continue;
+            float along = Vector3.Dot(col.bounds.ClosestPoint(probe) - paddle.position, towardHome);
+            if (along > rearExtent)
+                rearExtent = along;
+        }
+
+        const float skin = 0.04f;
+        float inset = Mathf.Max(skin, intoFieldInset);
+        Vector3 pos = paddle.position;
+        Vector3 desired = wallPoint - towardHome * (rearExtent + inset);
+        if (facing == Facing.Left || facing == Facing.Right)
+            pos.x = desired.x;
+        else
+            pos.y = desired.y;
+
+        paddle.position = pos;
+        Rigidbody rb = paddle.GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.position = pos;
+    }
+
+    public void SnapCharacterFlushToHomeWall(Transform paddle, Facing facing)
+    {
+        SnapFlushToHomeWall(paddle, facing);
     }
 
     /// <summary>

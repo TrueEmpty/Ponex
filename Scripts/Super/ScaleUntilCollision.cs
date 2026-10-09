@@ -18,8 +18,14 @@ public class ScaleUntilCollision : MonoBehaviour
 
     public Vector3 raycastOffset = Vector3.zero;
 
-    [Tooltip("World-space inset so the mesh sits flush inside the wall faces.")]
-    public float wallSkin = 0.04f;
+    [Tooltip("Extra lift along local up (into the field) so uneven home walls don't eat the side rays.")]
+    public float inwardLift = 1.25f;
+
+    [Tooltip("Ignore wall hits closer than this — usually the home wall we are sitting on.")]
+    public float minHitDistance = 0.45f;
+
+    [Tooltip("World-space inset so the bar stops short of the side walls.")]
+    public float wallSkin = 0.55f;
 
     [Tooltip("Max ray distance when searching for walls.")]
     public float maxRayDistance = 500f;
@@ -109,7 +115,7 @@ public class ScaleUntilCollision : MonoBehaviour
     {
         Vector3 pos = transform.position;
         pos += transform.right * raycastOffset.x;
-        pos += transform.up * raycastOffset.y;
+        pos += transform.up * (raycastOffset.y + inwardLift);
         pos += transform.forward * raycastOffset.z;
         return pos;
     }
@@ -210,9 +216,32 @@ public class ScaleUntilCollision : MonoBehaviour
 
     bool TryMeasureSpan(Vector3 origin, Vector3 axis, out float negDist, out float posDist)
     {
-        negDist = RayDistance(origin, -axis);
-        posDist = RayDistance(origin, axis);
-        return negDist > 0.01f && posDist > 0.01f;
+        // Uneven home walls clip a single low ray. Sample a few inward lifts and
+        // keep the longest end-wall span so the bar always reaches the corners.
+        negDist = -1f;
+        posDist = -1f;
+        Vector3 inward = transform.up;
+        float[] lifts = { 0f, 0.75f, 1.5f, 2.5f };
+        float bestSpan = -1f;
+
+        for (int i = 0; i < lifts.Length; i++)
+        {
+            Vector3 sample = origin + inward * lifts[i];
+            float neg = RayDistance(sample, -axis);
+            float pos = RayDistance(sample, axis);
+            if (neg <= 0.01f || pos <= 0.01f)
+                continue;
+
+            float span = neg + pos;
+            if (span > bestSpan)
+            {
+                bestSpan = span;
+                negDist = neg;
+                posDist = pos;
+            }
+        }
+
+        return bestSpan > 0.01f;
     }
 
     float RayDistance(Vector3 origin, Vector3 dir)
@@ -222,13 +251,22 @@ public class ScaleUntilCollision : MonoBehaviour
             return -1f;
 
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        Vector3 axis = dir.sqrMagnitude > 0.0001f ? dir.normalized : dir;
         for (int i = 0; i < hits.Length; i++)
         {
             Transform t = hits[i].transform;
             if (t == null || t == transform || t.IsChildOf(transform))
                 continue;
-            if (TagMatches(t.tag))
-                return hits[i].distance;
+            if (!TagMatches(t.tag))
+                continue;
+            if (hits[i].distance < minHitDistance)
+                continue;
+
+            // Home-wall faces point into the field (along up). End walls face the ray.
+            if (Mathf.Abs(Vector3.Dot(hits[i].normal, axis)) < 0.35f)
+                continue;
+
+            return hits[i].distance;
         }
         return -1f;
     }

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,6 +25,8 @@ public class Test : MonoBehaviour
     [SerializeField]
     Thought thought = Thought.Nothing;
     ComputerBrain brain;
+    PaddleWall.LaneLock lane;
+    bool ignoredHomeWall;
 
     // Start is called before the first frame update
     void Start()
@@ -37,7 +38,7 @@ public class Test : MonoBehaviour
         if (brain != null)
         {
             brain.hitTags = hitTags;
-            brain.wallStopDistance = dis;
+            brain.wallStopDistance = PaddleWall.LateralStopDistance(transform);
         }
 
         rb.useGravity = false;
@@ -59,8 +60,16 @@ public class Test : MonoBehaviour
                 rb.linearVelocity = Vector3.zero;
             }
 
+            if (pg.player != null)
+                lane.Ensure(rb, pg.player.facing);
+            if (!ignoredHomeWall)
+            {
+                PaddleWall.IgnoreHomeWallCollisions(transform, hitTags, null);
+                ignoredHomeWall = true;
+            }
             // Dash can overshoot soft wall stop — push out so leave-input always works
             PaddleWall.Unstick(rb, transform, hitTags);
+            lane.Clamp(rb);
 
             if (pg.player.CanBump)
             {
@@ -88,6 +97,11 @@ public class Test : MonoBehaviour
         }
     }
 
+    void FixedUpdate()
+    {
+        lane.Clamp(rb);
+    }
+
     void OnMove()
     {
         int moveDir = 0;
@@ -96,7 +110,7 @@ public class Test : MonoBehaviour
         {
             ComputerAI.Decision d = brain != null
                 ? brain.Lane
-                : ComputerAI.Evaluate(transform, pg.player, hitTags, dis);
+                : ComputerAI.Evaluate(transform, pg.player, hitTags, PaddleWall.LateralStopDistance(transform));
             moveDir = d.moveDir;
             thought = brain != null
                 ? brain.Thought
@@ -237,6 +251,6 @@ public class Test : MonoBehaviour
 
     bool WallInDirection(int dir)
     {
-        return PaddleWall.WallInDirection(transform, dir, hitTags, dis);
+        return PaddleWall.WallInDirection(transform, dir, hitTags, PaddleWall.LateralStopDistance(transform));
     }
 }

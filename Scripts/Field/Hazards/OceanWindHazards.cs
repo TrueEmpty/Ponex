@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Ocean field director: rotating wind that drifts unlocked hazards, periodically
-/// spawns floating logs / icebergs / sky targets.
+/// spawns floating logs / icebergs.
 /// </summary>
 public class OceanWindHazards : MonoBehaviour
 {
@@ -48,7 +48,7 @@ public class OceanWindHazards : MonoBehaviour
             Random.Range(-half + 2f, half - 2f),
             z);
 
-        int roll = Random.Range(0, 3);
+        int roll = Random.Range(0, 2);
         if (roll == 0)
         {
             GameObject log = FieldPartFactory.MakePrimitivePart("Drift Log", PrimitiveType.Cylinder,
@@ -57,7 +57,7 @@ public class OceanWindHazards : MonoBehaviour
             log.transform.SetParent(transform, true);
             log.AddComponent<DriftingLogHazard>();
         }
-        else if (roll == 1)
+        else
         {
             GameObject ice = FieldPartFactory.MakePrimitivePart("Iceberg", PrimitiveType.Cube,
                 pos, new Vector3(1.8f, 1.4f, 1f),
@@ -66,14 +66,6 @@ public class OceanWindHazards : MonoBehaviour
             BreakableHazard b = ice.AddComponent<BreakableHazard>();
             b.hitsToBreak = 6;
             ice.AddComponent<DriftingLogHazard>().surfaceSeconds = 10f;
-        }
-        else
-        {
-            GameObject target = FieldPartFactory.MakePrimitivePart("Sky Target", PrimitiveType.Cylinder,
-                pos, new Vector3(1.1f, 0.25f, 1.1f),
-                new Color(0.85f, 0.2f, 0.2f), "Obstacle");
-            target.transform.SetParent(transform, true);
-            target.AddComponent<SkyCannonTarget>();
         }
     }
 

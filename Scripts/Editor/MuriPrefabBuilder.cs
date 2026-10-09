@@ -283,7 +283,7 @@ public static class MuriPrefabBuilder
         asset.movementSpeed = 0f;
         asset.pushBack = 0f;
         asset.ignoreFacing = false;
-        asset.bump = new Skill { amount = 0, max = 0, cost = 0, speed = 0 };
+        asset.bump = new Skill { amount = 10, max = 10, cost = 999, speed = 0 };
         asset.super = new Skill { amount = 3, max = 3, cost = 1, speed = 0 };
         asset.dash = new Skill { amount = 0, max = 0, cost = 0, speed = 0 };
         asset.character = new ObjectInfo
@@ -296,7 +296,7 @@ public static class MuriPrefabBuilder
         asset.selector = null;
         asset.playerInfo = null;
         asset.superName = "Kunai Bind";
-        asset.superDescription = "Throw up to 3 kunai, then blink to a stuck blade. Shield absorbs one hit; claiming a ball restores it.";
+        asset.superDescription = "Throw up to 3 kunai, then blink to a stuck blade. Shield lasts 10s, absorbs one hit, and a kunai-to-ball hit restores up to 3s.";
         asset.portraitColor = new Color(0.15f, 0.55f, 0.95f, 1f);
         asset.portrait = AssetDatabase.LoadAssetAtPath<Texture>(PortraitPath);
         Texture icon = AssetDatabase.LoadAssetAtPath<Texture>(IconPath);

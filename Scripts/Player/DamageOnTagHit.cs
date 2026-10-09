@@ -16,6 +16,9 @@ public class DamageOnTagHit : MonoBehaviour
     [Tooltip("If > 0, clamp damage dealt by this collider to this value (Yuotay mit = 1).")]
     public int maxDamagePerHit = 0;
 
+    /// <summary>Shared Celarus moon/sun: also apply the same goal hit to these player indexes.</summary>
+    [System.NonSerialized] public int[] alsoDamagePlayerIndexes;
+
     void Start()
     {
         pg = GetComponent<PlayerGrab>();
@@ -68,7 +71,9 @@ public class DamageOnTagHit : MonoBehaviour
             return;
 
         // Actual HP lost (deduped if multiple DamageOnTagHit colliders hit the same ball this frame)
-        int lost = pg.player.ApplyGoalDamage(dealt, collision.gameObject.GetEntityId().GetHashCode());
+        int ballId = collision.gameObject.GetEntityId().GetHashCode();
+        int lost = pg.player.ApplyGoalDamage(dealt, ballId);
+        lost += ApplySharedCelarusDamage(dealt, ballId);
 
         // Credit ball owner for the HP actually removed — keeps Dealt/Taken in sync
         if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null && !ownBall)
@@ -81,5 +86,34 @@ public class DamageOnTagHit : MonoBehaviour
 
         if (pg.player.computer && lost > 0)
             ComputerAI.OnTookGoalDamage(pg.player, lost);
+    }
+
+    int ApplySharedCelarusDamage(int dealt, int ballId)
+    {
+        if (alsoDamagePlayerIndexes == null || alsoDamagePlayerIndexes.Length == 0)
+            return 0;
+        if (db == null || db.players == null)
+            return 0;
+
+        int extraLost = 0;
+        for (int i = 0; i < alsoDamagePlayerIndexes.Length; i++)
+        {
+            int idx = alsoDamagePlayerIndexes[i];
+            if (pg != null && idx == pg.playerIndex)
+                continue;
+            Player other = null;
+            for (int p = 0; p < db.players.Count; p++)
+            {
+                if (db.players[p] != null && db.players[p].index == idx)
+                {
+                    other = db.players[p];
+                    break;
+                }
+            }
+            if (other == null || other.currentHealth <= 0)
+                continue;
+            extraLost += other.ApplyGoalDamage(dealt, ballId);
+        }
+        return extraLost;
     }
 }

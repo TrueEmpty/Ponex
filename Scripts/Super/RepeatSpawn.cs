@@ -21,6 +21,8 @@ public class RepeatSpawn : MonoBehaviour
     public Vector3 spawnRotRangeMin = Vector3.zero;
     public Vector3 spawnRotRangeMax = Vector3.zero;
 
+    readonly List<GameObject> liveSpawns = new List<GameObject>();
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +32,12 @@ public class RepeatSpawn : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (pG != null && pG.IsLinked() && pG.player != null && pG.player.currentHealth <= 0)
+        {
+            DestroySpawned();
+            return;
+        }
+
         int mS = maxSpawns;
 
         if(maxSpawns < 0)
@@ -53,15 +61,44 @@ public class RepeatSpawn : MonoBehaviour
 
             PlayerGrab npg = go.GetComponent<PlayerGrab>();
 
-            if (npg != null)
+            if (npg != null && pG != null)
             {
                 npg.playerIndex = pG.playerIndex;
             }
 
+            if (go.GetComponent<ClearAfterTheGame>() == null)
+                go.AddComponent<ClearAfterTheGame>();
+            if (go.GetComponent<DestroyOnDeath>() == null)
+                go.AddComponent<DestroyOnDeath>();
+
+            Pawn pawn = go.GetComponent<Pawn>();
+            if (pawn != null && pG != null && pG.IsLinked() && pG.player != null && pG.player.spawnedPlayer != null)
+            {
+                Gaurd owner = pG.player.spawnedPlayer.GetComponent<Gaurd>();
+                if (owner != null)
+                    owner.RegisterPawn(pawn);
+            }
+
+            liveSpawns.Add(go);
             timeTillReset = 0;
             spawnedAmount++;
         }
 
         timeTillReset += Time.deltaTime;
+    }
+
+    public void DestroySpawned()
+    {
+        for (int i = 0; i < liveSpawns.Count; i++)
+        {
+            if (liveSpawns[i] != null)
+                Destroy(liveSpawns[i]);
+        }
+        liveSpawns.Clear();
+    }
+
+    void OnDestroy()
+    {
+        DestroySpawned();
     }
 }

@@ -294,10 +294,17 @@ public class MuriKunai : MonoBehaviour
         return v;
     }
 
-    public void OnKunaiHitBall()
+    int lastBallHitId;
+    float lastBallHitTime;
+
+    public void OnKunaiHitBall(int ballId = 0)
     {
+        if (ballId != 0 && ballId == lastBallHitId && Time.time - lastBallHitTime < 0.2f)
+            return;
+        lastBallHitId = ballId;
+        lastBallHitTime = Time.time;
         if (shield != null)
-            shield.Restore();
+            shield.AddCharge(shield.kunaiCharge);
     }
 
     public void Refund(MuriKunaiProjectile proj)

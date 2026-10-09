@@ -86,14 +86,31 @@ public class Garmen : MonoBehaviour
         }
     }
 
-    // LateUpdate: stay glued to lifeline (wall), then handle Drive toggle after inputs
-    void LateUpdate()
+    void SnapToLifeline()
     {
         if (ll == null && pg != null && pg.player != null)
             ll = pg.player.spawnedLifeline;
+        if (ll == null)
+            return;
+        Vector3 pos = ll.transform.position + (ll.transform.up * cannonOffset);
+        transform.position = pos;
+        Rigidbody body = GetComponent<Rigidbody>();
+        if (body != null)
+        {
+            body.position = pos;
+            body.linearVelocity = Vector3.zero;
+        }
+    }
 
-        if (ll != null)
-            transform.position = ll.transform.position + (ll.transform.up * cannonOffset);
+    void FixedUpdate()
+    {
+        SnapToLifeline();
+    }
+
+    // LateUpdate: stay glued to lifeline (wall), then handle Drive toggle after inputs
+    void LateUpdate()
+    {
+        SnapToLifeline();
 
         if (ll == null || pg == null || pg.player == null || db == null || !db.gameStart)
             return;

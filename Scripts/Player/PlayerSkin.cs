@@ -4,9 +4,7 @@ using UnityEngine;
 /// <summary>
 /// Resolves per-player skin colors and applies them to character / lifeline / projectile renderers.
 /// - Authored textures: soft tint (detail stays readable)
-/// - Flat / untextured (Nari, Test, Trigger, …): full color overwrite
-/// - Multi-flat parts (Tic, Master Pong, …): each distinct authored color remaps into the skin
-///   family while keeping relative shade / accent separation
+/// - Flat parts: each distinct authored color maps onto PlayerColors slots 1-10
 /// - Objects with <see cref="SkipPlayerSkin"/> keep authored colors
 /// </summary>
 public static class PlayerSkin
@@ -91,7 +89,10 @@ public static class PlayerSkin
         if (idx < 0 || idx >= db.playerColors.Count)
             return null;
 
-        return db.playerColors[idx];
+        PlayerColors pc = db.playerColors[idx];
+        if (pc != null)
+            pc.EnsureScheme();
+        return pc;
     }
 
     /// <summary>
@@ -236,7 +237,11 @@ public static class PlayerSkin
         if (root == null || p == null)
             return;
 
-        Apply(root, GetColor(p, db), p.name);
+        PlayerColors pc = GetPlayerColors(p, db);
+        if (pc != null)
+            Apply(root, pc, p.name);
+        else
+            Apply(root, GetColor(p, db), p.name);
     }
 
     public static void Apply(GameObject root, Color skin)
@@ -244,18 +249,27 @@ public static class PlayerSkin
         Apply(root, skin, null);
     }
 
-    /// <summary>
-    /// Apply skin. Flat materials fully overwrite; multi-flat parts keep relative shade/hue
-    /// separation inside the skin family; textured materials keep a soft tint.
-    /// </summary>
     public static void Apply(GameObject root, Color skin, string characterName)
     {
-        if (root == null)
+        PlayerColors temp = new PlayerColors { color = skin };
+        temp.EnsureScheme(true);
+        Apply(root, temp, characterName);
+    }
+
+    /// <summary>
+    /// Apply the 10-slot player scheme. Distinct authored flat colors map onto
+    /// colors 1-10 so parts that started different stay different.
+    /// </summary>
+    public static void Apply(GameObject root, PlayerColors schemeColors, string characterName)
+    {
+        if (root == null || schemeColors == null)
             return;
         if (SkipPlayerSkin.ShouldSkipRoot(root))
             return;
 
-        bool forceFull = ForcesFullOverwrite(characterName);
+        schemeColors.EnsureScheme();
+        Color[] scheme = schemeColors.GetScheme();
+        Color skin = scheme[0];
 
         Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
         List<MatSlot> slots = new List<MatSlot>(16);
@@ -279,7 +293,7 @@ public static class PlayerSkin
                 if (mat == null)
                     continue;
 
-                bool textured = !forceFull && HasAuthoredTexture(mat);
+                bool textured = HasAuthoredTexture(mat);
                 Color src = ReadAlbedo(mat);
                 float lum = Luminance(src);
 
@@ -295,18 +309,14 @@ public static class PlayerSkin
 
                 if (!textured)
                 {
-                    int id = mat.GetEntityId().GetHashCode();
-                    if (!uniqueFlatSrc.ContainsKey(id))
-                        uniqueFlatSrc[id] = src;
+                    int key = QuantizeColor(src);
+                    if (!uniqueFlatSrc.ContainsKey(key))
+                        uniqueFlatSrc[key] = src;
                 }
             }
         }
 
-        // Remap each distinct flat color into the skin family (preserves shade + accent gaps).
-        Color baseFlat = PickBaseFlatColor(uniqueFlatSrc);
-        Dictionary<int, Color> flatColorByMat = new Dictionary<int, Color>(uniqueFlatSrc.Count);
-        foreach (var kv in uniqueFlatSrc)
-            flatColorByMat[kv.Key] = RemapRelativeToSkin(kv.Value, baseFlat, skin);
+        Dictionary<int, Color> flatColorByKey = AssignSchemeToUniques(uniqueFlatSrc, scheme);
 
         MaterialPropertyBlock block = new MaterialPropertyBlock();
 
@@ -324,9 +334,8 @@ public static class PlayerSkin
             else
             {
                 Color target = skin;
-                if (flatColorByMat.TryGetValue(mat.GetEntityId().GetHashCode(), out Color schemeColor))
+                if (flatColorByKey.TryGetValue(QuantizeColor(slot.sourceColor), out Color schemeColor))
                     target = schemeColor;
-                // Preserve authored alpha (transparency on Iyolit-like flats, etc.)
                 target.a = slot.sourceColor.a;
                 ApplyFullOverwrite(block, mat, target, slot.sourceColor);
             }
@@ -334,9 +343,9 @@ public static class PlayerSkin
             ren.SetPropertyBlock(block, slot.matIndex);
         }
 
-        bool fullParticles = forceFull || uniqueFlatSrc.Count > 0 && CountTextured(slots) == 0;
+        bool fullParticles = uniqueFlatSrc.Count > 0 && CountTextured(slots) == 0;
         if (!SkipPlayerSkin.ShouldSkipRoot(root))
-            ApplyParticlesAndTrails(root, skin, fullParticles);
+            ApplyParticlesAndTrails(root, scheme, fullParticles);
     }
 
     static int CountTextured(List<MatSlot> slots)
@@ -348,16 +357,6 @@ public static class PlayerSkin
                 n++;
         }
         return n;
-    }
-
-    static bool ForcesFullOverwrite(string characterName)
-    {
-        if (string.IsNullOrEmpty(characterName))
-            return false;
-        // Known untextured single-color characters — always full overwrite
-        return characterName.Equals("Nari", System.StringComparison.OrdinalIgnoreCase)
-            || characterName.Equals("Test", System.StringComparison.OrdinalIgnoreCase)
-            || characterName.Equals("Trigger", System.StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -407,98 +406,73 @@ public static class PlayerSkin
         return c.r * 0.2126f + c.g * 0.7152f + c.b * 0.0722f;
     }
 
-    /// <summary>
-    /// Pick the "main" authored flat color (median luminance) so remaps keep relative contrast.
-    /// </summary>
-    static Color PickBaseFlatColor(Dictionary<int, Color> uniqueFlatSrc)
+    static int QuantizeColor(Color c)
     {
-        if (uniqueFlatSrc == null || uniqueFlatSrc.Count == 0)
-            return Color.white;
-
-        List<Color> colors = new List<Color>(uniqueFlatSrc.Values);
-        colors.Sort((a, b) => Luminance(a).CompareTo(Luminance(b)));
-        return colors[colors.Count / 2];
+        int r = Mathf.Clamp(Mathf.RoundToInt(c.r * 24f), 0, 24);
+        int g = Mathf.Clamp(Mathf.RoundToInt(c.g * 24f), 0, 24);
+        int b = Mathf.Clamp(Mathf.RoundToInt(c.b * 24f), 0, 24);
+        return (r << 10) | (g << 5) | b;
     }
 
     /// <summary>
-    /// Map an authored part color into the player skin family while keeping its relative
-    /// darkness/lightness and accent separation vs the character's base flat color.
-    /// Different hues on Tic (etc.) become different skin-family shades, not one solid fill.
+    /// Map each distinct authored flat onto scheme slots 1-10.
+    /// The most saturated part (the character's identity color) gets color 1;
+    /// darker parts take shadow/outline slots and lighter parts take highlights.
     /// </summary>
-    static Color RemapRelativeToSkin(Color source, Color baseCol, Color skin)
+    static Dictionary<int, Color> AssignSchemeToUniques(Dictionary<int, Color> uniqueFlatSrc, Color[] scheme)
     {
-        Color.RGBToHSV(source, out float sh, out float ss, out float sv);
-        Color.RGBToHSV(baseCol, out float bh, out float bs, out float bv);
-        Color.RGBToHSV(skin, out float kh, out float ks, out float kv);
+        Dictionary<int, Color> result = new Dictionary<int, Color>();
+        if (uniqueFlatSrc == null || uniqueFlatSrc.Count == 0 || scheme == null || scheme.Length == 0)
+            return result;
 
-        float valueScale = bv > 0.02f ? sv / bv : 1f;
-        float satScale = bs > 0.02f ? ss / bs : 1f;
-
-        float hueOffset = sh - bh;
-        if (hueOffset > 0.5f) hueOffset -= 1f;
-        if (hueOffset < -0.5f) hueOffset += 1f;
-
-        // Stronger authored hue gaps → more analogous drift under the skin hue
-        float chromaSep = Mathf.Abs(hueOffset) * Mathf.Clamp01(Mathf.Max(ss, bs));
-        float nh = kh + hueOffset * Mathf.Lerp(0.06f, 0.42f, Mathf.Clamp01(chromaSep * 2.2f));
-        if (nh < 0f) nh += 1f;
-        if (nh > 1f) nh -= 1f;
-
-        float nv = Mathf.Clamp01(kv * Mathf.Clamp(valueScale, 0.22f, 1.7f));
-        float ns = Mathf.Clamp01(ks * Mathf.Clamp(satScale, 0.3f, 1.4f));
-
-        // Keep dark accents dark and light panels light relative to the skin
-        if (sv < bv * 0.6f)
-            nv = Mathf.Min(nv, Mathf.Lerp(nv, kv * 0.32f, 0.55f));
-        if (sv > bv * 1.2f)
-            nv = Mathf.Max(nv, Mathf.Lerp(nv, Mathf.Lerp(kv, 1f, 0.55f), 0.45f));
-
-        // Near-base parts stay closest to the exact player skin
-        float nearBase = 1f - Mathf.Clamp01(Mathf.Abs(Luminance(source) - Luminance(baseCol)) * 2.5f
-            + chromaSep * 1.5f);
-        Color remapped = Color.HSVToRGB(nh, ns, nv);
-        remapped = Color.Lerp(remapped, skin, nearBase * 0.55f);
-        remapped.a = source.a;
-        return remapped;
-    }
-
-    /// <summary>
-    /// Dark → light tones that stay in the skin's hue family (fallback / particles).
-    /// </summary>
-    static Color[] BuildColorScheme(Color skin, int count)
-    {
-        count = Mathf.Max(1, count);
-        Color[] colors = new Color[count];
-        Color.RGBToHSV(skin, out float h, out float s, out float v);
-
-        if (count == 1)
+        List<KeyValuePair<int, Color>> list = new List<KeyValuePair<int, Color>>(uniqueFlatSrc);
+        if (list.Count == 1)
         {
-            colors[0] = skin;
-            return colors;
+            result[list[0].Key] = scheme[0];
+            return result;
         }
 
-        for (int i = 0; i < count; i++)
-        {
-            float t = (float)i / (count - 1);
-            float nv = Mathf.Lerp(Mathf.Clamp01(v * 0.28f + 0.04f), Mathf.Clamp01(Mathf.Lerp(v, 1f, 0.55f)), t);
-            float ns = Mathf.Lerp(Mathf.Clamp01(s * 1.05f), Mathf.Clamp01(s * 0.45f), t);
-            float nh = h + (t - 0.5f) * 0.035f;
-            if (nh < 0f) nh += 1f;
-            if (nh > 1f) nh -= 1f;
+        list.Sort((a, b) => Luminance(a.Value).CompareTo(Luminance(b.Value)));
 
-            Color c = Color.HSVToRGB(nh, ns, nv);
-            if (count >= 2)
+        int mainIdx = list.Count / 2;
+        float bestSat = -1f;
+        for (int i = 0; i < list.Count; i++)
+        {
+            Color.RGBToHSV(list[i].Value, out _, out float sat, out _);
+            if (sat > bestSat)
             {
-                float mid = (count - 1) * 0.5f;
-                float midBlend = 1f - Mathf.Clamp01(Mathf.Abs(i - mid) / Mathf.Max(0.5f, mid));
-                c = Color.Lerp(c, skin, midBlend * 0.65f);
+                bestSat = sat;
+                mainIdx = i;
             }
-            c.a = skin.a;
-            colors[i] = c;
+        }
+        if (bestSat < 0.08f)
+            mainIdx = list.Count / 2;
+
+        result[list[mainIdx].Key] = scheme[0];
+
+        // Remaining slots, dark → light (skip the main brand color)
+        int[] darkSlots = { 9, 1, 2, 8, 3 };
+        int[] lightSlots = { 6, 7, 4, 5 };
+
+        int darkCount = mainIdx;
+        for (int i = 0; i < darkCount; i++)
+        {
+            float t = darkCount <= 1 ? 0f : (float)i / (darkCount - 1);
+            int si = Mathf.Clamp(Mathf.RoundToInt(t * (darkSlots.Length - 1)), 0, darkSlots.Length - 1);
+            int slot = darkSlots[si];
+            result[list[i].Key] = scheme[Mathf.Clamp(slot, 0, scheme.Length - 1)];
         }
 
-        colors[count / 2] = skin;
-        return colors;
+        int lightCount = list.Count - mainIdx - 1;
+        for (int i = 0; i < lightCount; i++)
+        {
+            float t = lightCount <= 1 ? 1f : (float)i / (lightCount - 1);
+            int si = Mathf.Clamp(Mathf.RoundToInt(t * (lightSlots.Length - 1)), 0, lightSlots.Length - 1);
+            int slot = lightSlots[si];
+            result[list[mainIdx + 1 + i].Key] = scheme[Mathf.Clamp(slot, 0, scheme.Length - 1)];
+        }
+
+        return result;
     }
 
     static void ApplySoftTint(MaterialPropertyBlock block, Material mat, Color skin, Color src)
@@ -549,8 +523,10 @@ public static class PlayerSkin
         }
     }
 
-    static void ApplyParticlesAndTrails(GameObject root, Color skin, bool fullOverwrite)
+    static void ApplyParticlesAndTrails(GameObject root, Color[] scheme, bool fullOverwrite)
     {
+        Color skin = scheme != null && scheme.Length > 0 ? scheme[0] : Color.white;
+        Color highlight = scheme != null && scheme.Length > 4 ? scheme[4] : Color.Lerp(skin, Color.white, 0.35f);
         float strength = fullOverwrite ? 1f : ParticleTintStrength;
 
         ParticleSystem[] particles = root.GetComponentsInChildren<ParticleSystem>(true);
@@ -573,14 +549,14 @@ public static class PlayerSkin
                 if (fullOverwrite)
                 {
                     Color a = WithAlpha(skin, g.colorMin.a);
-                    Color b = WithAlpha(Color.Lerp(skin, Color.white, 0.35f), g.colorMax.a);
+                    Color b = WithAlpha(highlight, g.colorMax.a);
                     main.startColor = new ParticleSystem.MinMaxGradient(a, b);
                 }
                 else
                 {
                     main.startColor = new ParticleSystem.MinMaxGradient(
                         MultiplyTint(g.colorMin, skin, strength),
-                        MultiplyTint(g.colorMax, skin, strength));
+                        MultiplyTint(g.colorMax, highlight, strength));
                 }
             }
         }

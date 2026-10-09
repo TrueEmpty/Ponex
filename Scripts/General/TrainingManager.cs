@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -46,9 +49,23 @@ public class TrainingManager : MonoBehaviour
     Text btnStopAfterLabel;
     Text speedLabel;
     Slider speedSlider;
-    float desiredCpuSpeed = 1f;
+    public float desiredCpuSpeed = 2f;
 
     public static bool IsActive => instance != null && instance.sessionActive;
+
+    public bool IsMouseOverPanel()
+    {
+        if (panel == null || Mouse.current == null)
+            return false;
+        RectTransform rt = panel.transform as RectTransform;
+        if (rt == null)
+            return false;
+        Canvas canvas = panel.GetComponentInParent<Canvas>();
+        Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+        return RectTransformUtility.RectangleContainsScreenPoint(rt, Mouse.current.position.ReadValue(), cam);
+    }
 
     public static void EnsureExists()
     {
@@ -86,6 +103,7 @@ public class TrainingManager : MonoBehaviour
 
         db = Database.instance;
         mm = MenuManager.instance;
+        EnsureEventSystemForUi();
         BuildPanel();
         EnterSession(autoStart: true);
     }
@@ -459,21 +477,45 @@ public class TrainingManager : MonoBehaviour
 
     // ─── UI ────────────────────────────────────────────────────────────
 
+    void EnsureEventSystemForUi()
+    {
+        EventSystem es = FindAnyObjectByType<EventSystem>();
+        if (es == null)
+        {
+            GameObject go = new GameObject("EventSystem");
+            es = go.AddComponent<EventSystem>();
+        }
+
+        StandaloneInputModule old = es.GetComponent<StandaloneInputModule>();
+        if (old != null)
+        {
+            old.enabled = false;
+            Destroy(old);
+        }
+
+        InputSystemUIInputModule uiModule = es.GetComponent<InputSystemUIInputModule>();
+        if (uiModule == null)
+            uiModule = es.gameObject.AddComponent<InputSystemUIInputModule>();
+        uiModule.enabled = true;
+
+        if (EventSystem.current == null)
+            EventSystem.current = es;
+    }
+
     void BuildPanel()
     {
         if (panel != null)
             return;
 
-        Canvas canvas = FindAnyObjectByType<Canvas>();
-        if (canvas == null)
-        {
-            GameObject cGo = new GameObject("TrainingCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvas = cGo.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 100;
-        }
+        GameObject cGo = new GameObject("TrainingCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        Canvas canvas = cGo.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 6000;
+        cGo.layer = 5;
 
         panel = new GameObject("Training Panel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        panel.layer = 5;
         panel.transform.SetParent(canvas.transform, false);
         RectTransform prt = panel.GetComponent<RectTransform>();
         prt.anchorMin = new Vector2(0f, 1f);
@@ -483,6 +525,7 @@ public class TrainingManager : MonoBehaviour
         prt.sizeDelta = new Vector2(420f, 260f);
         Image bg = panel.GetComponent<Image>();
         bg.color = new Color(0.08f, 0.1f, 0.14f, 0.88f);
+        bg.raycastTarget = true;
 
         statusText = MakeLabel(panel.transform, "Status", new Vector2(10, -8), new Vector2(400, 40), 13);
         coverageText = MakeLabel(panel.transform, "Coverage", new Vector2(10, -48), new Vector2(400, 36), 11);
@@ -504,7 +547,8 @@ public class TrainingManager : MonoBehaviour
 
     Slider MakeSlider(Transform parent, string name, Vector2 pos, Vector2 size, float min, float max, float value, UnityEngine.Events.UnityAction<float> onChanged)
     {
-        GameObject go = new GameObject(name, typeof(RectTransform), typeof(Slider));
+        GameObject go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Slider));
+        go.layer = 5;
         go.transform.SetParent(parent, false);
         RectTransform rt = go.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0f, 1f);
@@ -512,6 +556,9 @@ public class TrainingManager : MonoBehaviour
         rt.pivot = new Vector2(0f, 1f);
         rt.anchoredPosition = pos;
         rt.sizeDelta = size;
+        Image rootImg = go.GetComponent<Image>();
+        rootImg.color = new Color(1f, 1f, 1f, 0.01f);
+        rootImg.raycastTarget = true;
 
         GameObject bgGo = new GameObject("Background", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         bgGo.transform.SetParent(go.transform, false);

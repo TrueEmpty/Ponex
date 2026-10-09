@@ -69,6 +69,12 @@ public class ControllerLink : MonoBehaviour
             return;
         }
 
+        if (!db.CanAddHumanPlayer())
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         if(!db.controllers.Contains(this)) //&& !manager.controllers.Exists(x=> x.playerInput.devices.ToString() == playerInput.devices.ToString()))
         {
             index = db.PlayerAdd(this);

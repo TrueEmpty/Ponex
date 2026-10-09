@@ -77,7 +77,7 @@ MonoBehaviour:
   timeTillReset: 8
   ttR: 0
   ballReady: 0
-  checkStuck: 0
+  checkStuck: 1
   speedCap: 1
   projectionOn: 1
   showProjection: 0

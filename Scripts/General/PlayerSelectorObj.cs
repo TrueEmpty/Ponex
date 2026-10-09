@@ -115,6 +115,23 @@ public class PlayerSelectorObj : MonoBehaviour
         return p != null && p.winScrollTarget != null;
     }
 
+    bool IsMenuSelectable(Collider hit)
+    {
+        if (hit == null)
+            return false;
+        if (db == null || !db.pauseMenuOpen)
+            return true;
+
+        MenuManager mm = MenuManager.instance;
+        if (mm == null)
+            return true;
+        MenuClass pause = mm.FindMenu("Pause");
+        if (pause == null || pause.holder == null)
+            return true;
+        Transform root = pause.holder.transform;
+        return hit.transform == root || hit.transform.IsChildOf(root);
+    }
+
     int ClickPlayerIndex()
     {
         // On win screen always use the human cursor owner (so CPU cards can be opened for scroll)
@@ -366,7 +383,7 @@ public class PlayerSelectorObj : MonoBehaviour
                 //Add pressed state
                 foreach (Collider hit in ucd.trackedColliders)
                 {
-                    if (hit == null)
+                    if (hit == null || !IsMenuSelectable(hit))
                         continue;
 
                     hit.SendMessage("Pressed", SendMessageOptions.DontRequireReceiver);
@@ -394,7 +411,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
                 foreach (Collider hit in ucd.trackedColliders)
                 {
-                    if (hit == null)
+                    if (hit == null || !IsMenuSelectable(hit))
                         continue;
 
                     // Prefer the CPU level chip over the portrait skin cycle when both overlap

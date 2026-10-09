@@ -21,6 +21,7 @@ public class OrbitSatellite : MonoBehaviour
             info.ball.damage = 1;
             info.ballReady = true;
             info.projectionOn = true;
+            info.checkStuck = false;
             info.anchor = gameObject;
         }
 

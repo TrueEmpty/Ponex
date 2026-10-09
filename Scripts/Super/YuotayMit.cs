@@ -25,8 +25,15 @@ public class YuotayMit : MonoBehaviour
     [Tooltip("Dead zone along the wall before the mit bothers moving.")]
     public float deadZone = 0.35f;
 
-    float wallCoord;
-    bool wallReady;
+    [Tooltip("Nudge into the field so raised / extended wall segments sit behind the mit.")]
+    public float fieldLift = 0.22f;
+
+    PaddleWall.LaneLock lane;
+    bool wallsIgnored;
+    bool batIgnored;
+    float laneMin;
+    float laneMax;
+    float laneRefresh;
     float currentSpeed;
     Vector3 cachedChaseTarget;
     bool hasCachedChaseTarget;
@@ -40,11 +47,26 @@ public class YuotayMit : MonoBehaviour
         stick = GetComponent<StickOnCollision>();
         db = Database.instance;
 
+        if (pg != null && pg.player != null)
+            lane.Ensure(rb, pg.player.facing);
+
         if (rb != null)
         {
             rb.useGravity = false;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
+            if (fieldLift != 0f)
+            {
+                Vector3 lifted = rb.position + transform.up.normalized * fieldLift;
+                lifted.z = rb.position.z;
+                rb.position = lifted;
+                transform.position = lifted;
+            }
         }
+
+        IgnoreStadiumAndBat();
+
+        if (GetComponent<DestroyOnDeath>() == null)
+            gameObject.AddComponent<DestroyOnDeath>();
 
         if (stick != null)
         {
@@ -77,73 +99,56 @@ public class YuotayMit : MonoBehaviour
         if (db == null || pg == null || pg.player == null)
             return;
 
-        EnsureWallLock(pg.player);
+        lane.Ensure(rb, pg.player.facing);
+
+        if (pg.player.currentHealth <= 0)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         if (db.gameStart && pg.player.currentHealth > 0)
+        {
+            IgnoreStadiumAndBat();
             OnMove();
+        }
         else if (rb != null)
         {
             currentSpeed = 0f;
             rb.linearVelocity = Vector3.zero;
         }
 
-        ClampToWall(pg.player);
+        ClampToSide();
     }
 
     void FixedUpdate()
     {
+        if (rb != null)
+            ClampToSide();
+    }
+
+    void ClampToSide()
+    {
+        lane.Clamp(rb);
         if (pg != null && pg.player != null)
-            ClampToWall(pg.player);
+            PaddleWall.ClampToLaneLimits(rb, transform, pg.player.facing, ref laneMin, ref laneMax, ref laneRefresh);
     }
 
-    void EnsureWallLock(Player p)
+    void IgnoreStadiumAndBat()
     {
-        if (wallReady || p == null || rb == null)
-            return;
-
-        switch (p.facing)
+        Collider[] self = GetComponentsInChildren<Collider>(true);
+        if (!wallsIgnored)
         {
-            case Facing.Left:
-            case Facing.Right:
-                rb.constraints = RigidbodyConstraints.FreezePositionX
-                    | RigidbodyConstraints.FreezePositionZ
-                    | RigidbodyConstraints.FreezeRotation;
-                wallCoord = rb.position.x;
-                break;
-            default:
-                rb.constraints = RigidbodyConstraints.FreezePositionY
-                    | RigidbodyConstraints.FreezePositionZ
-                    | RigidbodyConstraints.FreezeRotation;
-                wallCoord = rb.position.y;
-                break;
+            PaddleWall.IgnoreBoundaryWallCollisions(transform, self);
+            wallsIgnored = true;
         }
 
-        wallReady = true;
-    }
-
-    void ClampToWall(Player p)
-    {
-        if (!wallReady || p == null || rb == null)
+        if (batIgnored || pg == null || pg.player == null || pg.player.spawnedPlayer == null)
             return;
 
-        Vector3 pos = rb.position;
-        Vector3 vel = rb.linearVelocity;
-
-        switch (p.facing)
-        {
-            case Facing.Left:
-            case Facing.Right:
-                pos.x = wallCoord;
-                vel.x = 0f;
-                break;
-            default:
-                pos.y = wallCoord;
-                vel.y = 0f;
-                break;
-        }
-
-        rb.position = pos;
-        rb.linearVelocity = vel;
+        Collider[] batCols = pg.player.spawnedPlayer.GetComponentsInChildren<Collider>(true);
+        PaddleWall.IgnoreColliderSets(self, batCols);
+        batIgnored = true;
     }
 
     void OnMove()
@@ -165,7 +170,7 @@ public class YuotayMit : MonoBehaviour
         if (Mathf.Abs(targetSpeed) > 0.01f)
         {
             int dir = targetSpeed > 0f ? 1 : -1;
-            if (WallInDirection(dir))
+            if (AtLaneEnd(dir))
                 targetSpeed = 0f;
         }
 
@@ -257,8 +262,11 @@ public class YuotayMit : MonoBehaviour
         }
     }
 
-    bool WallInDirection(int dir)
+    bool AtLaneEnd(int dir)
     {
-        return PaddleWall.WallInDirection(transform, dir, hitTags, dis);
+        if (pg == null || pg.player == null)
+            return false;
+        return PaddleWall.LaneEndInDirection(
+            transform, pg.player.facing, dir, ref laneMin, ref laneMax, ref laneRefresh);
     }
 }

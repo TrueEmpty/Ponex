@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,92 +21,211 @@ public class Gaurd : MonoBehaviour
     Thought thought = Thought.Nothing;
 #pragma warning restore CS0414
 
-    // Start is called before the first frame update
+    bool ignoredHomeWall;
+    bool pinned;
+    Vector3 pinPos;
+    Quaternion pinRot;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         pg = GetComponent<PlayerGrab>();
         db = Database.instance;
 
-        rb.useGravity = false;
+        if (rb != null)
+        {
+            rb.useGravity = false;
+            rb.interpolation = RigidbodyInterpolation.None;
+        }
+
+        DamageOnTagHit dmg = GetComponent<DamageOnTagHit>();
+        if (dmg == null)
+            dmg = gameObject.AddComponent<DamageOnTagHit>();
+        dmg.tagHit = "Ball";
+        dmg.damageEvenIfOwnBall = true;
+
+        if (GetComponent<DestroyOnDeath>() == null)
+            gameObject.AddComponent<DestroyOnDeath>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // Destroyed pawns leave null entries and can soft-lock Gaurd at 1 HP forever
         pawns.RemoveAll(pawn => pawn == null);
 
-        if (pg.IsLinked())
+        if (!ignoredHomeWall && db != null && db.gameStart)
         {
-            Player p = pg.player;
+            PaddleWall.IgnoreHomeWallCollisions(transform, hitTags, null);
+            ignoredHomeWall = true;
+        }
 
-            if (db.gameStart)
+        HoldStill();
+
+        if (pg == null || !pg.IsLinked())
+            return;
+
+        Player p = pg.player;
+        if (db == null || !db.gameStart)
+            return;
+
+        if (savedByPawns && pawns.Count == 0)
+        {
+            if (p.currentHealth <= 1)
+                p.currentHealth = 0;
+            savedByPawns = false;
+        }
+
+        if (p.currentHealth <= 0 && !CharacterCreationManager.IsActive)
+            DespawnSelfAndSpawns();
+    }
+
+    void FixedUpdate()
+    {
+        HoldStill();
+    }
+
+    void HoldStill()
+    {
+        Player p = pg != null ? pg.player : null;
+        bool settle = db != null && db.startingGame && !db.gameStart;
+        if (!pinned || settle)
+        {
+            if (p == null)
+                return;
+            CapturePin(p);
+        }
+
+        transform.SetPositionAndRotation(pinPos, pinRot);
+        if (rb == null)
+            return;
+
+        rb.isKinematic = true;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+        rb.position = pinPos;
+        rb.rotation = pinRot;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
+
+    void CapturePin(Player p)
+    {
+        Physics.SyncTransforms();
+        pinPos = transform.position;
+        if (db != null && db.FieldPlaySize > 0.01f)
+            pinPos.z = db.FieldPlaySize;
+        pinRot = WallFacingRotation(p);
+        pinned = true;
+    }
+
+    static Quaternion WallFacingRotation(Player p)
+    {
+        Vector3 into = p != null ? PaddleWall.IntoField(p.facing) : Vector3.up;
+        if (into.sqrMagnitude < 0.0001f)
+            into = Vector3.up;
+        Quaternion rot = Quaternion.LookRotation(Vector3.forward, into.normalized);
+        if (p != null && p.character != null)
+            rot *= Quaternion.Euler(p.character.rotationOffset);
+        return rot;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision != null)
+            TryTakeBallHit(collision.gameObject);
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other != null)
+            TryTakeBallHit(other.gameObject);
+    }
+
+    void TryTakeBallHit(GameObject hit)
+    {
+        if (hit == null || !hit.CompareTag("Ball"))
+            return;
+        if (pg == null || !pg.IsLinked() || pg.player == null)
+            return;
+
+        PlayerGrab tpG = hit.GetComponent<PlayerGrab>();
+        BallInfo tbI = hit.GetComponent<BallInfo>();
+
+        int baseDamage = 1;
+        if (tbI != null && tbI.ball != null)
+            baseDamage = Mathf.Max(1, tbI.ball.damage);
+
+        int lost = pg.player.ApplyGoalDamage(baseDamage, hit.GetEntityId().GetHashCode());
+        if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null
+            && tpG.playerIndex != pg.playerIndex)
+            tpG.player.RecordDamageDealt(lost);
+
+        pawns.RemoveAll(pawn => pawn == null);
+
+        if (pg.player.currentHealth <= 1 && CharacterCreationManager.IsActive)
+            return;
+
+        if (pg.player.currentHealth <= 0)
+        {
+            if (pawns.Count > 0)
             {
-                // Killing blow was absorbed by pawns; once they are gone, finish the player
-                if (savedByPawns && pawns.Count == 0)
-                {
-                    if (p.currentHealth <= 1)
-                        p.currentHealth = 0;
-                    savedByPawns = false;
-                }
+                pg.player.currentHealth = 1;
+                savedByPawns = true;
+            }
+            else
+            {
+                pg.player.currentHealth = 0;
+                savedByPawns = false;
+                if (!CharacterCreationManager.IsActive)
+                    DespawnSelfAndSpawns();
             }
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    public void RegisterPawn(Pawn pawn)
     {
-        if (pg.IsLinked() && collision.transform.tag.ToLower().Trim() == "ball")
+        if (pawn == null || pawns.Contains(pawn))
+            return;
+        pawns.Add(pawn);
+    }
+
+    void DespawnSelfAndSpawns()
+    {
+        DestroyOwnedSpawns();
+        if (gameObject != null)
+            Destroy(gameObject);
+    }
+
+    void DestroyOwnedSpawns()
+    {
+        pawns.RemoveAll(pawn => pawn == null);
+        for (int i = 0; i < pawns.Count; i++)
         {
-            //Check if you own the object
-            PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
-            BallInfo tbI = collision.gameObject.GetComponent<BallInfo>();
-            bool pass = true;
-
-            if (tpG != null)
-            {
-                if (tpG.IsLinked())
-                {
-                    if (tpG.playerIndex == pg.playerIndex)
-                    {
-                        pass = false;
-                    }
-                }
-            }
-
-            if (pass)
-            {
-                int baseDamage = 0;
-
-                if (tbI != null && tbI.ball != null)
-                {
-                    baseDamage = tbI.ball.damage;
-                }
-
-                int lost = pg.player.ApplyGoalDamage(baseDamage, collision.gameObject.GetEntityId().GetHashCode());
-
-                if (lost > 0 && tpG != null && tpG.IsLinked() && tpG.player != null)
-                    tpG.player.RecordDamageDealt(lost);
-
-                pawns.RemoveAll(pawn => pawn == null);
-
-                if (pg.player.currentHealth <= 1 && CharacterCreationManager.IsActive)
-                    return;
-
-                if (pg.player.currentHealth <= 0)
-                {
-                    if (pawns.Count > 0)
-                    {
-                        pg.player.currentHealth = 1;
-                        savedByPawns = true;
-                    }
-                    else
-                    {
-                        pg.player.currentHealth = 0;
-                        savedByPawns = false;
-                    }
-                }
-            }
+            if (pawns[i] != null)
+                Destroy(pawns[i].gameObject);
         }
+        pawns.Clear();
+
+        int index = pg != null ? pg.playerIndex : -1;
+        Pawn[] allPawns = FindObjectsByType<Pawn>(FindObjectsInactive.Exclude);
+        for (int i = 0; i < allPawns.Length; i++)
+        {
+            Pawn pawn = allPawns[i];
+            if (pawn == null)
+                continue;
+            PlayerGrab grab = pawn.GetComponent<PlayerGrab>();
+            if (index >= 0 && grab != null && grab.playerIndex == index)
+                Destroy(pawn.gameObject);
+        }
+
+        RepeatSpawn[] spawners = GetComponentsInChildren<RepeatSpawn>(true);
+        for (int i = 0; i < spawners.Length; i++)
+        {
+            if (spawners[i] != null)
+                spawners[i].DestroySpawned();
+        }
+    }
+
+    void OnDestroy()
+    {
+        DestroyOwnedSpawns();
     }
 }

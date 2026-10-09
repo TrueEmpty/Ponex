@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,6 +16,7 @@ public class MasterPong : MonoBehaviour
     Thought thought = Thought.Nothing;
 #pragma warning restore CS0414
     ComputerBrain brain;
+    PaddleWall.LaneLock lane;
 
     // Start is called before the first frame update
     void Start()
@@ -28,7 +28,7 @@ public class MasterPong : MonoBehaviour
         if (brain != null)
         {
             brain.hitTags = hitTags;
-            brain.wallStopDistance = dis;
+            brain.wallStopDistance = PaddleWall.LateralStopDistance(transform);
         }
 
         rb.useGravity = false;
@@ -48,9 +48,17 @@ public class MasterPong : MonoBehaviour
                 rb.linearVelocity = Vector3.zero;
             }
 
+            if (pg.player != null)
+                lane.Ensure(rb, pg.player.facing);
             // Fast wall contact can overshoot soft stop — push out so leave-input always works
             PaddleWall.Unstick(rb, transform, hitTags);
+            lane.Clamp(rb);
         }
+    }
+
+    void FixedUpdate()
+    {
+        lane.Clamp(rb);
     }
 
     void OnMove()
@@ -61,7 +69,7 @@ public class MasterPong : MonoBehaviour
         {
             ComputerAI.Decision d = brain != null
                 ? brain.Lane
-                : ComputerAI.Evaluate(transform, pg.player, hitTags, dis);
+                : ComputerAI.Evaluate(transform, pg.player, hitTags, PaddleWall.LateralStopDistance(transform));
             moveDir = d.moveDir;
             thought = brain != null
                 ? brain.Thought
@@ -85,6 +93,6 @@ public class MasterPong : MonoBehaviour
 
     bool WallInDirection(int dir)
     {
-        return PaddleWall.WallInDirection(transform, dir, hitTags, dis);
+        return PaddleWall.WallInDirection(transform, dir, hitTags, PaddleWall.LateralStopDistance(transform));
     }
 }

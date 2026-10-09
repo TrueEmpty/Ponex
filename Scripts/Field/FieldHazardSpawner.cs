@@ -85,6 +85,17 @@ public static class FieldHazardSpawner
             if (!hazard)
                 continue;
 
+            string partName = p.name != null ? p.name.ToLowerInvariant() : "";
+            if (partName.Contains("sky target"))
+            {
+                if (p.spawned != null)
+                {
+                    Object.Destroy(p.spawned);
+                    p.spawned = null;
+                }
+                continue;
+            }
+
             // Hide / destroy the template instance from LoadField
             if (p.spawned != null)
             {
@@ -326,10 +337,6 @@ public static class FieldHazardSpawner
         else if (n.Contains("drift") || n.Contains("float log"))
         {
             Ensure<DriftingLogHazard>(go);
-        }
-        else if (n.Contains("target"))
-        {
-            Ensure<SkyCannonTarget>(go);
         }
     }
 

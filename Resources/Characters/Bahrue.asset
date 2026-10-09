@@ -42,7 +42,7 @@ MonoBehaviour:
     rotationOffset: {x: 0, y: 0, z: 0}
   lifeline:
     prefabs: {fileID: 0}
-    positionOffset: {x: 0, y: 0, z: 0}
+    positionOffset: {x: 0, y: 0.35, z: 0}
     rotationOffset: {x: 0, y: 0, z: 0}
   selector: {fileID: 0}
   playerInfo: {fileID: 0}

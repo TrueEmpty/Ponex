@@ -23,6 +23,7 @@ public class OrbitBall : MonoBehaviour
     public GameObject satellitePrefab;
 
     readonly List<OrbitSatellite> satellites = new List<OrbitSatellite>(2);
+    readonly HashSet<int> suppressedPullers = new HashSet<int>();
     float angle;
     float respawnTimer;
     float nextIgnoreRefresh;
@@ -37,8 +38,10 @@ public class OrbitBall : MonoBehaviour
         if (bI != null && bI.ball != null)
         {
             bI.ball.damage = 0;
-            bI.checkStuck = false;
+            bI.checkStuck = true;
             bI.ball.name = "Orbit Ball";
+            if (bI.anchor == null)
+                bI.anchor = gameObject;
         }
 
         // Invisible core
@@ -105,6 +108,101 @@ public class OrbitBall : MonoBehaviour
             return;
 
         Physics.IgnoreCollision(coreCol, collision.collider, true);
+        PullObjectIn puller = collision.collider.GetComponent<PullObjectIn>()
+            ?? collision.collider.GetComponentInParent<PullObjectIn>();
+        if (puller != null)
+            SuppressCelestialPull(puller, true);
+    }
+
+    /// <summary>
+    /// Celarus moon/sun gravity: once this invisible core touches the body,
+    /// ignore that well until we fully leave its range so we cannot sit locked inside.
+    /// </summary>
+    public bool IsCelestialPullBlocked(PullObjectIn puller)
+    {
+        if (puller == null)
+            return false;
+
+        int id = puller.GetEntityId().GetHashCode();
+        float range = Mathf.Max(0.01f, puller.distance * Mathf.Max(0.1f, puller.disScale));
+        float dist = Vector3.Distance(transform.position, puller.transform.position);
+
+        if (suppressedPullers.Contains(id))
+        {
+            if (dist > range + 0.2f)
+                suppressedPullers.Remove(id);
+            else
+                return true;
+        }
+
+        if (OverlapsCelestial(puller, dist))
+        {
+            SuppressCelestialPull(puller, false);
+            return true;
+        }
+
+        return false;
+    }
+
+    void SuppressCelestialPull(PullObjectIn puller, bool fromCollision)
+    {
+        if (puller == null)
+            return;
+
+        int id = puller.GetEntityId().GetHashCode();
+        bool first = suppressedPullers.Add(id);
+        if (!first && !fromCollision)
+            return;
+
+        NudgeOutOfWell(puller);
+    }
+
+    bool OverlapsCelestial(PullObjectIn puller, float dist)
+    {
+        float bodyR = CelestialRadius(puller);
+        float ballR = 0.2f;
+        if (coreCol != null)
+            ballR = Mathf.Max(0.08f, Mathf.Max(coreCol.bounds.extents.x, coreCol.bounds.extents.y));
+        return dist <= bodyR + ballR * 0.35f;
+    }
+
+    static float CelestialRadius(PullObjectIn puller)
+    {
+        SphereCollider sc = puller.GetComponent<SphereCollider>();
+        if (sc != null)
+        {
+            float s = Mathf.Max(puller.transform.lossyScale.x, puller.transform.lossyScale.y);
+            return Mathf.Max(0.35f, sc.radius * s);
+        }
+
+        Collider col = puller.GetComponent<Collider>();
+        if (col != null)
+            return Mathf.Max(0.35f, Mathf.Max(col.bounds.extents.x, col.bounds.extents.y));
+
+        return 1.25f;
+    }
+
+    void NudgeOutOfWell(PullObjectIn puller)
+    {
+        if (rb == null || puller == null)
+            return;
+
+        Vector3 away = rb.position - puller.transform.position;
+        away.z = 0f;
+        if (away.sqrMagnitude < 0.0001f)
+        {
+            Vector3 v = rb.linearVelocity;
+            v.z = 0f;
+            away = v.sqrMagnitude > 0.01f ? v : Vector3.up;
+        }
+        away.Normalize();
+
+        Vector3 vel = rb.linearVelocity;
+        vel.z = 0f;
+        float inward = Vector3.Dot(vel, -away);
+        if (inward > 0f)
+            vel += away * inward;
+        rb.linearVelocity = vel;
     }
 
     void EnsureSatellites()
@@ -164,7 +262,7 @@ public class OrbitBall : MonoBehaviour
             sInfo.ball.damage = Mathf.Max(1, bI.ball.damage > 0 ? bI.ball.damage : 1);
             sInfo.ballReady = true;
             sInfo.projectionOn = true;
-            sInfo.checkStuck = true;
+            sInfo.checkStuck = false;
             sInfo.anchor = go;
             sInfo.matchSlot = -1;
         }

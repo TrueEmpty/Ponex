@@ -77,6 +77,79 @@ public class Tic : MonoBehaviour
             leftRestRot = leftPaddle.localRotation;
         if (rightPaddle != null)
             rightRestRot = rightPaddle.localRotation;
+
+        // Database snap ran before parts resolved and used the plunger (inside the wall).
+        if (pg != null && pg.player != null && db != null)
+            db.SnapCharacterFlushToHomeWall(transform, pg.player.facing);
+    }
+
+    /// <summary>
+    /// Plunger / bay sit inside the home wall. Do not use them to place the cabinet.
+    /// </summary>
+    public bool IsInteriorSpawnPart(Transform t)
+    {
+        if (t == null)
+            return false;
+        if (plunger != null && (t == plunger || t.IsChildOf(plunger)))
+            return true;
+        if (loadPoint != null && (t == loadPoint || t.IsChildOf(loadPoint)))
+            return true;
+        if (launchArea != null && (t == launchArea.transform || t.IsChildOf(launchArea.transform)))
+            return true;
+
+        string n = t.name;
+        if (string.IsNullOrEmpty(n))
+            return false;
+        if (n.IndexOf("plung", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        if (n.Equals("Center", System.StringComparison.OrdinalIgnoreCase)
+            || n.Equals("LoadPoint", System.StringComparison.OrdinalIgnoreCase)
+            || n.IndexOf("Launch", System.StringComparison.OrdinalIgnoreCase) >= 0
+            || n.Equals("Loader", System.StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Where bumpers should settle in the shaft. The plunger sits inside the home wall,
+    /// so this is the plunger pulled forward until it clears that wall.
+    /// </summary>
+    public Vector3 GetBayRestPosition()
+    {
+        Vector3 rest = plunger != null
+            ? plunger.position
+            : (loadPoint != null ? loadPoint.position : transform.position);
+        Vector3 up = transform.up;
+        if (up.sqrMagnitude < 0.0001f)
+            return rest;
+        up.Normalize();
+
+        const float probe = 3.25f;
+        Vector3 origin = rest + up * probe;
+        RaycastHit[] hits = Physics.RaycastAll(origin, -up, probe + 1.5f, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.MaxValue;
+        Vector3 wallPt = rest;
+        bool found = false;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Transform t = hits[i].transform;
+            if (t == null || t == transform || t.IsChildOf(transform))
+                continue;
+            string tag = t.tag;
+            if (tag != "Wall" && tag != "Walls" && tag != "Obstacle")
+                continue;
+            if (hits[i].distance >= best)
+                continue;
+            best = hits[i].distance;
+            wallPt = hits[i].point;
+            found = true;
+        }
+
+        if (found && Vector3.Dot(rest - wallPt, up) < 0.45f)
+            rest = wallPt + up * 0.5f;
+
+        rest.z = transform.position.z;
+        return rest;
     }
 
     void ResolveParts()
@@ -437,7 +510,7 @@ public class Tic : MonoBehaviour
                 sc.material = null;
         }
 
-        go.tag = "Paddle";
+        TagHierarchyPaddle(go);
         if (go.GetComponent<ClearAfterTheGame>() == null)
             go.AddComponent<ClearAfterTheGame>();
 
@@ -486,5 +559,18 @@ public class Tic : MonoBehaviour
     public void UnregisterBumper(TicBumper bumper)
     {
         liveBumpers.Remove(bumper);
+    }
+
+    static void TagHierarchyPaddle(GameObject go)
+    {
+        if (go == null)
+            return;
+        go.tag = "Paddle";
+        Transform[] all = go.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] != null)
+                all[i].gameObject.tag = "Paddle";
+        }
     }
 }
