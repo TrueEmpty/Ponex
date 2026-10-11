@@ -158,9 +158,17 @@ public class Uwrenmaw : MonoBehaviour
             radial = radial.normalized * OrbitRadius;
             Vector3 tangent = new Vector3(-radial.y, radial.x, 0f) * circleSign;
             float ang = angSpeed * Time.fixedDeltaTime;
-            radial = Quaternion.AngleAxis(ang * Mathf.Rad2Deg * circleSign, Vector3.forward) * radial;
-            Vector3 next = center + radial;
+            Vector3 spun = Quaternion.AngleAxis(ang * Mathf.Rad2Deg * circleSign, Vector3.forward) * radial;
+            Vector3 next = center + spun;
             next.z = playZ;
+            if (WallAhead(next))
+            {
+                circleSign *= -1f;
+                spun = Quaternion.AngleAxis(ang * Mathf.Rad2Deg * circleSign, Vector3.forward) * radial;
+                next = center + spun;
+                next.z = playZ;
+            }
+            radial = spun;
             rb.MovePosition(next);
             rb.linearVelocity = tangent.normalized * speed;
             flyDir = tangent.normalized;
@@ -174,7 +182,12 @@ public class Uwrenmaw : MonoBehaviour
             }
 
             if (growing != null)
-                growing.SetGrow(Mathf.Clamp01(lapAngle / (Mathf.PI * 2f * LapsPerTick) + (growing.complete ? 1f : 0f)));
+            {
+                float goal = Mathf.PI * 2f * LapsPerTick;
+                growing.SetGrow(Mathf.Clamp01(lapAngle / goal));
+                if (pg.player.super != null && goal > 0.01f)
+                    pg.player.super.Spend(ang * (pg.player.super.cost / goal));
+            }
         }
         else
         {
@@ -215,13 +228,20 @@ public class Uwrenmaw : MonoBehaviour
         if (pg == null || pg.player == null)
             return;
         Color scheme = PlayerSkin.GetColor(pg.player, db);
-        Color tail = Color.Lerp(Color.white, scheme, 0.82f);
-        tail.a = 1f;
+        Color tint = Color.Lerp(Color.white, scheme, 0.82f);
+        tint.a = 1f;
+        Renderer[] body = GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < body.Length; i++)
+        {
+            if (body[i] == null || body[i] is ParticleSystemRenderer)
+                continue;
+            TintRenderer(body[i], tint);
+        }
         for (int i = 0; i < segments.Count; i++)
         {
             if (segments[i] == null)
                 continue;
-            TintRenderer(segments[i].GetComponent<Renderer>(), tail);
+            TintRenderer(segments[i].GetComponent<Renderer>(), tint);
         }
         for (int i = 0; i < pillars.Count; i++)
         {
@@ -400,6 +420,21 @@ public class Uwrenmaw : MonoBehaviour
         return PaddleWall.IntoField(pg.player.facing);
     }
 
+    bool WallAhead(Vector3 spot)
+    {
+        Collider[] hits = Physics.OverlapSphere(spot, 0.42f, ~0, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Collider hit = hits[i];
+            if (hit == null || hit.transform == transform || hit.transform.IsChildOf(transform))
+                continue;
+            string tag = hit.tag;
+            if (tag == "Walls" || tag == "Wall")
+                return true;
+        }
+        return false;
+    }
+
     bool SpotTaken(Vector3 spot)
     {
         Collider[] hits = Physics.OverlapSphere(spot, 0.7f, ~0, QueryTriggerInteraction.Ignore);
@@ -466,8 +501,6 @@ public class Uwrenmaw : MonoBehaviour
     {
         if (growing != null || orbit != null)
             return;
-        pg.player.super.Spend();
-        pg.player.RecordUltUsed();
         Vector3 spot = transform.position;
         spot.z = playZ;
         growing = SpawnPillar(spot, false);
@@ -488,6 +521,7 @@ public class Uwrenmaw : MonoBehaviour
             growing.StopGrowDust();
             growing.Finish();
             growing = null;
+            pg.player.RecordUltUsed();
             SyncHealth();
             return;
         }

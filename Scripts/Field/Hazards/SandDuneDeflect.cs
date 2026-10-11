@@ -54,7 +54,7 @@ public class SandDuneDeflect : MonoBehaviour
             else
                 away /= dist;
 
-            float closeness = 1f - Mathf.Clamp01(dist / worldRadius);
+            float closeness = Falloff(dist, worldRadius);
             if (rb.isKinematic)
             {
                 if (hit.GetComponentInParent<PlayerGrab>() == null)
@@ -69,12 +69,12 @@ public class SandDuneDeflect : MonoBehaviour
             vel.z = 0f;
             float speed = vel.magnitude;
             // Fast objects keep most of their direction. Slow ones near the middle get turned around the hill.
-            float turn = closeness * closeness * Mathf.Clamp01(6.5f / (speed + 0.75f));
+            float turn = closeness * Mathf.Clamp01(6.5f / (speed + 0.75f));
             Vector3 dir = speed < 0.05f ? away : Vector3.Slerp(vel.normalized, away, turn);
             float kept = Mathf.Max(speed, closeness * 1.4f);
             Vector3 next = dir * kept;
             next.z = rb.linearVelocity.z;
-            rb.linearVelocity = next + away * (strength * closeness * closeness / (1f + speed * 0.45f)) * Time.fixedDeltaTime;
+            rb.linearVelocity = next + away * (strength * closeness / (1f + speed * 0.45f)) * Time.fixedDeltaTime;
         }
     }
 
@@ -102,13 +102,20 @@ public class SandDuneDeflect : MonoBehaviour
                 away = Vector3.right;
             else
                 away /= dist;
-            float closeness = 1f - Mathf.Clamp01(dist / worldRadius);
-            float turn = closeness * closeness * Mathf.Clamp01(6.5f / (speed + 0.75f));
+            float closeness = Falloff(dist, worldRadius);
+            float turn = closeness * Mathf.Clamp01(6.5f / (speed + 0.75f));
             direction = Vector3.Slerp(direction, away, turn);
             direction.z = 0f;
             direction.Normalize();
         }
         return direction;
+    }
+
+    /// <summary>Nearly nothing at the rim, full strength only near the middle.</summary>
+    static float Falloff(float dist, float worldRadius)
+    {
+        float t = 1f - Mathf.Clamp01(dist / Mathf.Max(0.05f, worldRadius));
+        return t * t * t * t;
     }
 
     static bool Affects(Collider hit)
