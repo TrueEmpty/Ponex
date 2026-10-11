@@ -84,6 +84,43 @@ public class BallInfo : MonoBehaviour
         }
     }
 
+    void FixedUpdate()
+    {
+        LockToPlayfield();
+    }
+
+    void LockToPlayfield()
+    {
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
+        if (db == null)
+            db = Database.instance;
+        if (rb == null || db == null || db.FieldPlaySize <= 0.01f)
+            return;
+
+        float z = db.FieldPlaySize;
+        Vector3 pos = rb.position;
+        if (Mathf.Abs(pos.z - z) > 0.0001f)
+        {
+            pos.z = z;
+            rb.position = pos;
+            transform.position = pos;
+        }
+
+        if (!rb.isKinematic)
+        {
+            Vector3 vel = rb.linearVelocity;
+            if (Mathf.Abs(vel.z) > 0.0001f)
+            {
+                vel.z = 0f;
+                rb.linearVelocity = vel;
+            }
+        }
+
+        if ((rb.constraints & RigidbodyConstraints.FreezePositionZ) == 0)
+            rb.constraints |= RigidbodyConstraints.FreezePositionZ;
+    }
+
     void Update()
     {
         if (db == null || !db.gameStart)

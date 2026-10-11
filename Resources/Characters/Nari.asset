@@ -48,7 +48,7 @@ MonoBehaviour:
   playerInfo: {fileID: 0}
   superName: Enlightened Hunger
   superDescription: On ball hits Nari builds up her energy to gain health.
-  portraitColor: {r: 0.7169523, g: 0, b: 1, a: 1}
+  portraitColor: {r: 0.55, g: 0.12, b: 0.92, a: 1}
   portrait: {fileID: 2800000, guid: 0374c35459c345a46bfd6ea765bc88a4, type: 3}
   icon: {fileID: 2800000, guid: 0374c35459c345a46bfd6ea765bc88a4, type: 3}
   active: 1

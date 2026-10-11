@@ -194,10 +194,7 @@ public class CelarusResidue : MonoBehaviour
         fx.transform.localPosition = Vector3.zero;
         fx.transform.localScale = Vector3.one;
 
-        ParticleSystem ps = fx.AddComponent<ParticleSystem>();
-        // AddComponent starts playing when playOnAwake is default-true — stop before editing duration
-        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-
+        ParticleSystem ps = ParticleEdit.AddStopped(fx);
         var main = ps.main;
         main.playOnAwake = false;
         main.loop = true;
@@ -405,7 +402,7 @@ public class CelarusResidue : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!pullToTarget)
+        if (!pullToTarget || !Database.MatchPlayActive)
             return;
 
         Vector3 residuePosition = transform.position;

@@ -36,6 +36,9 @@ public static class FieldHazardSpawner
         if (!GameSettings.HazardsEnabled)
             return;
 
+        if (name.Equals("Marajie Dessert", System.StringComparison.OrdinalIgnoreCase))
+            PlaceMarajieDunes(fieldRoot, field);
+
         // Kingdom of Nuoryn — extras only if authored templates missing (legacy)
         if (name.IndexOf("Nuoryn", System.StringComparison.OrdinalIgnoreCase) >= 0
             || name.IndexOf("Old Kingdom", System.StringComparison.OrdinalIgnoreCase) >= 0)
@@ -282,6 +285,63 @@ public static class FieldHazardSpawner
         if (r == null)
             return;
         FieldTextureFactory.ApplyAlbedo(r, p.material, p.material_Color, p.material_Matallic, p.material_Smoothness);
+    }
+
+    static void PlaceMarajieDunes(Transform fieldRoot, Field field)
+    {
+        if (fieldRoot.GetComponentInChildren<SandDuneDeflect>(true) != null)
+            return;
+
+        GameObject prefab = Database.instance != null
+            ? Database.instance.HazardPrefabFor("Marajie Dessert")
+            : null;
+        if (prefab == null)
+            prefab = Resources.Load<GameObject>("Parts/Hazards/Sand Dune");
+        if (prefab == null)
+            return;
+
+        float half = (field.size + 10) * 0.5f;
+        float inset = 7f;
+        float z = Database.instance != null ? Database.instance.FieldPlaySize : fieldRoot.position.z;
+        Vector3[] spots =
+        {
+            new Vector3(-half * 0.55f, half * 0.34f, 0f),
+            new Vector3(-half * 0.18f, half * 0.5f, 0f),
+            new Vector3(half * 0.22f, half * 0.46f, 0f),
+            new Vector3(half * 0.52f, half * 0.22f, 0f),
+            new Vector3(-half * 0.48f, -half * 0.18f, 0f),
+            new Vector3(-half * 0.16f, -half * 0.42f, 0f),
+            new Vector3(half * 0.14f, -half * 0.5f, 0f),
+            new Vector3(half * 0.48f, -half * 0.28f, 0f),
+            new Vector3(0f, half * 0.08f, 0f),
+            new Vector3(half * 0.08f, -half * 0.08f, 0f)
+        };
+
+        for (int i = 0; i < spots.Length; i++)
+        {
+            Vector3 local = spots[i];
+            if (Mathf.Abs(local.x) > half - inset)
+                local.x = Mathf.Sign(local.x) * (half - inset);
+            if (Mathf.Abs(local.y) > half - inset)
+                local.y = Mathf.Sign(local.y) * (half - inset);
+            // Keep clear of the four wall-center player spawns
+            if (Mathf.Abs(local.x) < 3.5f && Mathf.Abs(Mathf.Abs(local.y) - half) < 6f)
+                local.x += 6f;
+            if (Mathf.Abs(local.y) < 3.5f && Mathf.Abs(Mathf.Abs(local.x) - half) < 6f)
+                local.y += 6f;
+
+            GameObject go = Object.Instantiate(prefab, fieldRoot);
+            go.name = "Sand Dune";
+            go.transform.localPosition = new Vector3(local.x, local.y, 0f);
+            go.transform.localRotation = Quaternion.Euler(0f, 0f, 30f);
+            Vector3 world = go.transform.position;
+            // Sit lower than a half-buried mound so only a low crown sticks up.
+            float halfDepth = Mathf.Abs(go.transform.lossyScale.z) * 0.42f;
+            world.z = z + halfDepth;
+            go.transform.position = world;
+            if (go.GetComponent<SandDuneDeflect>() == null)
+                go.AddComponent<SandDuneDeflect>();
+        }
     }
 
     static void SetupDeepHarborWater(Transform fieldRoot, Field field)

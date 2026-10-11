@@ -11,6 +11,8 @@ public class BallMovement : MonoBehaviour
 
     bool moveReady = false;
     bool launcherHold;
+    bool holdPosSet;
+    Vector3 holdPos;
     Vector3 velocityBeforePhysics;
 
     void Start()
@@ -33,22 +35,57 @@ public class BallMovement : MonoBehaviour
 
     public bool IsLauncherHeld => launcherHold;
 
-    void FixedUpdate()
+    bool PreMatchHold => launcherHold || !Database.MatchPlayActive || bI == null || !bI.ballReady;
+
+    void HoldStill()
     {
-        if (launcherHold && rb != null)
+        if (rb == null)
+            return;
+        if (!holdPosSet)
+        {
+            holdPos = rb.position;
+            holdPosSet = true;
+        }
+        if (db != null && db.FieldPlaySize > 0.01f)
+            holdPos.z = db.FieldPlaySize;
+        if (!rb.isKinematic)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-            velocityBeforePhysics = Vector3.zero;
+            rb.isKinematic = true;
+        }
+        rb.position = holdPos;
+        transform.position = holdPos;
+        velocityBeforePhysics = Vector3.zero;
+    }
+
+    void ReleaseHold()
+    {
+        if (rb != null && rb.isKinematic)
+            rb.isKinematic = false;
+    }
+
+    void FixedUpdate()
+    {
+        if (PreMatchHold)
+        {
+            HoldStill();
             return;
         }
+
+        ReleaseHold();
         velocityBeforePhysics = rb.linearVelocity;
     }
 
     void Update()
     {
-        if (launcherHold)
+        if (PreMatchHold)
+        {
+            HoldStill();
             return;
+        }
+
+        ReleaseHold();
 
         if (bI.ballReady && db.gameStart)
         {
@@ -65,6 +102,8 @@ public class BallMovement : MonoBehaviour
 
     public void BeginMovement()
     {
+        ReleaseHold();
+        holdPosSet = false;
         float speed = Mathf.Max(bI.ball.startSpeed, bI.ball.minSpeed);
         Vector2 dir = Random.insideUnitCircle;
         if (dir.sqrMagnitude < 0.001f)

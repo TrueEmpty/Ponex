@@ -97,11 +97,13 @@ public class IyolitFlameFx : MonoBehaviour
 
     /// <summary>
     /// Flame rise + sprite tip follow this object's up (into the field).
-    /// Side walls rotate 90°, top wall flips 180°.
+    /// Side walls rotate 90°, top wall flips 180°. Uses camera view space so a
+    /// tilted gameplay camera still lines the sprite up with the wick.
     /// </summary>
     void OrientAllToWick()
     {
-        float spriteRot = SpriteRotationForUp(transform.up);
+        Vector3 wickUp = transform.up;
+        float spriteRot = SpriteRotationForUp(wickUp);
         ParticleSystem[] systems = GetComponentsInChildren<ParticleSystem>(true);
         for (int i = 0; i < systems.Length; i++)
         {
@@ -111,9 +113,13 @@ public class IyolitFlameFx : MonoBehaviour
 
             var main = ps.main;
             main.gravityModifier = 0f;
+            // Child body-flame prefab has rotation3D on — 2D startRotation is ignored until this is off.
+            main.startRotation3D = false;
             main.startRotation = spriteRot;
+            main.scalingMode = ParticleSystemScalingMode.Shape;
 
             var velocity = ps.velocityOverLifetime;
+            velocity.enabled = true;
             velocity.space = ParticleSystemSimulationSpace.Local;
 
             var renderer = ps.GetComponent<ParticleSystemRenderer>();
@@ -125,9 +131,23 @@ public class IyolitFlameFx : MonoBehaviour
         }
     }
 
-    /// <summary>View-billboard 0° = texture up is world +Y. Rotate so texture up matches wick up.</summary>
+    /// <summary>
+    /// View-billboard 0° = texture up is camera up. Rotate so texture up matches wick up on screen.
+    /// </summary>
     public static float SpriteRotationForUp(Vector3 up)
     {
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            Vector3 view = cam.worldToCameraMatrix.MultiplyVector(up);
+            view.z = 0f;
+            if (view.sqrMagnitude > 0.0001f)
+            {
+                view.Normalize();
+                return Mathf.Atan2(-view.x, view.y);
+            }
+        }
+
         up.z = 0f;
         if (up.sqrMagnitude < 0.0001f)
             up = Vector3.up;
@@ -276,14 +296,15 @@ public class IyolitFlameFx : MonoBehaviour
 
     static void ConfigureSystem(ParticleSystem ps, Style layer)
     {
-        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        ParticleEdit.PauseForEdit(ps);
 
         var main = ps.main;
         main.playOnAwake = true;
         main.loop = true;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+        main.scalingMode = ParticleSystemScalingMode.Shape;
         main.gravityModifier = 0f;
+        main.startRotation3D = false;
         main.startRotation = SpriteRotationForUp(ps.transform.up);
 
         Texture2D tex;
@@ -438,6 +459,8 @@ public class IyolitFlameFx : MonoBehaviour
             }
         }
 
+        ParticleEdit.Resume(ps, false);
+
         // Extra ember spark layer on body aura / candle (not bump — bump IS the ember)
         if (layer == Style.BodyAura || layer == Style.Candle)
             EnsureEmberChild(ps.transform, layer);
@@ -455,14 +478,14 @@ public class IyolitFlameFx : MonoBehaviour
             go = new GameObject(childName);
             go.transform.SetParent(parent, false);
             go.transform.localPosition = Vector3.zero;
-            go.AddComponent<ParticleSystem>();
+            ParticleEdit.AddStopped(go);
         }
 
         ParticleSystem ps = go.GetComponent<ParticleSystem>();
         if (ps == null)
             return;
 
-        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        ParticleEdit.PauseForEdit(ps);
         var main = ps.main;
         main.playOnAwake = true;
         main.loop = true;
@@ -475,8 +498,10 @@ public class IyolitFlameFx : MonoBehaviour
             new Color(1f, 0.95f, 0.5f, 1f),
             new Color(1f, 0.4f, 0.05f, 0.85f));
         main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.scalingMode = ParticleSystemScalingMode.Shape;
         main.gravityModifier = 0f;
         main.maxParticles = 56;
+        main.startRotation3D = false;
         main.startRotation = SpriteRotationForUp(parent.up);
 
         var emission = ps.emission;
@@ -550,6 +575,6 @@ public class IyolitFlameFx : MonoBehaviour
             renderer.maxParticleSize = 0.16f;
         }
 
-        ps.Play(true);
+        ParticleEdit.Resume(ps, true);
     }
 }

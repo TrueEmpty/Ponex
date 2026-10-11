@@ -19,7 +19,7 @@ public class Player
     public int index = -1;
 
     /// <summary>Index into Database.playerColors for duplicate-character skins. -1 = use player index.</summary>
-    public int skinColorIndex = -1;
+    public int skinColorIndex = -1; // -1 = this character's base color
 
     public bool ignoreFacing = false;
 
@@ -868,6 +868,9 @@ public class Skill
 
     public void Charge()
     {
+        if (!Database.MatchPlayActive)
+            return;
+
         if (amount < max)
         {
             readyPercent += Time.deltaTime;

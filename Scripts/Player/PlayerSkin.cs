@@ -17,9 +17,11 @@ public static class PlayerSkin
     static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
     /// <summary>How strongly textured materials multiply albedo by skin.</summary>
-    const float TexturedAlbedoTint = 0.45f;
+    const float TexturedAlbedoTint = 0.16f;
     /// <summary>How strongly textured emission is hue-shifted.</summary>
-    const float TexturedEmissionTint = 0.40f;
+    const float TexturedEmissionTint = 0.12f;
+    /// <summary>Bahrue's blocks stay close to the authored texture.</summary>
+    const float BlockAlbedoTint = 0.1f;
     const float ParticleTintStrength = 0.55f;
 
     struct MatSlot
@@ -66,11 +68,74 @@ public static class PlayerSkin
         return idx;
     }
 
+    /// <summary>skinColorIndex -1 with a character picked means that character's base color.</summary>
+    public static bool UsesBaseColor(Player p)
+    {
+        return p != null && p.skinColorIndex < 0 && !string.IsNullOrEmpty(p.name);
+    }
+
+    public static Color BaseColor(string characterName, Database db = null)
+    {
+        switch (characterName)
+        {
+            case "Test": return new Color(0.12f, 0.28f, 0.95f);
+            case "Trigger": return new Color(0.86f, 0.08f, 0.08f);
+            case "Nari": return new Color(0.55f, 0.12f, 0.92f);
+            case "Garmen": return new Color(0.18f, 0.78f, 0.12f);
+            case "Gaurd": return new Color(0.48f, 0.10f, 0.90f);
+            case "Tic": return new Color(0.95f, 0.48f, 0.06f);
+        }
+
+        db = db != null ? db : Database.instance;
+        if (db != null && db.characters != null)
+        {
+            for (int i = 0; i < db.characters.Count; i++)
+            {
+                Characters c = db.characters[i];
+                if (c == null || c.name != characterName)
+                    continue;
+                if (c.portraitColor.maxColorComponent > 0.02f)
+                    return c.portraitColor;
+            }
+        }
+
+        return Color.white;
+    }
+
+    public static bool ColorsClose(Color a, Color b)
+    {
+        float dr = a.r - b.r;
+        float dg = a.g - b.g;
+        float dbc = a.b - b.b;
+        if (dr * dr + dg * dg + dbc * dbc < 0.045f)
+            return true;
+
+        Color.RGBToHSV(a, out float ha, out float sa, out float va);
+        Color.RGBToHSV(b, out float hb, out float sb, out float vb);
+        if (sa < 0.18f && sb < 0.18f)
+            return Mathf.Abs(va - vb) < 0.15f;
+        if (sa < 0.22f || sb < 0.22f)
+            return false;
+
+        float dh = Mathf.Abs(ha - hb);
+        if (dh > 0.5f)
+            dh = 1f - dh;
+        return dh < 0.07f;
+    }
+
+    static bool SchemeAllowed(string characterName, Color scheme, Database db)
+    {
+        return !ColorsClose(BaseColor(characterName, db), scheme);
+    }
+
     public static Color GetColor(Player p, Database db = null)
     {
         db = db != null ? db : Database.instance;
         if (p == null || db == null || db.playerColors == null || db.playerColors.Count == 0)
             return Color.white;
+
+        if (UsesBaseColor(p))
+            return BaseColor(p.name, db);
 
         int idx = EffectiveSkinIndex(p, db);
         if (idx < 0 || idx >= db.playerColors.Count)
@@ -85,6 +150,9 @@ public static class PlayerSkin
         if (p == null || db == null || db.playerColors == null || db.playerColors.Count == 0)
             return null;
 
+        if (UsesBaseColor(p))
+            return SchemeForColor(BaseColor(p.name, db), db);
+
         int idx = EffectiveSkinIndex(p, db);
         if (idx < 0 || idx >= db.playerColors.Count)
             return null;
@@ -93,6 +161,39 @@ public static class PlayerSkin
         if (pc != null)
             pc.EnsureScheme();
         return pc;
+    }
+
+    static PlayerColors SchemeForColor(Color color, Database db)
+    {
+        PlayerColors pc = new PlayerColors { color = color };
+        int usable = UsableColorCount(db);
+        int best = -1;
+        float bestD = float.MaxValue;
+        for (int i = 0; i < usable; i++)
+        {
+            PlayerColors slot = db.playerColors[i];
+            if (slot == null)
+                continue;
+            float d = ColorDistance(slot.color, color);
+            if (d < bestD)
+            {
+                bestD = d;
+                best = i;
+            }
+        }
+
+        if (best >= 0)
+            pc.sprite = db.playerColors[best].sprite;
+        pc.EnsureScheme(true);
+        return pc;
+    }
+
+    static float ColorDistance(Color a, Color b)
+    {
+        float dr = a.r - b.r;
+        float dg = a.g - b.g;
+        float dbc = a.b - b.b;
+        return dr * dr + dg * dg + dbc * dbc;
     }
 
     /// <summary>
@@ -117,12 +218,10 @@ public static class PlayerSkin
             || name == "Moonlight Celarus";
     }
 
-    /// <summary>Skins already used by other players in the same skin group.</summary>
-    public static bool[] GetTakenSkins(Player p, Database db, int usable)
+    static bool ColorTakenByGroup(Player p, Color candidate, Database db)
     {
-        bool[] taken = new bool[Mathf.Max(0, usable)];
-        if (p == null || db == null || db.players == null || usable <= 0)
-            return taken;
+        if (p == null || db == null || db.players == null)
+            return false;
 
         for (int i = 0; i < db.players.Count; i++)
         {
@@ -131,13 +230,42 @@ public static class PlayerSkin
                 continue;
             if (!SharesSkinGroup(other.name, p.name))
                 continue;
-
-            int oi = EffectiveSkinIndex(other, db);
-            if (oi >= 0 && oi < usable)
-                taken[oi] = true;
+            if (ColorsClose(GetColor(other, db), candidate))
+                return true;
         }
 
-        return taken;
+        return false;
+    }
+
+    /// <summary>Base color first, then scheme slots that are not the same hue as that base.</summary>
+    static List<int> SkinOptions(Player p, Database db)
+    {
+        List<int> options = new List<int>();
+        if (p == null || string.IsNullOrEmpty(p.name))
+            return options;
+
+        options.Add(-1);
+        int usable = UsableColorCount(db);
+        for (int i = 0; i < usable; i++)
+        {
+            PlayerColors slot = db.playerColors[i];
+            if (slot == null)
+                continue;
+            if (!SchemeAllowed(p.name, slot.color, db))
+                continue;
+            options.Add(i);
+        }
+
+        return options;
+    }
+
+    static Color ColorForOption(Player p, int option, Database db)
+    {
+        if (option < 0)
+            return BaseColor(p.name, db);
+        if (db == null || db.playerColors == null || option >= db.playerColors.Count || db.playerColors[option] == null)
+            return BaseColor(p.name, db);
+        return db.playerColors[option].color;
     }
 
     public static bool IsSkinTakenBySameCharacter(Player p, int skinIndex, Database db = null)
@@ -146,17 +274,20 @@ public static class PlayerSkin
             return false;
 
         db = db != null ? db : Database.instance;
+        if (skinIndex < 0)
+            return ColorTakenByGroup(p, BaseColor(p.name, db), db);
+
         int usable = UsableColorCount(db);
-        if (skinIndex < 0 || skinIndex >= usable)
+        if (skinIndex >= usable || db.playerColors == null || db.playerColors[skinIndex] == null)
             return false;
 
-        bool[] taken = GetTakenSkins(p, db, usable);
-        return taken[skinIndex];
+        return ColorTakenByGroup(p, db.playerColors[skinIndex].color, db);
     }
 
     /// <summary>
     /// Cycle to the next free skin for this character.
     /// direction &gt; 0 goes forward; direction &lt; 0 goes backward.
+    /// The base color is included. Schemes close to that base are not.
     /// </summary>
     public static void Cycle(Player p, Database db = null, int direction = 1)
     {
@@ -164,22 +295,25 @@ public static class PlayerSkin
             return;
 
         db = db != null ? db : Database.instance;
-        int usable = UsableColorCount(db);
-        if (usable <= 0)
+        List<int> options = SkinOptions(p, db);
+        if (options.Count == 0)
             return;
 
         int dir = direction < 0 ? -1 : 1;
-        int cur = EffectiveSkinIndex(p, db);
-        bool[] taken = GetTakenSkins(p, db, usable);
+        int cur = UsesBaseColor(p) ? -1 : p.skinColorIndex;
+        int pos = options.IndexOf(cur);
+        if (pos < 0)
+            pos = 0;
 
-        for (int step = 1; step <= usable; step++)
+        for (int step = 1; step <= options.Count; step++)
         {
-            int next = cur + dir * step;
-            next %= usable;
-            if (next < 0)
-                next += usable;
+            int nextPos = pos + dir * step;
+            nextPos %= options.Count;
+            if (nextPos < 0)
+                nextPos += options.Count;
 
-            if (!taken[next])
+            int next = options[nextPos];
+            if (!ColorTakenByGroup(p, ColorForOption(p, next, db), db))
             {
                 p.skinColorIndex = next;
                 return;
@@ -188,8 +322,8 @@ public static class PlayerSkin
     }
 
     /// <summary>
-    /// Pick a skin not already used by another player on the same character.
-    /// Prefers the player's slot color when free.
+    /// Default to this character's base color.
+    /// A duplicate (Celarus counts across her variations) gets the next free scheme instead.
     /// </summary>
     public static void AssignUniqueForCharacter(Player p, Database db = null)
     {
@@ -197,39 +331,39 @@ public static class PlayerSkin
             return;
 
         db = db != null ? db : Database.instance;
+        if (string.IsNullOrEmpty(p.name))
+        {
+            if (p.skinColorIndex < 0)
+                p.skinColorIndex = Mathf.Max(0, p.index);
+            return;
+        }
+
         int usable = UsableColorCount(db);
         if (usable <= 0)
         {
-            p.skinColorIndex = p.index;
+            p.skinColorIndex = -1;
             return;
         }
 
-        bool[] taken = GetTakenSkins(p, db, usable);
-
-        int current = EffectiveSkinIndex(p, db);
-        if (!taken[current])
+        if (!ColorTakenByGroup(p, BaseColor(p.name, db), db))
         {
-            p.skinColorIndex = current;
-            return;
-        }
-
-        int prefer = ((p.index % usable) + usable) % usable;
-        if (!taken[prefer])
-        {
-            p.skinColorIndex = prefer;
+            p.skinColorIndex = -1;
             return;
         }
 
         for (int i = 0; i < usable; i++)
         {
-            if (!taken[i])
+            PlayerColors slot = db.playerColors[i];
+            if (slot == null || !SchemeAllowed(p.name, slot.color, db))
+                continue;
+            if (!ColorTakenByGroup(p, slot.color, db))
             {
                 p.skinColorIndex = i;
                 return;
             }
         }
 
-        p.skinColorIndex = current;
+        p.skinColorIndex = -1;
     }
 
     public static void Apply(GameObject root, Player p, Database db = null)
@@ -293,8 +427,11 @@ public static class PlayerSkin
                 if (mat == null)
                     continue;
 
-                bool textured = HasAuthoredTexture(mat);
-                Color src = ReadAlbedo(mat);
+                bool blocks = IsBahrueBlocks(mat);
+                bool textured = HasAuthoredTexture(mat) || blocks;
+                Color src = blocks ? Color.white : ReadAlbedo(mat);
+                if (blocks)
+                    src.a = ReadAlbedo(mat).a;
                 float lum = Luminance(src);
 
                 slots.Add(new MatSlot
@@ -329,7 +466,8 @@ public static class PlayerSkin
 
             if (slot.textured)
             {
-                ApplySoftTint(block, mat, skin, slot.sourceColor);
+                bool blocks = IsBahrueBlocks(mat);
+                ApplySoftTint(block, mat, skin, slot.sourceColor, blocks ? BlockAlbedoTint : TexturedAlbedoTint);
             }
             else
             {
@@ -475,19 +613,24 @@ public static class PlayerSkin
         return result;
     }
 
-    static void ApplySoftTint(MaterialPropertyBlock block, Material mat, Color skin, Color src)
+    static bool IsBahrueBlocks(Material mat)
+    {
+        return mat != null && mat.name.IndexOf("Bahrue Blocks", System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    static void ApplySoftTint(MaterialPropertyBlock block, Material mat, Color skin, Color src, float albedoStrength)
     {
         if (mat.HasProperty(BaseColorId))
-            block.SetColor(BaseColorId, MultiplyTint(src, skin, TexturedAlbedoTint));
+            block.SetColor(BaseColorId, MultiplyTint(src, skin, albedoStrength));
         if (mat.HasProperty(ColorId))
         {
-            Color c = mat.HasProperty(BaseColorId) ? mat.GetColor(ColorId) : src;
-            block.SetColor(ColorId, MultiplyTint(c, skin, TexturedAlbedoTint));
+            Color c = IsBahrueBlocks(mat) || !mat.HasProperty(BaseColorId) ? src : mat.GetColor(ColorId);
+            block.SetColor(ColorId, MultiplyTint(c, skin, albedoStrength));
         }
         if (mat.HasProperty(TintColorId))
         {
             Color c = mat.GetColor(TintColorId);
-            block.SetColor(TintColorId, MultiplyTint(c, skin, TexturedAlbedoTint));
+            block.SetColor(TintColorId, MultiplyTint(c, skin, albedoStrength));
         }
         if (mat.HasProperty(EmissionId))
         {

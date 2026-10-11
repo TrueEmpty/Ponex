@@ -28,12 +28,18 @@ public class ExplosionBall : MonoBehaviour
     ParticleSystem fuseFx;
     Material tipMatInstance;
 
+    void Awake()
+    {
+        AllowPlanarSpin();
+    }
+
     void Start()
     {
         db = Database.instance;
         bI = GetComponent<BallInfo>();
         grab = GetComponent<PlayerGrab>();
         rootRen = GetComponent<Renderer>();
+        AllowPlanarSpin();
 
         // Projection ghosts clone this ball at high speed — never build visuals / logic on them
         if (CompareTag("Ghost") || (bI != null && bI.anchor != null && bI.anchor != gameObject))
@@ -106,6 +112,19 @@ public class ExplosionBall : MonoBehaviour
         ClearFuse();
     }
 
+    void AllowPlanarSpin()
+    {
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb == null)
+            return;
+
+        // Stay on the play plane, but let the rectangle tumble around Z.
+        rb.constraints = RigidbodyConstraints.FreezePositionZ
+            | RigidbodyConstraints.FreezeRotationX
+            | RigidbodyConstraints.FreezeRotationY;
+        rb.angularDamping = Mathf.Max(rb.angularDamping, 0.35f);
+    }
+
     void BuildDynamiteBundle()
     {
         // Root is an invisible collider shell — long on X
@@ -129,6 +148,7 @@ public class ExplosionBall : MonoBehaviour
             box.sharedMaterial = phys;
 
         transform.localScale = new Vector3(0.92f, 0.42f, 0.42f);
+        AllowPlanarSpin();
 
         // Bundle of sticks (cylinders along X)
         Vector2[] offsets =

@@ -164,6 +164,10 @@ public class Celarus : MonoBehaviour
         {
             if (db.startingGame)
                 PreparePhaseVisuals();
+            if (sunGravity != null)
+                sunGravity.active = false;
+            if (moonGravity != null)
+                moonGravity.active = false;
             return;
         }
 

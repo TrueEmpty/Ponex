@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7a41c9b2d8f4a6e0b5c3d1f9a8e7042, type: 3}
+  m_Name: Kingdom of Nuoryn
+  m_EditorClassIdentifier: Assembly-CSharp::FieldData
+  rosterOrder: 3
+  field:
+    name: Kingdom of Nuoryn
+    arthur: '#True Empty'
+    uid:
+      avalableChars: abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      uid_Value: 
+    size: 18
+    parts: []
+    portrait: {fileID: 0}
+    icon: {fileID: 0}
+    active: 1
+    backgroundMaterial: {fileID: 0}
+    backgroundColor: {r: 0.45, g: 0.4, b: 0.32, a: 1}
+    backgroundMatallic: 0.25
+    backgroundSmoothness: 0.35
+    tilling: {x: 4, y: 4}
+  levelMusic: {fileID: 0}

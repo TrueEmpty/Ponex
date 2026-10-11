@@ -161,5 +161,12 @@ public class FieldGrab : MonoBehaviour
             fs.RefreshAllSelectionLooks();
             fs.UpdateSelectedPortrait();
         }
+
+        AudioSettings.PlaySelection();
+    }
+
+    public void OnHighlighted(int player)
+    {
+        AudioSettings.PlaySelected();
     }
 }

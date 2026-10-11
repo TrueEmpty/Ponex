@@ -34,7 +34,7 @@ public class WanderingWagon : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (rb == null)
+        if (rb == null || !Database.MatchPlayActive)
             return;
 
         repathTimer -= Time.fixedDeltaTime;
@@ -84,7 +84,7 @@ public class WanderingWagon : MonoBehaviour
             if (c.GetComponentInParent<WanderingWagon>() != null)
                 continue;
             // Prefer pushing off stationary obstacles / walls
-            Vector3 away = transform.position - c.ClosestPoint(transform.position);
+            Vector3 away = transform.position - ClosestOnCollider(c, transform.position);
             away.z = 0f;
             float d = away.magnitude;
             if (d < 0.01f)
@@ -94,5 +94,17 @@ public class WanderingWagon : MonoBehaviour
             sum += away.normalized * w;
         }
         return sum;
+    }
+
+    static Vector3 ClosestOnCollider(Collider col, Vector3 point)
+    {
+        if (col == null)
+            return point;
+        if (col is BoxCollider || col is SphereCollider || col is CapsuleCollider)
+            return col.ClosestPoint(point);
+        MeshCollider mesh = col as MeshCollider;
+        if (mesh != null && mesh.convex)
+            return col.ClosestPoint(point);
+        return col.bounds.ClosestPoint(point);
     }
 }

@@ -24,6 +24,9 @@ public class DriftingLogHazard : MonoBehaviour
 
     void Update()
     {
+        if (!Database.MatchPlayActive)
+            return;
+
         age += Time.deltaTime;
         float z = Database.instance != null ? Database.instance.FieldPlaySize : surfacePos.z;
         surfacePos.z = z;

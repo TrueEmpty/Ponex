@@ -32,6 +32,9 @@ public class RepeatSpawn : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!Database.MatchPlayActive)
+            return;
+
         if (pG != null && pG.IsLinked() && pG.player != null && pG.player.currentHealth <= 0)
         {
             DestroySpawned();

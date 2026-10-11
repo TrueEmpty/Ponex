@@ -46,10 +46,13 @@ public class MuriKunaiProjectile : MonoBehaviour
         EnsureRefs();
         if (col != null)
             col.isTrigger = true;
-        rb.isKinematic = true;
         rb.useGravity = false;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
+        if (!rb.isKinematic)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
         transform.rotation = Quaternion.LookRotation(Vector3.forward, flyDir);
         rb.rotation = transform.rotation;
         SyncChildGrabs();
@@ -171,7 +174,8 @@ public class MuriKunaiProjectile : MonoBehaviour
                 continue;
             }
 
-            if (!IsStickable(hit.collider))
+            // Interior props (towers, wagons, logs in the field) are not the border.
+            if (!IsBorderWall(hit.collider))
                 continue;
 
             if (hit.distance < stickDist)
@@ -182,15 +186,16 @@ public class MuriKunaiProjectile : MonoBehaviour
             }
         }
 
-        if (oob && !stick)
-        {
-            Vanish();
-            return;
-        }
-
         if (stick && !StartsInside(stickHit.collider, from))
         {
             StickTo(stickHit);
+            return;
+        }
+
+        if (oob)
+        {
+            if (!TryStickBorder(from, flyDir, castDist + 2f))
+                Vanish();
             return;
         }
 
@@ -202,7 +207,38 @@ public class MuriKunaiProjectile : MonoBehaviour
         rb.rotation = rot;
 
         if (MuriMove.IsOutsidePlayfield(pos, transform))
-            Vanish();
+        {
+            if (!TryStickBorder(from, flyDir, castDist + 2.5f))
+                Vanish();
+        }
+    }
+
+    bool TryStickBorder(Vector3 from, Vector3 dir, float dist)
+    {
+        if (dir.sqrMagnitude < 0.0001f)
+            return false;
+        int n = Physics.RaycastNonAlloc(from, dir, rayHits, dist, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.PositiveInfinity;
+        RaycastHit wall = default;
+        bool found = false;
+        for (int i = 0; i < n; i++)
+        {
+            RaycastHit hit = rayHits[i];
+            if (hit.collider == null || IsOwner(hit.collider) || IsKunaiPart(hit.collider))
+                continue;
+            if (!IsBorderWall(hit.collider))
+                continue;
+            if (hit.distance < best)
+            {
+                best = hit.distance;
+                wall = hit;
+                found = true;
+            }
+        }
+        if (!found)
+            return false;
+        StickTo(wall);
+        return state == State.Stuck;
     }
 
     void OnCollisionEnter(Collision collision)
@@ -220,7 +256,12 @@ public class MuriKunaiProjectile : MonoBehaviour
         if (IsBall(other) && owner != null)
             owner.OnKunaiHitBall(other.GetEntityId().GetHashCode());
         if (state == State.Flying && IsOutOfBounds(other))
-            Vanish();
+        {
+            Vector3 from = transform.position - flyDir * 1.5f;
+            from.z = FlyZ();
+            if (!TryStickBorder(from, flyDir, 3.5f))
+                Vanish();
+        }
     }
 
     void StickTo(RaycastHit hit)
@@ -228,23 +269,19 @@ public class MuriKunaiProjectile : MonoBehaviour
         state = State.Stuck;
         stickCollider = hit.collider;
         stickParent = hit.collider.transform;
-        Vector3 n = Flatten(hit.normal);
-        if (n.sqrMagnitude < 0.0001f)
-            n = -flyDir;
-        n.Normalize();
-        if (Vector3.Dot(n, -flyDir) < 0f)
-            n = -n;
-        StickNormal = n;
-
         float embed = 0.03f;
         Vector3 pos = hit.point - flyDir * (TipOffset() - embed);
         pos.z = FlyZ();
+        StickNormal = MuriMove.CardinalInward(pos);
         Quaternion rot = Quaternion.LookRotation(Vector3.forward, flyDir);
         transform.SetParent(null, true);
         transform.SetPositionAndRotation(pos, rot);
-        rb.isKinematic = true;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
+        if (!rb.isKinematic)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
         rb.position = pos;
         rb.rotation = rot;
         if (col != null)
@@ -289,7 +326,7 @@ public class MuriKunaiProjectile : MonoBehaviour
             Collider hit = crushHits[i];
             if (hit == null || IsKunaiPart(hit) || IsOwner(hit) || IsBall(hit) || hit.isTrigger)
                 continue;
-            if (IsStickFamily(hit))
+            if (IsStickFamily(hit) || IsBorderWall(hit))
                 continue;
             extras++;
         }
@@ -340,13 +377,14 @@ public class MuriKunaiProjectile : MonoBehaviour
         return other.CompareTag("OutOfBounds");
     }
 
+    static bool IsBorderWall(Collider other)
+    {
+        return MuriMove.IsBorderWall(other);
+    }
+
     static bool IsStickable(Collider other)
     {
-        if (other.isTrigger)
-            return false;
-        if (IsBall(other) || IsOutOfBounds(other))
-            return false;
-        return true;
+        return IsBorderWall(other) && !other.isTrigger;
     }
 
     static Vector3 Flatten(Vector3 v)

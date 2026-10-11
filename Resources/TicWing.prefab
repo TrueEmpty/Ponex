@@ -71,7 +71,7 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 120
   m_CollisionDetection: 2
---- !u!55 &1000000000000000011
+--- !u!75 &1000000000000000011
 ConstantForce:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

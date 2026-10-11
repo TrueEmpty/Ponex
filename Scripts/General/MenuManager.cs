@@ -209,6 +209,29 @@ public class MenuManager : MonoBehaviour
         return noMenu;
     }
 
+    /// <summary>
+    /// True when this title is on screen. Overlays stay visible on top of the menu under them.
+    /// </summary>
+    public bool IsMenuVisible(string title)
+    {
+        if (string.IsNullOrEmpty(title) || openMenu == null || openMenu.Count == 0)
+            return false;
+
+        for (int i = openMenu.Count - 1; i >= 0; i--)
+        {
+            string open = openMenu[i];
+            if (!string.IsNullOrEmpty(open)
+                && open.Trim().Equals(title.Trim(), StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            MenuClass mc = FindMenu(open);
+            if (mc == null || mc.title == "...No Menu..." || !mc.overlay)
+                break;
+        }
+
+        return false;
+    }
+
     public MenuClass GetOpenMenu(bool nonOverlay = false)
     {
         MenuClass mC = noMenu;

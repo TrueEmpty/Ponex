@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Yuotay bat / mit one-shots. Clips live under Resources/Sounds/Yuotay:
+/// Yuotay bat / mit one-shots. Clips live under Resources/Sounds/Characters/Yuotay:
 /// hit_*, bunt_*, whoosh_*, catch_*, throw_*.
 /// </summary>
 public static class YuotaySfx
 {
-    const string ResourceFolder = "Sounds/Yuotay";
+    const string ResourceFolder = "Sounds/Characters/Yuotay";
 
     static AudioClip[] hitClips;
     static AudioClip[] buntClips;
@@ -89,14 +89,7 @@ public static class YuotaySfx
         if (clip == null)
             return;
 
-        GameObject go = new GameObject("YuotaySfx");
-        AudioSource src = go.AddComponent<AudioSource>();
-        src.playOnAwake = false;
-        src.spatialBlend = 0f;
-        src.volume = Mathf.Clamp01(volume);
-        src.pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
-        src.clip = clip;
-        src.Play();
-        Object.Destroy(go, (clip.length / Mathf.Max(0.01f, src.pitch)) + 0.05f);
+        float pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
+        AudioSettings.PlayCharacterEffect(clip, volume, pitch);
     }
 }

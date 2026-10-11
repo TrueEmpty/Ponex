@@ -101,6 +101,10 @@ public class OrbitSatellite : MonoBehaviour
         Vector3 toTarget = target - rb.position;
         toTarget.z = 0f;
 
+        Vector3 pos = rb.position;
+        pos.z = target.z;
+        rb.position = pos;
+
         Vector3 vel = rb.linearVelocity;
         vel.z = 0f;
 

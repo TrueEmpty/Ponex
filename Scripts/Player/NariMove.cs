@@ -142,12 +142,51 @@ public class NariMove : MonoBehaviour
 
         rb.linearVelocity = trueSpeed * moveDir;
 
-        if (WallInDirection(moveDir))
+        if (BlockedAhead(moveDir))
         {
             rb.linearVelocity *= -1;
             moveDir *= -1;
             ApplyFacing(moveDir);
         }
+    }
+
+    bool BlockedAhead(Vector3 dir)
+    {
+        return WallInDirection(dir) || CelestialAhead(dir);
+    }
+
+    bool CelestialAhead(Vector3 dir)
+    {
+        if (dir.sqrMagnitude < 0.0001f)
+            return false;
+
+        float distance = (hheadCur * 0.5f) + 0.35f;
+        PullObjectIn[] bodies = PullObjectIn.ActiveCelestials;
+        Vector3 origin = transform.position;
+        for (int i = 0; i < bodies.Length; i++)
+        {
+            PullObjectIn body = bodies[i];
+            if (body == null || !body.isActiveAndEnabled)
+                continue;
+            SphereCollider sphere = body.GetComponent<SphereCollider>();
+            if (sphere == null || !sphere.enabled)
+                continue;
+
+            Vector3 center = sphere.transform.TransformPoint(sphere.center);
+            center.z = origin.z;
+            float scale = Mathf.Max(sphere.transform.lossyScale.x, sphere.transform.lossyScale.y);
+            float radius = sphere.radius * scale + 0.2f;
+            Vector3 to = center - origin;
+            to.z = 0f;
+            float along = Vector3.Dot(to, dir);
+            if (along < 0f || along > distance + radius)
+                continue;
+            Vector3 closest = origin + dir * Mathf.Clamp(along, 0f, distance);
+            closest.z = center.z;
+            if ((closest - center).sqrMagnitude <= radius * radius)
+                return true;
+        }
+        return false;
     }
 
     void ApplyHumanMove()
@@ -171,16 +210,67 @@ public class NariMove : MonoBehaviour
             moveDir,
             aiArriveDistance,
             aiDashMinDistance,
-            WallInDirection);
+            BlockedAhead);
 
         TrySetMoveDir(d.moveDir);
         if (!dashing)
             aiWantDash = d.wantDash;
     }
 
+    void FixedUpdate()
+    {
+        EjectFromCelestials();
+    }
+
+    void EjectFromCelestials()
+    {
+        if (rb == null)
+            return;
+
+        Vector3 pos = rb.position;
+        float skin = (hheadCur * 0.5f) + 0.15f;
+        PullObjectIn[] bodies = PullObjectIn.ActiveCelestials;
+        for (int i = 0; i < bodies.Length; i++)
+        {
+            PullObjectIn body = bodies[i];
+            if (body == null || !body.isActiveAndEnabled)
+                continue;
+            SphereCollider sphere = body.GetComponent<SphereCollider>();
+            if (sphere == null || !sphere.enabled)
+                continue;
+
+            Vector3 center = sphere.transform.TransformPoint(sphere.center);
+            center.z = pos.z;
+            float scale = Mathf.Max(sphere.transform.lossyScale.x, sphere.transform.lossyScale.y);
+            float limit = sphere.radius * scale + skin;
+            Vector3 delta = pos - center;
+            delta.z = 0f;
+            float dist = delta.magnitude;
+            if (dist >= limit)
+                continue;
+
+            Vector3 outDir = dist > 0.001f ? delta / dist : Vector3.up;
+            pos = center + outDir * limit;
+            pos.z = rb.position.z;
+            rb.position = pos;
+            transform.position = pos;
+
+            if (Vector3.Dot(moveDir, outDir) < 0f)
+            {
+                moveDir = -moveDir;
+                ApplyFacing(moveDir);
+            }
+            Vector3 vel = rb.linearVelocity;
+            vel.z = 0f;
+            if (Vector3.Dot(vel, outDir) < 0f)
+                vel -= outDir * Vector3.Dot(vel, outDir);
+            rb.linearVelocity = vel;
+        }
+    }
+
     bool TrySetMoveDir(Vector3 dir)
     {
-        if (dir.sqrMagnitude < 0.01f || WallInDirection(dir))
+        if (dir.sqrMagnitude < 0.01f || BlockedAhead(dir))
             return false;
 
         moveDir = dir.normalized;

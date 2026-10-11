@@ -63,10 +63,10 @@ public class SpacePortalBounds : MonoBehaviour
     {
         GameObject go = new GameObject("PortalBurst");
         go.transform.SetParent(transform, false);
-        ParticleSystem ps = go.AddComponent<ParticleSystem>();
+        ParticleSystem ps = ParticleEdit.AddStopped(go);
         var main = ps.main;
-        main.loop = false;
         main.playOnAwake = false;
+        main.loop = false;
         main.duration = 0.45f;
         main.startLifetime = 0.45f;
         main.startSize = new ParticleSystem.MinMaxCurve(0.15f, 0.55f);
@@ -122,6 +122,9 @@ public class SpacePortalBounds : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!Database.MatchPlayActive)
+            return;
+
         float z = Database.instance != null ? Database.instance.FieldPlaySize : transform.position.z;
         float limit = halfExtent - margin;
 

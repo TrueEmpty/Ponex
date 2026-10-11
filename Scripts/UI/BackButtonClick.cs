@@ -65,6 +65,9 @@ public class BackButtonClick : MonoBehaviour
 
         Button btn = GetComponent<Button>();
         if (btn != null)
+        {
+            AudioSettings.PlayDeselected();
             btn.onClick.Invoke();
+        }
     }
 }

@@ -18,11 +18,45 @@ public class PullObjectIn : MonoBehaviour
 
     public bool ejectOnCollision = true;
 
+    static readonly List<PullObjectIn> celestialBodies = new List<PullObjectIn>(8);
+    static PullObjectIn[] celestialSnapshot = System.Array.Empty<PullObjectIn>();
+
+    public static PullObjectIn[] ActiveCelestials => celestialSnapshot;
+
     readonly List<GameObject> liveBalls = new List<GameObject>(32);
     readonly Dictionary<GameObject, Rigidbody> hitBodies = new Dictionary<GameObject, Rigidbody>(32);
     readonly List<GameObject> staleBodyKeys = new List<GameObject>(8);
     Collider[] overlapBuffer = new Collider[32];
     float nextBodyCacheCleanup;
+
+    void OnEnable()
+    {
+        if (!IsCelestialBody())
+            return;
+        if (!celestialBodies.Contains(this))
+            celestialBodies.Add(this);
+        RefreshCelestialSnapshot();
+    }
+
+    void OnDisable()
+    {
+        if (celestialBodies.Remove(this))
+            RefreshCelestialSnapshot();
+    }
+
+    bool IsCelestialBody()
+    {
+        string n = gameObject.name;
+        return n.Equals("Moon", System.StringComparison.OrdinalIgnoreCase)
+            || n.Equals("Sun", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    static void RefreshCelestialSnapshot()
+    {
+        celestialSnapshot = celestialBodies.Count == 0
+            ? System.Array.Empty<PullObjectIn>()
+            : celestialBodies.ToArray();
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -33,7 +67,7 @@ public class PullObjectIn : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(active)
+        if(active && Database.MatchPlayActive)
         {
             SizeDistancer(distance);
             CollectHits();

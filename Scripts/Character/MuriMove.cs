@@ -416,11 +416,9 @@ public class MuriMove : MonoBehaviour
 
         if (supportIsWall)
         {
-            // Wall meshes are often authored at the field origin; radial from
-            // that origin points into the wall. Always stand toward the field.
-            Vector3 inward = Flatten(FieldCenter() - worldPos);
-            if (inward.sqrMagnitude > 0.0004f)
-                standUp = inward.normalized;
+            // Stand cardinally into the field (up/down/left/right), not along a
+            // sloped log or battlement normal.
+            standUp = CardinalInward(worldPos);
         }
         else if (IsFighterTransform(support))
         {
@@ -589,6 +587,77 @@ public class MuriMove : MonoBehaviour
         return col != null && HasWallTag(col.transform);
     }
 
+    public static bool IsBorderWall(Collider col)
+    {
+        if (col == null)
+            return false;
+        Transform p = col.transform;
+        while (p != null)
+        {
+            if (p.CompareTag("Wall") || p.CompareTag("Walls"))
+                return true;
+            p = p.parent;
+        }
+        return false;
+    }
+
+    /// <summary>Cardinal direction from the field center toward this point (the wall under it).</summary>
+    public static Vector3 CardinalOutward(Vector3 worldPos)
+    {
+        Database db = Database.instance;
+        float z = db != null ? db.FieldPlaySize : worldPos.z;
+        Vector3 fromCenter = worldPos - new Vector3(0f, 0f, z);
+        fromCenter.z = 0f;
+        if (fromCenter.sqrMagnitude < 0.0001f)
+            return Vector3.down;
+        if (Mathf.Abs(fromCenter.x) >= Mathf.Abs(fromCenter.y))
+            return fromCenter.x >= 0f ? Vector3.right : Vector3.left;
+        return fromCenter.y >= 0f ? Vector3.up : Vector3.down;
+    }
+
+    public static Vector3 CardinalInward(Vector3 worldPos)
+    {
+        return -CardinalOutward(worldPos);
+    }
+
+    /// <summary>
+    /// Sit on the border wall that is cardinally under <paramref name="worldPoint"/>
+    /// (same tangent axis, gravity straight into that wall).
+    /// </summary>
+    public void PlaceCardinalUnder(Vector3 worldPoint)
+    {
+        db = db != null ? db : Database.instance;
+        Physics.SyncTransforms();
+        Vector3 outward = CardinalOutward(worldPoint);
+        Vector3 from = worldPoint - outward * 8f;
+        from.z = PlayZ();
+
+        int n = Physics.RaycastNonAlloc(from, outward, rayHits, 16f, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.PositiveInfinity;
+        RaycastHit wallHit = default;
+        bool found = false;
+        for (int i = 0; i < n; i++)
+        {
+            RaycastHit hit = rayHits[i];
+            if (hit.collider == null || IsSelf(hit.collider) || !IsBorderWall(hit.collider))
+                continue;
+            if (hit.distance < best)
+            {
+                best = hit.distance;
+                wallHit = hit;
+                found = true;
+            }
+        }
+
+        if (found)
+        {
+            Attach(wallHit.collider.transform, wallHit.point, -outward, true);
+            return;
+        }
+
+        PlaceOnBestSupport();
+    }
+
     static bool IsNonConvexMesh(Transform t)
     {
         if (t == null)
@@ -634,7 +703,9 @@ public class MuriMove : MonoBehaviour
         pos.z = z;
         Vector3 center = new Vector3(0f, 0f, z);
 
-        int o = Physics.OverlapSphereNonAlloc(pos, 0.1f, overlap, ~0, QueryTriggerInteraction.Collide);
+        bool touchingBorder = false;
+        bool oob = false;
+        int o = Physics.OverlapSphereNonAlloc(pos, 0.35f, overlap, ~0, QueryTriggerInteraction.Collide);
         for (int i = 0; i < o; i++)
         {
             Collider col = overlap[i];
@@ -642,9 +713,17 @@ public class MuriMove : MonoBehaviour
                 continue;
             if (ignoreRoot != null && (col.transform == ignoreRoot || col.transform.IsChildOf(ignoreRoot)))
                 continue;
-            if (col.CompareTag("OutOfBounds"))
-                return true;
+            if (IsBorderWall(col))
+                touchingBorder = true;
+            else if (col.CompareTag("OutOfBounds"))
+                oob = true;
         }
+
+        // Sitting in a border wall is still in play. Interior obstacles are not a boundary.
+        if (touchingBorder)
+            return false;
+        if (oob)
+            return true;
 
         Vector3 delta = Flatten(pos - center);
         float dist = delta.magnitude;
@@ -661,7 +740,7 @@ public class MuriMove : MonoBehaviour
                 continue;
             if (ignoreRoot != null && (hit.collider.transform == ignoreRoot || hit.collider.transform.IsChildOf(ignoreRoot)))
                 continue;
-            if (!IsWall(hit.collider))
+            if (!IsBorderWall(hit.collider))
                 continue;
             if (hit.distance < wallDist)
                 wallDist = hit.distance;

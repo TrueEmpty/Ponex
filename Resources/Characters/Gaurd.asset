@@ -48,7 +48,7 @@ MonoBehaviour:
   playerInfo: {fileID: 0}
   superName: Rapid Fire
   superDescription: Quickly shoots more empowered bullets in rapid succession
-  portraitColor: {r: 1, g: 0, b: 0.9201374, a: 1}
+  portraitColor: {r: 0.48, g: 0.1, b: 0.9, a: 1}
   portrait: {fileID: 2800000, guid: ea536af8dd344cc78dbdd71c59f27b58, type: 3}
   icon: {fileID: 2800000, guid: 498315a393d444c2888efd808dc76ebf, type: 3}
   active: 0

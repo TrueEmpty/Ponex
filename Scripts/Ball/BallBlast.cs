@@ -173,10 +173,7 @@ public static class BallBlast
         // Fallback tiny burst if prefab missing
         GameObject fallback = new GameObject("BallBlastFX");
         fallback.transform.position = center;
-        ParticleSystem ps = fallback.AddComponent<ParticleSystem>();
-        // AddComponent starts a ParticleSystem immediately because playOnAwake defaults
-        // to true. Duration cannot be changed until the system is fully stopped.
-        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        ParticleSystem ps = ParticleEdit.AddStopped(fallback);
         var main = ps.main;
         main.playOnAwake = false;
         main.loop = false;

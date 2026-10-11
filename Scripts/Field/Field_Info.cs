@@ -76,14 +76,22 @@ public class Field_Info : MonoBehaviour
             }
             else
             {
-                FieldTextureFactory.ApplyAlbedo(
-                    bRen,
-                    field.backgroundMaterial,
-                    field.backgroundColor,
-                    field.backgroundMatallic,
-                    field.backgroundSmoothness);
-                if (field.backgroundMaterial != null)
-                    bRen.material.mainTextureScale = field.tilling;
+                Material authoredGround = db != null ? db.GroundMaterialFor(field.name) : null;
+                if (authoredGround != null)
+                {
+                    bRen.sharedMaterial = authoredGround;
+                }
+                else
+                {
+                    FieldTextureFactory.ApplyAlbedo(
+                        bRen,
+                        field.backgroundMaterial,
+                        field.backgroundColor,
+                        field.backgroundMatallic,
+                        field.backgroundSmoothness);
+                    if (field.backgroundMaterial != null)
+                        bRen.material.mainTextureScale = field.tilling;
+                }
             }
         }
     }

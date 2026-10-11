@@ -93,7 +93,7 @@ public class OrbitBall : MonoBehaviour
         {
             float a = (angle + i * 180f) * Mathf.Deg2Rad;
             Vector3 target = rb.position + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * orbitRadius;
-            target.z = rb.position.z;
+            target.z = PlayZ();
             satellites[i].SetOrbitTarget(target, pullStrength, maxPullAccel);
         }
     }
@@ -230,11 +230,15 @@ public class OrbitBall : MonoBehaviour
             // Stagger initial placement
             float a = (angle + satellites.Count * 180f) * Mathf.Deg2Rad;
             Vector3 pos = transform.position + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * orbitRadius;
-            pos.z = transform.position.z;
+            pos.z = PlayZ();
             satObj.transform.position = pos;
             Rigidbody sRb = satObj.GetComponent<Rigidbody>();
-            if (sRb != null && rb != null)
-                sRb.linearVelocity = rb.linearVelocity;
+            if (sRb != null)
+            {
+                sRb.position = pos;
+                if (rb != null && !sRb.isKinematic)
+                    sRb.linearVelocity = rb.linearVelocity;
+            }
         }
     }
 
@@ -247,6 +251,10 @@ public class OrbitBall : MonoBehaviour
 
         Rigidbody sRb = go.AddComponent<Rigidbody>();
         sRb.useGravity = false;
+        Vector3 spawn = transform.position;
+        spawn.z = PlayZ();
+        go.transform.position = spawn;
+        sRb.position = spawn;
         sRb.constraints = RigidbodyConstraints.FreezePositionZ
             | RigidbodyConstraints.FreezeRotationX
             | RigidbodyConstraints.FreezeRotationY
@@ -277,6 +285,13 @@ public class OrbitBall : MonoBehaviour
             ren.sharedMaterial = coreRen.sharedMaterial;
 
         return go;
+    }
+
+    float PlayZ()
+    {
+        if (db != null && db.FieldPlaySize > 0.01f)
+            return db.FieldPlaySize;
+        return rb != null ? rb.position.z : transform.position.z;
     }
 
     void IgnoreNonWallColliders()

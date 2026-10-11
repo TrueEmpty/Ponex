@@ -25,6 +25,12 @@ public class OceanWindHazards : MonoBehaviour
 
     void Update()
     {
+        if (!Database.MatchPlayActive)
+        {
+            CurrentWind = Vector2.zero;
+            return;
+        }
+
         windAngle += windRotateDegreesPerSecond * Time.deltaTime;
         float rad = windAngle * Mathf.Deg2Rad;
         CurrentWind = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * windSpeed;

@@ -50,7 +50,7 @@ MonoBehaviour:
   superDescription: Garmen can change between defensive mode and Drive mode. With
     the ability to shoot while in Defensive mode and move while in drive mode with
     enough gas.
-  portraitColor: {r: 0.26666668, g: 0.8862745, b: 0, a: 1}
+  portraitColor: {r: 0.18, g: 0.78, b: 0.12, a: 1}
   portrait: {fileID: 2800000, guid: f2061655d0f104a4f8a77a74fc6b04cf, type: 3}
   icon: {fileID: 2800000, guid: 3d534b634f1561c40b8bb147eaa829bf, type: 3}
   active: 1

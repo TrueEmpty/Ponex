@@ -162,6 +162,7 @@ public class CharacterGrab : MonoBehaviour
                     p.pso.SetCircleColor(pc);
             }
             db.RememberSelectedCharacter(p.index, Database.RandomCharacterSentinel);
+            AudioSettings.PlaySelection();
             Debug.Log("Player " + player + " selected Random character (rolls at match start).");
             return;
         }
@@ -181,5 +182,11 @@ public class CharacterGrab : MonoBehaviour
                 p.pso.SetCircleColor(pc);
         }
         db.RememberSelectedCharacter(p.index, ch.name);
+        AudioSettings.PlaySelection();
+    }
+
+    public void OnHighlighted(int player)
+    {
+        AudioSettings.PlaySelected();
     }
 }

@@ -12,6 +12,9 @@ public class Trigger : MonoBehaviour
     public float dis = 1.38f;
 
     int canDash = 0;
+    int dashDir = 0;
+    int queuedDash = 0;
+    float dashQueueUntil = 0f;
     float dashEnd = 0;
     float speedIncrease = 1;
     public float speedMultiplyer = 4;
@@ -54,12 +57,14 @@ public class Trigger : MonoBehaviour
     {
         if (db.gameStart && pg.player.currentHealth > 0)
         {
+            if (!pg.player.computer)
+                LatchDashButtons();
+
+            if (pg.player.CanDash)
+                OnDash();
+
             if (pg.player.CanMove)
-            {
-                OnMove(); // evaluate AI first so dash can read the decision
-                if (pg.player.CanDash)
-                    OnDash();
-            }
+                OnMove();
             else
             {
                 rb.linearVelocity = Vector3.zero;
@@ -136,6 +141,9 @@ public class Trigger : MonoBehaviour
                 moveDir += 1;
             if (pg.inp.left)
                 moveDir -= 1;
+            // Dash buttons move even if the stick is neutral
+            if (moveDir == 0 && Mathf.Abs(canDash) == 2)
+                moveDir = dashDir;
         }
 
         // Block only into-wall travel; moving away from a wall is always allowed
@@ -162,15 +170,13 @@ public class Trigger : MonoBehaviour
             return;
         }
 
-        // Bumper / Q-R: instant dash (no double-tap)
-        if (pg.inp.tf_dashRight && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
+        // Bumper / Q-R: instant dash (no double-tap). Queued so a press during
+        // the dash lockout or a one-frame edge still fires.
+        if (queuedDash != 0 && Time.time <= dashQueueUntil && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
         {
-            StartDash(1, d);
-            return;
-        }
-        if (pg.inp.tf_dashLeft && d.amount >= d.cost && Mathf.Abs(canDash) != 2)
-        {
-            StartDash(-1, d);
+            int dir = queuedDash;
+            queuedDash = 0;
+            StartDash(dir, d);
             return;
         }
 
@@ -200,13 +206,25 @@ public class Trigger : MonoBehaviour
         }
     }
 
+    void LatchDashButtons()
+    {
+        if (pg.inp.tf_dashRight)
+            queuedDash = 1;
+        else if (pg.inp.tf_dashLeft)
+            queuedDash = -1;
+        else
+            return;
+        dashQueueUntil = Time.time + 0.28f;
+    }
+
     void StartDash(int dir, Skill d)
     {
         speedIncrease = speedMultiplyer;
         dashEnd = dashTime;
+        dashDir = dir > 0 ? 1 : -1;
         d.readyPercent = 0;
         d.Spend();
-        canDash = dir > 0 ? 2 : -2;
+        canDash = dashDir > 0 ? 2 : -2;
         pg.player.RecordDash();
     }
 

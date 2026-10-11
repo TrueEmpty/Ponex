@@ -8,6 +8,8 @@ public class GuardCannonTower : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        if (!Database.MatchPlayActive)
+            return;
         if (collision == null || collision.contactCount == 0)
             return;
         if (Time.time - lastFire < cooldown)

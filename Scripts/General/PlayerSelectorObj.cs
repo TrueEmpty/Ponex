@@ -132,6 +132,32 @@ public class PlayerSelectorObj : MonoBehaviour
         return hit.transform == root || hit.transform.IsChildOf(root);
     }
 
+    bool HasHitOnTopMenu()
+    {
+        if (ucd == null)
+            return false;
+        for (int i = 0; i < ucd.trackedColliders.Count; i++)
+        {
+            if (IsUnderTopMenu(ucd.trackedColliders[i]))
+                return true;
+        }
+        return false;
+    }
+
+    static bool IsUnderTopMenu(Collider hit)
+    {
+        if (hit == null)
+            return false;
+        MenuManager mm = MenuManager.instance;
+        if (mm == null)
+            return true;
+        MenuClass top = mm.GetOpenMenu(false);
+        if (top == null || top.holder == null)
+            return true;
+        Transform root = top.holder.transform;
+        return hit.transform == root || hit.transform.IsChildOf(root);
+    }
+
     int ClickPlayerIndex()
     {
         // On win screen always use the human cursor owner (so CPU cards can be opened for scroll)
@@ -223,12 +249,7 @@ public class PlayerSelectorObj : MonoBehaviour
         if (mm == null)
             return false;
 
-        MenuClass open = mm.GetOpenMenu(true);
-        if (open == null || string.IsNullOrEmpty(open.title))
-            return false;
-
-        return open.title.Equals("Character Select", StringComparison.OrdinalIgnoreCase)
-            || open.title.Equals("Characters", StringComparison.OrdinalIgnoreCase);
+        return mm.IsMenuVisible("Character Select") || mm.IsMenuVisible("Characters");
     }
 
     bool WasPressed(string action)
@@ -409,9 +430,12 @@ public class PlayerSelectorObj : MonoBehaviour
                     }
                 }
 
+                bool topOnly = HasHitOnTopMenu();
                 foreach (Collider hit in ucd.trackedColliders)
                 {
                     if (hit == null || !IsMenuSelectable(hit))
+                        continue;
+                    if (topOnly && !IsUnderTopMenu(hit))
                         continue;
 
                     // Prefer the CPU level chip over the portrait skin cycle when both overlap

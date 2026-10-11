@@ -18,6 +18,9 @@ public class ConstantForward : MonoBehaviour
 
     void Update()
     {
+        if (!Database.MatchPlayActive)
+            return;
+
         rb.linearVelocity = transform.up * speed;
         lifetime += Time.deltaTime;
 

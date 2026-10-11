@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7a41c9b2d8f4a6e0b5c3d1f9a8e7042, type: 3}
+  m_Name: Nari's Void Orbit
+  m_EditorClassIdentifier: Assembly-CSharp::FieldData
+  rosterOrder: 2
+  field:
+    name: Nari's Void Orbit
+    arthur: '#True Empty'
+    uid:
+      avalableChars: abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      uid_Value: 
+    size: 12
+    parts: []
+    portrait: {fileID: 0}
+    icon: {fileID: 0}
+    active: 1
+    backgroundMaterial: {fileID: 0}
+    backgroundColor: {r: 0, g: 0, b: 0.01, a: 1}
+    backgroundMatallic: 0.2
+    backgroundSmoothness: 0.15
+    tilling: {x: 1, y: 1}
+  levelMusic: {fileID: 0}

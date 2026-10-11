@@ -74,15 +74,25 @@ public static class FieldCatalog
 
         // Build unique levels once — rebuilding every Awake/Start hitch the main menu
         if (!registered
-            || !db.fields.Exists(x => x != null && x.name == "Nari's Void Orbit")
-            || !db.fields.Exists(x => x != null && x.name == "Kingdom of Nuoryn")
-            || !db.fields.Exists(x => x != null && x.name == "Deep Harbor"))
+            || FieldNeedsGeometry(db, "Nari's Void Orbit")
+            || FieldNeedsGeometry(db, "Kingdom of Nuoryn")
+            || FieldNeedsGeometry(db, "Deep Harbor")
+            || FieldNeedsGeometry(db, "Marajie Dessert"))
         {
             AddOrReplace(db, BuildNariVoidOrbit(kit));
             AddOrReplace(db, BuildKingdomOfNuoryn(kit));
             AddOrReplace(db, BuildDeepHarbor(kit));
+            AddOrReplace(db, BuildMarajieDessert(kit));
             registered = true;
         }
+    }
+
+    static bool FieldNeedsGeometry(Database db, string name)
+    {
+        if (db.fields == null)
+            return true;
+        Field f = db.fields.Find(x => x != null && x.name == name);
+        return f == null || f.parts == null || f.parts.Count == 0;
     }
 
     static void PurgeLevels(Database db)
@@ -280,6 +290,23 @@ public static class FieldCatalog
         f.backgroundColor = new Color(0f, 0f, 0f, 0f);
         f.backgroundMatallic = 0f;
         f.backgroundSmoothness = 0f;
+        return f;
+    }
+
+    static Field BuildMarajieDessert(PrefabKit kit)
+    {
+        Texture stone = Database.instance != null
+            ? Database.instance.WallTextureFor("Marajie Dessert")
+            : null;
+        Field f = BuildSquareField(
+            "Marajie Dessert", 22, kit.wall,
+            Color.white, new Color(0.82f, 0.68f, 0.42f),
+            null, Color.clear,
+            BorderStyle.Uniform, 1f,
+            stone, null);
+        f.backgroundMatallic = 0.2f;
+        f.backgroundSmoothness = 0.62f;
+        f.tilling = new Vector2(90f, 90f);
         return f;
     }
 

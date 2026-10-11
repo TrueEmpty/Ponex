@@ -14,6 +14,8 @@ public class RunOnClicked : MonoBehaviour
     {
         if (HasCalls(onClickEvent))
         {
+            if (IsBackButton())
+                AudioSettings.PlayDeselected();
             onClickEvent.Invoke();
             return;
         }
@@ -21,13 +23,18 @@ public class RunOnClicked : MonoBehaviour
         // Back buttons were historically wired to long-press — fire them on short click.
         if (IsBackButton() && HasCalls(onLongClickEvent))
         {
+            AudioSettings.PlayDeselected();
             onLongClickEvent.Invoke();
             return;
         }
 
         Button btn = GetComponent<Button>();
         if (btn != null && HasCalls(btn.onClick))
+        {
+            if (IsBackButton())
+                AudioSettings.PlayDeselected();
             btn.onClick.Invoke();
+        }
     }
 
     void OnLongClick(int player)

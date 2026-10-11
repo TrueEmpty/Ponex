@@ -48,7 +48,7 @@ MonoBehaviour:
   playerInfo: {fileID: 3846361648969047310, guid: ba799a7b10e921541b556f9a1634e700, type: 3}
   superName: Loads bumpers into your bump zone
   superDescription: 
-  portraitColor: {r: 0.72, g: 0.55, b: 0.95, a: 1}
+  portraitColor: {r: 0.95, g: 0.48, b: 0.06, a: 1}
   portrait: {fileID: 2800000, guid: d38dc5fb9e144fc087389ae4e8bacd25, type: 3}
   icon: {fileID: 2800000, guid: 01561edc0b5c4fd2b8f03f3aca89685d, type: 3}
   active: 1

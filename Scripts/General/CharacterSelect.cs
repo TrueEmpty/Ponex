@@ -202,6 +202,7 @@ public class CharacterSelect : MonoBehaviour
 
                 db.RememberSelectedCharacter(p.index, Database.RandomCharacterSentinel);
                 p.characterSelected = true;
+                AudioSettings.PlaySelection();
             }
             else
             {
@@ -223,6 +224,7 @@ public class CharacterSelect : MonoBehaviour
 
                 db.RememberSelectedCharacter(p.index, p.name);
                 p.characterSelected = true;
+                AudioSettings.PlaySelection();
             }
 
             //Check if all charactersAreSelected

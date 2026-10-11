@@ -225,9 +225,7 @@ public class MuriShield : MonoBehaviour
         SkipPlayerSkin skip = fx.AddComponent<SkipPlayerSkin>();
         skip.includeChildren = true;
 
-        ParticleSystem ps = fx.AddComponent<ParticleSystem>();
-        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-
+        ParticleSystem ps = ParticleEdit.AddStopped(fx);
         var main = ps.main;
         main.playOnAwake = false;
         main.loop = false;

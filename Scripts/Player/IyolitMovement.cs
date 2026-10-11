@@ -54,26 +54,7 @@ public class IyolitMovement : MonoBehaviour
         {
             if (ready)
             {
-                if (positions.Count > 0)
-                {
-                    for (int i = positions.Count - 1; i >= 0; i--)
-                    {
-                        if (positions[i] == null)
-                        {
-                            positions.RemoveAt(i);
-
-                            if (currentPosition == i)
-                            {
-                                lastPosition = -1;
-                            }
-
-                            if (currentPosition >= positions.Count)
-                            {
-                                currentPosition = positions.Count - 1;
-                            }
-                        }
-                    }
-                }
+                PruneAndClampCandleSeats();
 
                 if (positions.Count > 0)
                 {
@@ -92,13 +73,22 @@ public class IyolitMovement : MonoBehaviour
                             percentDis += pG.player.EffectiveMovementSpeed * 0.5f * Time.deltaTime;
                             percentFC = 1 - (Mathf.Abs(.5f - percentDis) * 2);
 
-                            if (percentDis < 1)
+                            Transform to = CandleAt(currentPosition);
+                            Transform from = lastPosition >= 0 ? CandleAt(lastPosition) : null;
+                            if (to == null)
                             {
-                                transform.position = Vector3.Lerp(lastPosition < 0 ? startPos : positions[lastPosition].position, positions[currentPosition].position + (positions[currentPosition].up * (maxheight * percentFC)), percentDis);
+                                moving = false;
+                                percentDis = 0;
+                                lastPosition = currentPosition;
+                            }
+                            else if (percentDis < 1)
+                            {
+                                Vector3 a = from != null ? from.position : startPos;
+                                transform.position = Vector3.Lerp(a, to.position + (to.up * (maxheight * percentFC)), percentDis);
                             }
                             else
                             {
-                                transform.position = positions[currentPosition].position;
+                                transform.position = to.position;
                                 lastPosition = currentPosition;
                                 percentDis = 0;
                                 moving = false;
@@ -126,10 +116,14 @@ public class IyolitMovement : MonoBehaviour
                                 if (currentPosition < 0)
                                     currentPosition = 0;
                             }
+
+                            ClampCandleIndex(ref currentPosition, false);
                         }
 
                         //Keep it on the Candle
-                        transform.position = positions[currentPosition].position;
+                        Transform sit = CandleAt(currentPosition);
+                        if (sit != null)
+                            transform.position = sit.position;
                     }
                 }
                 else
@@ -246,12 +240,69 @@ public class IyolitMovement : MonoBehaviour
 
         if(!moving)
         {
-            if(currentPosition >= 0 && currentPosition < positions.Count)
-            {
-                result = positions[currentPosition].parent.parent;
-            }
+            Transform seat = CandleAt(currentPosition);
+            if (seat != null && seat.parent != null)
+                result = seat.parent.parent;
         }
 
         return result;
+    }
+
+    Transform CandleAt(int index)
+    {
+        if (positions == null || index < 0 || index >= positions.Count)
+            return null;
+        return positions[index];
+    }
+
+    void ClampCandleIndex(ref int index, bool allowMissing)
+    {
+        if (positions == null || positions.Count == 0)
+        {
+            index = allowMissing ? -1 : 0;
+            return;
+        }
+        if (index < 0)
+            index = allowMissing ? -1 : 0;
+        else if (index >= positions.Count)
+            index = positions.Count - 1;
+    }
+
+    void PruneAndClampCandleSeats()
+    {
+        if (positions == null)
+            return;
+
+        for (int i = positions.Count - 1; i >= 0; i--)
+        {
+            if (positions[i] != null)
+                continue;
+
+            positions.RemoveAt(i);
+            if (lastPosition == i)
+                lastPosition = -1;
+            else if (lastPosition > i)
+                lastPosition--;
+            if (currentPosition == i)
+                lastPosition = -1;
+            else if (currentPosition > i)
+                currentPosition--;
+        }
+
+        ClampCandleIndex(ref currentPosition, false);
+        ClampCandleIndex(ref lastPosition, true);
+        if (lastPosition >= 0 && CandleAt(lastPosition) == null)
+            lastPosition = -1;
+        if (CandleAt(currentPosition) == null && positions.Count > 0)
+        {
+            for (int i = 0; i < positions.Count; i++)
+            {
+                if (positions[i] != null)
+                {
+                    currentPosition = i;
+                    break;
+                }
+            }
+        }
     }
 }

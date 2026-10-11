@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
 
 public class Database : MonoBehaviour
@@ -18,6 +17,14 @@ public class Database : MonoBehaviour
 
     #region Fields
     public List<Field> fields;
+    readonly Dictionary<string, AudioClip> levelMusicByName =
+        new Dictionary<string, AudioClip>(StringComparer.OrdinalIgnoreCase);
+    readonly Dictionary<string, Material> groundMaterialByName =
+        new Dictionary<string, Material>(StringComparer.OrdinalIgnoreCase);
+    readonly Dictionary<string, Texture> wallTextureByName =
+        new Dictionary<string, Texture>(StringComparer.OrdinalIgnoreCase);
+    readonly Dictionary<string, GameObject> hazardPrefabByName =
+        new Dictionary<string, GameObject>(StringComparer.OrdinalIgnoreCase);
     public List<Part> parts;
     public List<Ball> balls;
 
@@ -87,6 +94,8 @@ public class Database : MonoBehaviour
     public bool startingGame = false;
     public bool someoneWon = false;
     public bool winnerScreen = false;
+    /// <summary>True only after the countdown finishes. Hazards, gravity, meters, and spawners wait for this.</summary>
+    public static bool MatchPlayActive => instance != null && instance.gameStart;
     public GridControl mmOp;
     public bool gameStart = false;
     /// <summary>True while AI Training session is driving matches (Training scene / panel).</summary>
@@ -131,8 +140,10 @@ public class Database : MonoBehaviour
             EnsureBallSlots();
             EnsurePlayerColorSchemes();
             LoadCharactersFromAssets();
+            LoadFieldsFromAssets();
             LoadMatchPrefs();
         GameSettings.EnsureLoaded();
+        AudioSettings.Ensure();
         FieldCatalog.EnsureRegistered(this);
         // Before ControllerLink.Start (-200) so Character Creation can claim pads
             CharacterCreationManager.EnsureExists();
@@ -148,6 +159,7 @@ public class Database : MonoBehaviour
         ComputerAI.EnsureLoaded();
         if (characters == null || characters.Count == 0)
             LoadCharactersFromAssets();
+        LoadFieldsFromAssets();
 
         EnsureBallSlots();
         EnsurePlayerColorSchemes();
@@ -333,7 +345,12 @@ public class Database : MonoBehaviour
         GameObject bSpawned = Instantiate(ball.prefab);
         float spread = Mathf.Max(0, ballCount - 1) * 0.55f;
         float x = ballCount <= 1 ? 0f : Mathf.Lerp(-spread, spread, slot / Mathf.Max(1f, ballCount - 1f));
-        bSpawned.transform.position = new Vector3(x, 0f, fieldSize);
+        Vector3 preferred = new Vector3(x, 0f, fieldSize);
+        Vector3 spawnPos = FindClearBallSpawn(preferred, bSpawned);
+        bSpawned.transform.position = spawnPos;
+        Rigidbody spawnedRb = bSpawned.GetComponent<Rigidbody>();
+        if (spawnedRb != null)
+            spawnedRb.position = spawnPos;
 
         BallInfo bI = bSpawned.GetComponent<BallInfo>();
         if (bI != null)
@@ -343,6 +360,96 @@ public class Database : MonoBehaviour
         }
 
         return bSpawned;
+    }
+
+    static readonly Collider[] ballSpawnHits = new Collider[48];
+
+    Vector3 FindClearBallSpawn(Vector3 preferred, GameObject ball)
+    {
+        float radius = EstimateBallSpawnRadius(ball);
+        float clearance = radius + 0.35f;
+        Physics.SyncTransforms();
+        if (!BallSpawnBlocked(preferred, clearance, ball))
+            return preferred;
+
+        float limit = Mathf.Max(2.5f, fieldSize * 0.5f - 1.5f);
+        for (int ring = 1; ring <= 24; ring++)
+        {
+            float dist = clearance * 1.2f * ring;
+            int steps = 8 + ring * 4;
+            for (int i = 0; i < steps; i++)
+            {
+                float ang = (i / (float)steps) * Mathf.PI * 2f;
+                Vector3 candidate = preferred + new Vector3(Mathf.Cos(ang) * dist, Mathf.Sin(ang) * dist, 0f);
+                candidate.x = Mathf.Clamp(candidate.x, -limit, limit);
+                candidate.y = Mathf.Clamp(candidate.y, -limit, limit);
+                candidate.z = preferred.z;
+                if (!BallSpawnBlocked(candidate, clearance, ball))
+                    return candidate;
+            }
+        }
+
+        return preferred;
+    }
+
+    static float EstimateBallSpawnRadius(GameObject ball)
+    {
+        if (ball == null)
+            return 0.4f;
+
+        SphereCollider sphere = ball.GetComponent<SphereCollider>();
+        if (sphere != null)
+            return Mathf.Max(0.15f, sphere.radius * Mathf.Max(ball.transform.lossyScale.x, ball.transform.lossyScale.y));
+
+        Collider col = ball.GetComponent<Collider>();
+        if (col != null)
+        {
+            Vector3 e = col.bounds.extents;
+            return Mathf.Max(0.15f, Mathf.Max(e.x, e.y));
+        }
+
+        return 0.4f;
+    }
+
+    static bool BallSpawnBlocked(Vector3 pos, float radius, GameObject self)
+    {
+        int n = Physics.OverlapSphereNonAlloc(pos, radius, ballSpawnHits, ~0, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < n; i++)
+        {
+            if (IsBallSpawnBlocker(ballSpawnHits[i], self))
+                return true;
+        }
+        return false;
+    }
+
+    static bool IsBallSpawnBlocker(Collider col, GameObject self)
+    {
+        if (col == null || col.isTrigger)
+            return false;
+
+        Transform t = col.transform;
+        if (self != null && (t == self.transform || t.IsChildOf(self.transform) || self.transform.IsChildOf(t)))
+            return false;
+
+        if (col.CompareTag("OutOfBounds") || col.CompareTag("Ghost"))
+            return false;
+
+        if (t.name.IndexOf("Background", StringComparison.OrdinalIgnoreCase) >= 0)
+            return false;
+        if (col.GetComponentInParent<OceanWaterTerrain>() != null)
+            return false;
+        if (col.GetComponentInParent<AnimatedWater>() != null)
+            return false;
+
+        MeshCollider mesh = col as MeshCollider;
+        if (mesh != null && !mesh.convex)
+        {
+            Vector3 e = col.bounds.extents;
+            if (e.x > 6f || e.y > 6f)
+                return false;
+        }
+
+        return true;
     }
 
     void EnsureMatchBalls(bool ballReady)
@@ -383,17 +490,14 @@ public class Database : MonoBehaviour
         if (mm == null)
             return false;
 
-        MenuClass open = mm.GetOpenMenu(true);
-        if (open == null || string.IsNullOrEmpty(open.title))
+        // Character Select is an overlay, so the menu under it (Vs, Arcade, Story)
+        // is still in the stack. Joining stays open while that overlay is on screen.
+        if (mm.IsMenuVisible("Character Select") || mm.IsMenuVisible("Characters"))
+            return false;
+        if (mm.IsMenuVisible("Main Menu"))
             return false;
 
-        string title = open.title.Trim();
-        if (title.Equals("Character Select", StringComparison.OrdinalIgnoreCase))
-            return false;
-        if (title.Equals("Main Menu", StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        return true;
+        return mm.openMenu != null && mm.openMenu.Count > 0;
     }
 
     /// <summary>
@@ -526,6 +630,100 @@ public class Database : MonoBehaviour
         }
 
         Debug.Log($"Database: loaded {characters.Count} characters from ScriptableObjects.");
+    }
+
+    void LoadFieldsFromAssets()
+    {
+        FieldData[] assets = Resources.LoadAll<FieldData>("Fields");
+        if (assets == null || assets.Length == 0)
+        {
+            if (fields == null)
+                fields = new List<Field>();
+            return;
+        }
+
+        System.Array.Sort(assets, (a, b) =>
+        {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+            int byOrder = a.rosterOrder.CompareTo(b.rosterOrder);
+            if (byOrder != 0) return byOrder;
+            return string.CompareOrdinal(a.ResolvedName(), b.ResolvedName());
+        });
+
+        if (fields == null)
+            fields = new List<Field>();
+
+        List<Field> ordered = new List<Field>(assets.Length);
+        for (int i = 0; i < assets.Length; i++)
+        {
+            FieldData asset = assets[i];
+            if (asset == null)
+                continue;
+
+            string fieldName = asset.ResolvedName();
+            if (!string.IsNullOrEmpty(fieldName))
+            {
+                if (asset.levelMusic != null)
+                    levelMusicByName[fieldName] = asset.levelMusic;
+                if (asset.groundMaterial != null)
+                    groundMaterialByName[fieldName] = asset.groundMaterial;
+                if (asset.wallTexture != null)
+                    wallTextureByName[fieldName] = asset.wallTexture;
+                if (asset.hazardPrefab != null)
+                    hazardPrefabByName[fieldName] = asset.hazardPrefab;
+            }
+
+            Field existing = null;
+            for (int f = 0; f < fields.Count; f++)
+            {
+                Field candidate = fields[f];
+                if (candidate != null && candidate.name == fieldName
+                    && candidate.parts != null && candidate.parts.Count > 0)
+                {
+                    existing = candidate;
+                    break;
+                }
+            }
+
+            ordered.Add(existing != null ? existing : asset.ToField());
+        }
+
+        fields = ordered;
+        Debug.Log($"Database: loaded {fields.Count} fields from ScriptableObjects.");
+    }
+
+    public AudioClip LevelMusicFor(string fieldName)
+    {
+        if (string.IsNullOrEmpty(fieldName))
+            return null;
+        levelMusicByName.TryGetValue(fieldName.Trim(), out AudioClip clip);
+        return clip;
+    }
+
+    public Material GroundMaterialFor(string fieldName)
+    {
+        if (string.IsNullOrEmpty(fieldName))
+            return null;
+        groundMaterialByName.TryGetValue(fieldName.Trim(), out Material mat);
+        return mat;
+    }
+
+    public Texture WallTextureFor(string fieldName)
+    {
+        if (string.IsNullOrEmpty(fieldName))
+            return null;
+        wallTextureByName.TryGetValue(fieldName.Trim(), out Texture tex);
+        return tex;
+    }
+
+    public GameObject HazardPrefabFor(string fieldName)
+    {
+        if (string.IsNullOrEmpty(fieldName))
+            return null;
+        hazardPrefabByName.TryGetValue(fieldName.Trim(), out GameObject prefab);
+        return prefab;
     }
 
     public void RememberSelectedCharacter(int playerIndex, string characterName)
@@ -897,6 +1095,7 @@ public class Database : MonoBehaviour
 
     void DestroyLiveMatch()
     {
+        AudioSettings.StopLevelMusic();
         if (players != null)
         {
             for (int i = 0; i < players.Count; i++)
@@ -1225,8 +1424,7 @@ public class Database : MonoBehaviour
 
         PlayerSelectorObj pso = go.GetComponent<PlayerSelectorObj>();
         pso.cLink = cL;
-        if (p.skinColorIndex < 0)
-            p.skinColorIndex = p.index;
+        PlayerSkin.AssignUniqueForCharacter(p, this);
         PlayerColors startColor = PlayerSkin.GetPlayerColors(p, this);
         pso.SetCircleColor(startColor != null
             ? startColor
@@ -1388,6 +1586,7 @@ public class Database : MonoBehaviour
 
             // AI learns from match outcome (persisted across sessions)
             ComputerAI.OnMatchEnd(players);
+            AudioSettings.StopLevelMusic();
             MatchStatTicker.FinalizeMatch(this);
 
             //Run Time Slow
@@ -1845,6 +2044,7 @@ public class Database : MonoBehaviour
 
             Field field = fields[sF];
             fieldSize = field.size + 10;
+            AudioSettings.PlayLevelMusic(LevelMusicFor(field.name));
 
             GameObject fSpawned = Instantiate(fieldObj);
             fSpawned.transform.position = new Vector3(0, 0, fieldSize);

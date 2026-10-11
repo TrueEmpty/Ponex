@@ -97,11 +97,14 @@ public class Garmen : MonoBehaviour
         if (body == null)
             return;
         body.useGravity = false;
-        body.isKinematic = true;
+        if (!body.isKinematic)
+        {
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+            body.isKinematic = true;
+        }
         body.interpolation = RigidbodyInterpolation.None;
         body.constraints = RigidbodyConstraints.FreezeAll;
-        body.linearVelocity = Vector3.zero;
-        body.angularVelocity = Vector3.zero;
     }
 
     Transform AttachmentPoint()
@@ -140,8 +143,6 @@ public class Garmen : MonoBehaviour
         {
             body.position = pos;
             body.rotation = ll.transform.rotation;
-            body.linearVelocity = Vector3.zero;
-            body.angularVelocity = Vector3.zero;
         }
     }
 

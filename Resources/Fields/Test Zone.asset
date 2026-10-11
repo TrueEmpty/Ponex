@@ -1,0 +1,849 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7a41c9b2d8f4a6e0b5c3d1f9a8e7042, type: 3}
+  m_Name: Test Zone
+  m_EditorClassIdentifier: Assembly-CSharp::FieldData
+  rosterOrder: 0
+  field:
+      name: Test Zone
+      arthur: '#True Empty'
+      size: 0
+      parts:
+      - name: Stars
+        type: Effect
+        prefab: {fileID: 1477142148930249477, guid: e584fd426fabbf646ac331b5cbfc68bd, type: 3}
+        components: []
+        position: {x: 0, y: 0, z: 0.5}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 10, y: 10, z: 1}
+        icon: {fileID: 2800000, guid: 7100b059ac2b1f844b5b0944d691e649, type: 3}
+        material: {fileID: 0}
+        material_Color: {r: 1, g: 1, b: 1, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 1
+        canMove: 0
+        setPos: 1
+        canBeBorder: 0
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: -4, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: -3, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: -2, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: -1, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: 1, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: 2, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: 3, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: 4, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -5, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -4, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -4, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -3, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -3, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -2, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -2, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -1, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: -1, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 0, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 0, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 1, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 1, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 2, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 2, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 3, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 3, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 4, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 4, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: -5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: -4, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: -3, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: -2, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: -1, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: 1, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: 2, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: 3, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: 4, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      - name: Wall
+        type: Wall
+        prefab: {fileID: 7817225344641008084, guid: 4c6e963c7aeecbc4e81630dc24483bd4, type: 3}
+        components: []
+        position: {x: 5, y: 5, z: 0}
+        rotation: {x: 0, y: 0, z: 0}
+        size: {x: 1, y: 1, z: 1}
+        icon: {fileID: 0}
+        material: {fileID: 2800000, guid: feb4f5ab2fd76004d8a9b8cdba3bc8f4, type: 3}
+        material_Color: {r: 0.03529412, g: 0.07058824, b: 0.8509804, a: 1}
+        material_Matallic: 0.72
+        material_Smoothness: 0.5
+        scaling: 0
+        canMove: 1
+        setPos: 0
+        canBeBorder: 1
+        isHazard: 0
+        tangible: 0
+        spawnRange: {x: 0, y: 0}
+        spawned: {fileID: 0}
+      portrait: {fileID: 2800000, guid: 6d2e90a68985c4f4b865c9f3b836cf9a, type: 3}
+      icon: {fileID: 2800000, guid: 6d2e90a68985c4f4b865c9f3b836cf9a, type: 3}
+      active: 1
+      backgroundMaterial: {fileID: 0}
+      backgroundColor: {r: 0, g: 0, b: 0, a: 1}
+      backgroundMatallic: 0.91
+      backgroundSmoothness: 0.74
+      tilling: {x: 1, y: 1}
+  levelMusic: {fileID: 0}

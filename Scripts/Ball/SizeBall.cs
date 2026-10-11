@@ -8,6 +8,8 @@ public class SizeBall : MonoBehaviour
     Database db;
     BallInfo bI;
     SphereCollider sC;
+    CapsuleCollider cC;
+    BoxCollider bC;
     float timer = 0;
     public Vector3 sizeSwitch; //Min, Max, Nextswitch
     public Vector2 sizeRange;
@@ -21,6 +23,8 @@ public class SizeBall : MonoBehaviour
         db = Database.instance;
         bI = GetComponent<BallInfo>();
         sC = GetComponent<SphereCollider>();
+        cC = GetComponent<CapsuleCollider>();
+        bC = GetComponent<BoxCollider>();
 
         if(bI.projectionOn)
         {
@@ -40,7 +44,7 @@ public class SizeBall : MonoBehaviour
             if (timer > sizeSwitch.z)
             {
                 ball.localScale = adjusted.localScale;
-                sC.radius = ball.localScale.x / 2;
+                ApplyHitboxScale(ball.localScale.x);
                 SetSwitch();
                 timer = 0;
             }
@@ -85,6 +89,28 @@ public class SizeBall : MonoBehaviour
         }
 
         return result;
+    }
+
+    void ApplyHitboxScale(float diameter)
+    {
+        if (sC == null) sC = GetComponent<SphereCollider>();
+        if (cC == null) cC = GetComponent<CapsuleCollider>();
+        if (bC == null) bC = GetComponent<BoxCollider>();
+
+        float radius = diameter * 0.5f;
+        if (sC != null)
+        {
+            sC.radius = radius;
+            return;
+        }
+        if (cC != null)
+        {
+            cC.radius = radius;
+            cC.height = Mathf.Max(cC.height, diameter);
+            return;
+        }
+        if (bC != null)
+            bC.size = Vector3.one * diameter;
     }
 
     void SetSwitch()

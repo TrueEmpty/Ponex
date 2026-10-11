@@ -49,7 +49,7 @@ MonoBehaviour:
   superName: Creates a electric line from wall to wall. Bouncing any object that
     hits it.
   superDescription: 
-  portraitColor: {r: 0, g: 1, b: 1, a: 1}
+  portraitColor: {r: 0.12, g: 0.28, b: 0.95, a: 1}
   portrait: {fileID: 2800000, guid: e009bf2198c1ac040a3fedc863857d93, type: 3}
   icon: {fileID: 2800000, guid: 3f199e46bb5fb5c4ab2716f46934023c, type: 3}
   active: 1

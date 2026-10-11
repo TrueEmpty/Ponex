@@ -48,14 +48,23 @@ public class Field
         size = field.size; //smallest should be 10
 
         parts = new List<Part>();
-        for (int i = 0; i < field.parts.Count; i++)
+        if (field.parts != null)
         {
-            parts.Add(field.parts[i]);
+            for (int i = 0; i < field.parts.Count; i++)
+            {
+                if (field.parts[i] != null)
+                    parts.Add(new Part(field.parts[i]));
+            }
         }
 
         portrait = field.portrait;
         icon = field.icon;
         active = field.active;
+        backgroundMaterial = field.backgroundMaterial;
+        backgroundColor = field.backgroundColor;
+        backgroundMatallic = field.backgroundMatallic;
+        backgroundSmoothness = field.backgroundSmoothness;
+        tilling = field.tilling;
     }
 
     public Field(string fromString)

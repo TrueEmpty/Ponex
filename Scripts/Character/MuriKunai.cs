@@ -202,7 +202,7 @@ public class MuriKunai : MonoBehaviour
         target.ConsumeForBlink();
         if (move != null)
         {
-            move.PlaceOnBestSupport();
+            move.PlaceCardinalUnder(dest);
             move.RecoverIfOutOfBounds();
         }
         nextBlink = Time.time + 0.22f;

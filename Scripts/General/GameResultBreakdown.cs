@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(50)]
 public class GameResultBreakdown : MonoBehaviour
 {
     Database db;
@@ -29,6 +30,9 @@ public class GameResultBreakdown : MonoBehaviour
 
     public float scrollspeed = 10;
     int compScrollDir = 1;
+    ScrollRect statScroll;
+    float manualIgnoreExitUntil;
+    float pendingScroll;
 
     void Start()
     {
@@ -36,6 +40,8 @@ public class GameResultBreakdown : MonoBehaviour
         rt = GetComponent<RectTransform>();
         db = Database.instance;
         SelectorClickable.Ensure(gameObject, 180f);
+        if (info != null)
+            statScroll = info.GetComponentInParent<ScrollRect>();
     }
 
     void Update()
@@ -65,6 +71,14 @@ public class GameResultBreakdown : MonoBehaviour
             ComputerScroll();
     }
 
+    void LateUpdate()
+    {
+        if (Mathf.Abs(pendingScroll) < 0.0001f)
+            return;
+        ApplyScroll(pendingScroll);
+        pendingScroll = 0f;
+    }
+
     void Resize()
     {
         int pCC = transform.parent != null ? transform.parent.childCount : 1;
@@ -74,13 +88,7 @@ public class GameResultBreakdown : MonoBehaviour
         else
             rt.sizeDelta = new Vector2(FourLessWidth, rt.sizeDelta.y);
 
-        if (info != null)
-        {
-            float view = info.rectTransform.rect.height;
-            if (view < 8f)
-                view = info.rectTransform.sizeDelta.y;
-            height = Mathf.Max(0f, info.preferredHeight - Mathf.Max(8f, view));
-        }
+        height = ScrollRange();
     }
 
     void UpdateInfo()
@@ -148,6 +156,7 @@ public class GameResultBreakdown : MonoBehaviour
 
         // Leave any other card first
         p.winScrollTarget = this;
+        manualIgnoreExitUntil = Time.unscaledTime + 0.2f;
     }
 
     void HandleManualScroll(Player scroller)
@@ -156,25 +165,71 @@ public class GameResultBreakdown : MonoBehaviour
         if (cL == null || info == null)
             return;
 
-        // Exit scroll: bump (Jump), super (Interact), or Menu (Esc / Start / Options)
-        if (WasPressed(cL, "Jump") || WasPressed(cL, "Interact") || WasPressed(cL, "Menu"))
+        // Exit scroll: bump (Jump), super (Interact), or Menu (Esc / Start / Options).
+        // Ignore the click that just opened this card.
+        if (Time.unscaledTime > manualIgnoreExitUntil
+            && (WasPressed(cL, "Jump") || WasPressed(cL, "Interact") || WasPressed(cL, "Menu")))
         {
             scroller.winScrollTarget = null;
             return;
         }
 
-        Vector3 curPos = info.transform.localPosition;
         ControllerButtons move = cL["Move"];
         float axisY = move != null ? move.value.y : 0f;
+        if (Mathf.Abs(axisY) < 0.2f && move != null)
+            axisY = move.flatValue.y;
 
         if (Mathf.Abs(axisY) > 0.01f)
-            curPos.y += axisY * scrollspeed * 10f * Time.deltaTime;
+        {
+            float dt = Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
+            // Half the old manual rate (scrollspeed * 10).
+            pendingScroll += axisY * scrollspeed * 5f * dt;
+        }
+    }
 
-        if (curPos.y < 0)
-            curPos.y = 0;
-        else if (curPos.y > height)
-            curPos.y = height;
+    float ScrollRange()
+    {
+        if (statScroll == null && info != null)
+            statScroll = info.GetComponentInParent<ScrollRect>();
+        if (statScroll != null && statScroll.content != null && statScroll.viewport != null)
+            return Mathf.Max(0f, statScroll.content.rect.height - statScroll.viewport.rect.height);
+        if (info == null)
+            return 0f;
+        float view = info.rectTransform.rect.height;
+        return Mathf.Max(0f, info.preferredHeight - Mathf.Max(8f, view));
+    }
 
+    void ApplyScroll(float delta)
+    {
+        if (statScroll == null && info != null)
+            statScroll = info.GetComponentInParent<ScrollRect>();
+        if (statScroll != null && statScroll.content != null)
+        {
+            float range = ScrollRange();
+            Vector2 pos = statScroll.content.anchoredPosition;
+            float y = pos.y + delta;
+            if (y < 0f)
+            {
+                y = 0f;
+                if (delta < 0f)
+                    compScrollDir = 1;
+            }
+            else if (y > range)
+            {
+                y = range;
+                if (delta > 0f)
+                    compScrollDir = -1;
+            }
+            pos.y = y;
+            statScroll.content.anchoredPosition = pos;
+            statScroll.velocity = Vector2.zero;
+            return;
+        }
+
+        if (info == null)
+            return;
+        Vector3 curPos = info.transform.localPosition;
+        curPos.y = Mathf.Clamp(curPos.y + delta, 0f, height);
         info.transform.localPosition = curPos;
     }
 
@@ -189,20 +244,7 @@ public class GameResultBreakdown : MonoBehaviour
         if (info == null)
             return;
 
-        Vector3 curPos = info.transform.localPosition;
-        curPos.y += compScrollDir * (scrollspeed / 3) * Time.deltaTime;
-
-        if (curPos.y < 0)
-        {
-            curPos.y = 0;
-            compScrollDir *= -1;
-        }
-        else if (curPos.y > height)
-        {
-            curPos.y = height;
-            compScrollDir *= -1;
-        }
-
-        info.transform.localPosition = curPos;
+        float dt = Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
+        pendingScroll += compScrollDir * (scrollspeed / 3f) * dt;
     }
 }

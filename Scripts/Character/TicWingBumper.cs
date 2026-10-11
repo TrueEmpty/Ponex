@@ -274,11 +274,14 @@ public class TicWingBumper : MonoBehaviour
 
         if (superHolding)
         {
-            bumper.rb.isKinematic = true;
+            if (!bumper.rb.isKinematic)
+            {
+                bumper.rb.linearVelocity = Vector3.zero;
+                bumper.rb.angularVelocity = Vector3.zero;
+                bumper.rb.isKinematic = true;
+            }
             bumper.rb.position = freezePos;
             transform.position = freezePos;
-            bumper.rb.linearVelocity = Vector3.zero;
-            bumper.rb.angularVelocity = Vector3.zero;
             return;
         }
 
@@ -465,9 +468,12 @@ public class TicWingBumper : MonoBehaviour
     {
         if (bumper == null || bumper.rb == null)
             return;
-        bumper.rb.isKinematic = true;
-        bumper.rb.linearVelocity = Vector3.zero;
-        bumper.rb.angularVelocity = Vector3.zero;
+        if (!bumper.rb.isKinematic)
+        {
+            bumper.rb.linearVelocity = Vector3.zero;
+            bumper.rb.angularVelocity = Vector3.zero;
+            bumper.rb.isKinematic = true;
+        }
         bumper.rb.position = freezePos;
         bumper.rb.rotation = transform.rotation;
         transform.position = freezePos;

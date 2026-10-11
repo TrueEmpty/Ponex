@@ -102,12 +102,15 @@ public class Gaurd : MonoBehaviour
             return;
 
         rb.useGravity = false;
-        rb.isKinematic = true;
+        if (!rb.isKinematic)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
         rb.interpolation = RigidbodyInterpolation.None;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         rb.constraints = RigidbodyConstraints.FreezeAll;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
     }
 
     void HoldStill()
@@ -127,8 +130,6 @@ public class Gaurd : MonoBehaviour
 
         rb.position = pinPos;
         rb.rotation = pinRot;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
     }
 
     void PinCurrentPose()
