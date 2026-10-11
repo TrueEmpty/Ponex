@@ -610,6 +610,10 @@ public class Uwrenmaw : MonoBehaviour
                 ownOrTeam = true;
         }
 
+        // A ball your team owns passes the pillar. It does not crack it or score.
+        if (ownOrTeam)
+            return;
+
         int ballId = ball != null ? ball.GetEntityId().GetHashCode() : 0;
         pillar.hp--;
         pillar.Puff();

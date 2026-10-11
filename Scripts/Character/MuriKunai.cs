@@ -58,8 +58,7 @@ public class MuriKunai : MonoBehaviour
             return;
         if (pg.player.currentHealth <= 0)
         {
-            if (aimArrow != null)
-                aimArrow.gameObject.SetActive(false);
+            DestroyAllParts();
             return;
         }
 
@@ -305,6 +304,49 @@ public class MuriKunai : MonoBehaviour
         lastBallHitTime = Time.time;
         if (shield != null)
             shield.AddCharge(shield.kunaiCharge);
+    }
+
+    bool dying;
+
+    void OnDestroy()
+    {
+        DiscardKunai();
+    }
+
+    void DestroyAllParts()
+    {
+        if (dying)
+            return;
+        dying = true;
+        if (aimArrow != null)
+            aimArrow.gameObject.SetActive(false);
+        if (shield != null)
+            shield.BreakForDeath();
+        DiscardKunai();
+
+        Player owner = pg != null ? pg.player : null;
+        if (owner != null)
+        {
+            if (owner.spawnedLifeline != null)
+            {
+                Destroy(owner.spawnedLifeline);
+                owner.spawnedLifeline = null;
+            }
+            if (owner.spawnedPlayer == gameObject)
+                owner.spawnedPlayer = null;
+        }
+        Destroy(gameObject);
+    }
+
+    void DiscardKunai()
+    {
+        for (int i = active.Count - 1; i >= 0; i--)
+        {
+            MuriKunaiProjectile proj = active[i];
+            if (proj != null)
+                proj.DiscardWithoutRefund();
+        }
+        active.Clear();
     }
 
     public void Refund(MuriKunaiProjectile proj)

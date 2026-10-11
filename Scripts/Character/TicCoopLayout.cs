@@ -51,7 +51,7 @@ public static class TicCoopLayout
                 Player p = players[i];
                 if (p == null || p.facing != facing)
                     continue;
-                if (!IsTicPlayer(p))
+                if (p.arcadeOut || !IsTicPlayer(p))
                     continue;
                 group.Add(p);
             }
@@ -94,6 +94,74 @@ public static class TicCoopLayout
             {
                 group[i].ticWingForm = true;
                 group[i].ticPartnerIndex = a.index;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Arcade seats write a wall offset after Prepare. Two full machines on one wall
+    /// must still be side-by-side or fused, never stacked on the same spot.
+    /// Solo Tics keep the seat offset already assigned.
+    /// </summary>
+    public static void KeepTicsApart(List<Player> players, float fieldPlaySize)
+    {
+        if (players == null)
+            return;
+
+        for (int f = 0; f < 4; f++)
+        {
+            Facing facing = (Facing)f;
+            List<Player> group = new List<Player>(2);
+            for (int i = 0; i < players.Count; i++)
+            {
+                Player p = players[i];
+                if (p == null || p.arcadeOut || p.facing != facing || !IsTicPlayer(p))
+                    continue;
+                group.Add(p);
+            }
+
+            if (group.Count < 2)
+                continue;
+
+            group.Sort((a, b) =>
+            {
+                int c = a.ticWallSideOffset.CompareTo(b.ticWallSideOffset);
+                return c != 0 ? c : a.index.CompareTo(b.index);
+            });
+
+            Player host = group[0];
+            Player mate = group[1];
+            bool alreadyFused = host.ticHostFused;
+            for (int i = 0; i < group.Count; i++)
+            {
+                group[i].ticWingForm = false;
+                group[i].ticHostFused = false;
+                group[i].ticPartnerIndex = -1;
+            }
+            if (fieldPlaySize >= MinWallForSideBySide)
+            {
+                host.ticWallSideOffset = -SideBySideHalfGap;
+                mate.ticWallSideOffset = SideBySideHalfGap;
+                host.ticPartnerIndex = mate.index;
+                mate.ticPartnerIndex = host.index;
+            }
+            else
+            {
+                host.ticHostFused = true;
+                if (!alreadyFused)
+                {
+                    host.maxHealth = Mathf.Max(1, host.maxHealth * 2);
+                    host.currentHealth = host.maxHealth;
+                }
+                host.ticPartnerIndex = mate.index;
+                mate.ticWingForm = true;
+                mate.ticPartnerIndex = host.index;
+            }
+
+            for (int i = 2; i < group.Count; i++)
+            {
+                group[i].ticWingForm = true;
+                group[i].ticPartnerIndex = host.index;
             }
         }
     }

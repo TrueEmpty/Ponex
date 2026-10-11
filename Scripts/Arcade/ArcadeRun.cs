@@ -166,6 +166,8 @@ public class ArcadeRun : MonoBehaviour
                 ComputerAI.AssignMatchBrain(p);
             }
         }
+
+        TicCoopLayout.KeepTicsApart(db.players, db.FieldPlaySize);
     }
 
     public void ModifyBalls()
@@ -499,6 +501,13 @@ public class ArcadeRun : MonoBehaviour
             Player p = db.players[i];
             if (p == null || p.arcadeCpu || p.arcadeHumanSlot < 0)
                 continue;
+            if (p.arcadeOut)
+            {
+                // They sat this match out. A win brings them back at full health.
+                p.arcadeOut = false;
+                carriedHealth[p.index] = int.MaxValue;
+                continue;
+            }
             if (p.currentHealth <= 0)
             {
                 p.arcadeOut = true;

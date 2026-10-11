@@ -301,6 +301,14 @@ public class MuriKunaiProjectile : MonoBehaviour
         Vanish();
     }
 
+    public void DiscardWithoutRefund()
+    {
+        refunded = true;
+        state = State.Dead;
+        owner = null;
+        Destroy(gameObject);
+    }
+
     void Vanish()
     {
         if (state == State.Dead)

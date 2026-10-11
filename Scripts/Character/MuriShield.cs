@@ -144,6 +144,11 @@ public class MuriShield : MonoBehaviour
         }
     }
 
+    public void BreakForDeath()
+    {
+        BreakShield();
+    }
+
     void BreakShield()
     {
         Skill bump = Bump();
