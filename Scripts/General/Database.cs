@@ -158,6 +158,8 @@ public class Database : MonoBehaviour
             TrainingManager.EnsureExists();
             if (GetComponent<StoryMenuController>() == null)
                 gameObject.AddComponent<StoryMenuController>();
+            if (GetComponent<ArcadeRun>() == null)
+                gameObject.AddComponent<ArcadeRun>();
         }
     }
 
@@ -846,6 +848,9 @@ public class Database : MonoBehaviour
     /// </summary>
     public void EnsureLobbySeatsForStart()
     {
+        if (gametype == Gametype.Arcade)
+            return;
+
         if (positionSelect || teamSelect)
         {
             RememberAllLobbySeats();
@@ -1164,8 +1169,10 @@ public class Database : MonoBehaviour
         CharactersPicked("balls");
     }
 
-    void ReturnToCharacterSelect()
+    public void ReturnToCharacterSelect()
     {
+        if (ArcadeRun.Running)
+            ArcadeRun.instance.EndRun();
         HaltStartRoutine();
         DestroyLiveMatch();
         AbortCurrentMatch();
@@ -1198,8 +1205,10 @@ public class Database : MonoBehaviour
         }
     }
 
-    void LeaveMatchToMainMenu()
+    public void LeaveMatchToMainMenu()
     {
+        if (ArcadeRun.Running)
+            ArcadeRun.instance.EndRun();
         HaltStartRoutine();
         DestroyLiveMatch();
         AbortCurrentMatch();
@@ -1377,8 +1386,8 @@ public class Database : MonoBehaviour
                 controllers.Add(cL);
             }
 
-            // 5+ players always require Team Mode
-            if (players.Count >= TeamModeToggle.ForceTeamAtPlayerCount)
+            // 5+ players always require Team Mode. Arcade fills opponents itself and stays a 1–2 human lobby.
+            if (gametype != Gametype.Arcade && players.Count >= TeamModeToggle.ForceTeamAtPlayerCount)
             {
                 bool wasTeam = teamSelect;
                 teamSelect = true;
@@ -1559,6 +1568,23 @@ public class Database : MonoBehaviour
         if (CharacterCreationManager.IsActive)
             return;
 
+        if (gametype == Gametype.Arcade && ArcadeRun.Running)
+        {
+            if (ArcadeRun.instance != null && ArcadeRun.instance.PollMatchEnd())
+            {
+                ComputerAI.OnMatchEnd(players);
+                AudioSettings.StopLevelMusic();
+                MatchStatTicker.FinalizeMatch(this);
+                if (!someoneWon)
+                {
+                    winnerScreen = true;
+                    someoneWon = true;
+                    StartCoroutine(SomeoneWon());
+                }
+            }
+            return;
+        }
+
         winnersBuffer.Clear();
         aliveTeamsBuffer.Clear();
 
@@ -1738,6 +1764,16 @@ public class Database : MonoBehaviour
         bool trainingAuto = aiTrainingSession
             && TrainingManager.instance != null
             && TrainingManager.instance.ShouldAutoContinue();
+
+        if (gametype == Gametype.Arcade && ArcadeRun.Running)
+        {
+            gameStart = false;
+            winnerScreen = false;
+            someoneWon = false;
+            if (ArcadeRun.instance != null)
+                ArcadeRun.instance.ResolveMatch();
+            yield break;
+        }
 
         if (!trainingAuto)
         {
@@ -2052,11 +2088,11 @@ public class Database : MonoBehaviour
         mm.OpenMenu("Playing");
         yield return null;
 
-        Vector3 pPos = Vector3.zero;
-        Vector3 fRot = Vector3.zero;
-
-        if(gametype == Gametype.Coop || gametype == Gametype.Vs)
+        if (gametype == Gametype.Coop || gametype == Gametype.Vs || gametype == Gametype.Arcade)
         {
+            if (gametype == Gametype.Arcade && ArcadeRun.instance != null)
+                ArcadeRun.instance.EnsureMatchReady();
+
             #region Create Field
             int sF = selectedField;
 
@@ -2066,6 +2102,9 @@ public class Database : MonoBehaviour
             if (sF < 0 || sF >= fields.Count)
             {
                 Debug.LogError("StartGame: no field available to spawn.");
+                if (gametype == Gametype.Arcade && ArcadeRun.instance != null)
+                    ArcadeRun.instance.HideCard();
+                startingGame = false;
                 yield break;
             }
 
@@ -2092,7 +2131,9 @@ public class Database : MonoBehaviour
 
             #region Add Players
             // Phase 1 — bind roster / clear match stats for every seat
-            int spawnCount = Mathf.Min(maxPlayers, players.Count);
+            int spawnCount = gametype == Gametype.Arcade
+                ? players.Count
+                : Mathf.Min(maxPlayers, players.Count);
             for (int i = 0; i < spawnCount; i++)
             {
                 Player p = players[i];
@@ -2127,6 +2168,9 @@ public class Database : MonoBehaviour
                         p.SetUpCharacter(rosterChar);
                 }
 
+                if (gametype == Gametype.Arcade)
+                    ArcadeRun.RestoreHealth(p);
+
                 if (p.computer)
                     ComputerAI.AssignMatchBrain(p);
             }
@@ -2135,6 +2179,8 @@ public class Database : MonoBehaviour
             TicCoopLayout.Prepare(players, fieldSize);
             Yuotay.PrepareSameWallSeats(players, fieldSize);
             CelarusCoopLayout.Prepare(players, gametype);
+            if (gametype == Gametype.Arcade && ArcadeRun.instance != null)
+                ArcadeRun.instance.ApplySeats();
 
             // Phase 2 — spawn (hosts before wing / Celarus guests so partners can find the shared object)
             List<int> spawnOrder = new List<int>(spawnCount);
@@ -2153,127 +2199,10 @@ public class Database : MonoBehaviour
             {
                 int i = spawnOrder[oi];
                 Player p = players[i];
-                if (p == null)
+                if (p == null || p.arcadeOut)
                     continue;
 
-                if (p.character == null || p.character.prefabs == null)
-                {
-                    if (CharacterCreationManager.IsActive && p.index == 0)
-                    {
-                        Debug.Log("[CharacterCreation] Draft has no character prefab yet — assign one in Object Assign (Ctrl+Shift+O).");
-                        continue;
-                    }
-                    if (!p.ticWingForm)
-                    {
-                        Debug.LogError($"StartGame: Player index={p.index} name='{p.name}' has no character prefab after roster bind. Skipping spawn.");
-                        continue;
-                    }
-                }
-
-                switch (p.facing)
-                {
-                    case Facing.Up:
-                        fRot = new Vector3(0, 0, 0);
-                        break;
-                    case Facing.Down:
-                        fRot = new Vector3(0, 0, 180);
-                        break;
-                    case Facing.Left:
-                        fRot = new Vector3(0, 0, 90);
-                        break;
-                    case Facing.Right:
-                        fRot = new Vector3(0, 0, 270);
-                        break;
-                }
-
-                // Snap to the real wall surface (large maps often don't match fieldSize/2 math)
-                pPos = GetSpawnWallPos(p.facing);
-
-                if (p.ticWingForm)
-                {
-                    SpawnTicWingBumperPlayer(p, pPos, fRot);
-                }
-                else
-                {
-                    p.spawnedPlayer = Instantiate(p.character.prefabs);
-                    p.spawnedPlayer.transform.position = pPos;
-                    p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
-                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
-
-                    // Tic side-by-side: same depth, split along the wall. Otherwise legacy stack.
-                    if (Mathf.Abs(p.ticWallSideOffset) > 0.01f)
-                    {
-                        p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * p.character.positionOffset.y;
-                        p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.ticWallSideOffset;
-                    }
-                    else
-                    {
-                        p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up
-                            * (p.character.positionOffset.y * ((p.position == 0) ? 1f : 1.5f));
-                    }
-
-                    p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
-
-                    if (p.spawnedPlayer.GetComponent<MuriMove>() == null
-                        && p.spawnedPlayer.GetComponent<Yuotay>() == null)
-                    {
-                        float inset = 0f;
-                        if (p.spawnedPlayer.GetComponent<Gaurd>() != null)
-                            inset = Gaurd.BallBehindGap;
-                        else if (p.spawnedPlayer.GetComponent<Tic>() == null && p.character != null)
-                            inset = Mathf.Max(0f, p.character.positionOffset.y);
-                        SnapFlushToHomeWall(p.spawnedPlayer.transform, p.facing, inset);
-                    }
-
-                    PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
-                    if (pG != null)
-                        pG.playerIndex = p.index;
-
-                    // Shared CPU brain — new characters get AI intents automatically
-                    if (p.computer)
-                        ComputerBrain.Ensure(p.spawnedPlayer);
-
-                    if (p.spawnedPlayer.GetComponent<Gaurd>() == null
-                        && !string.IsNullOrEmpty(p.name)
-                        && p.name.Equals("Gaurd", StringComparison.OrdinalIgnoreCase))
-                        p.spawnedPlayer.AddComponent<Gaurd>();
-
-                    if (!SkipPlayerSkin.ShouldSkipRoot(p.spawnedPlayer)
-                        && p.spawnedPlayer.GetComponentInChildren<Field_Info>(true) == null)
-                        PlayerSkin.Apply(p.spawnedPlayer, p, this);
-
-                    MuriMove muri = p.spawnedPlayer.GetComponent<MuriMove>();
-                    if (muri != null)
-                        muri.PlaceOnBestSupport();
-
-                    // Fused host keeps the only lifeline (double HP already applied in Prepare).
-                    // Celarus guests ride the host moon/sun — do not spawn a second lifeline.
-                    if (p.lifeline != null && p.lifeline.prefabs != null && !p.celarusShareGuest)
-                    {
-                        p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
-                        PlaceLifelineOnWall(p.spawnedLifeline, p.facing, p.spawnedPlayer.transform.position, fRot, p.lifeline);
-                        SpreadTriggerLifelineParts(p.spawnedLifeline, p);
-                        PlayerGrab lifePG = p.spawnedLifeline.GetComponent<PlayerGrab>();
-                        if (lifePG != null)
-                            lifePG.playerIndex = p.index;
-                        if (!SkipPlayerSkin.ShouldSkipRoot(p.spawnedLifeline))
-                            PlayerSkin.Apply(p.spawnedLifeline, p, this);
-                    }
-                }
-
-                GameObject sIB = p.playerInfo != null ? p.playerInfo : playerInfo;
-                if (sIB != null)
-                {
-                    GameObject iB = Instantiate(sIB);
-                    if ((i % 2) == 0)
-                        iB.transform.SetParent(playerInfoHolderRS);
-                    else
-                        iB.transform.SetParent(playerInfoHolderLS);
-
-                    PlayerGrab ibpG = iB.GetComponent<PlayerGrab>();
-                    if (ibpG != null)
-                        ibpG.playerIndex = p.index;
-                }
+                SpawnJoinedPlayer(p, i);
                 yield return null;
             }
 
@@ -2293,9 +2222,18 @@ public class Database : MonoBehaviour
             if (!anySpawned)
             {
                 Debug.LogError("StartGame: no ball available to spawn.");
+                if (gametype == Gametype.Arcade && ArcadeRun.instance != null)
+                    ArcadeRun.instance.HideCard();
+                startingGame = false;
                 yield break;
             }
             #endregion
+
+            if (gametype == Gametype.Arcade && ArcadeRun.instance != null)
+            {
+                ArcadeRun.instance.ModifyBalls();
+                yield return ArcadeRun.instance.WaitRemainder();
+            }
 
             #region Start Count Down
             gameplayinfo.gameObject.SetActive(true);
@@ -2672,6 +2610,141 @@ public class Database : MonoBehaviour
     public void SnapCharacterFlushToHomeWall(Transform paddle, Facing facing)
     {
         SnapFlushToHomeWall(paddle, facing);
+    }
+
+    public void SpawnJoinedPlayer(Player p, int infoSideIndex)
+    {
+        if (p == null || p.arcadeOut)
+            return;
+
+        if (p.character == null || p.character.prefabs == null)
+        {
+            if (CharacterCreationManager.IsActive && p.index == 0)
+            {
+                Debug.Log("[CharacterCreation] Draft has no character prefab yet — assign one in Object Assign (Ctrl+Shift+O).");
+                return;
+            }
+            if (!p.ticWingForm)
+            {
+                Debug.LogError($"StartGame: Player index={p.index} name='{p.name}' has no character prefab after roster bind. Skipping spawn.");
+                return;
+            }
+        }
+
+        if (p.spawnedPlayer != null)
+        {
+            Destroy(p.spawnedPlayer);
+            p.spawnedPlayer = null;
+        }
+        if (p.spawnedLifeline != null)
+        {
+            Destroy(p.spawnedLifeline);
+            p.spawnedLifeline = null;
+        }
+
+        Vector3 fRot;
+        switch (p.facing)
+        {
+            case Facing.Up:
+                fRot = new Vector3(0, 0, 0);
+                break;
+            case Facing.Down:
+                fRot = new Vector3(0, 0, 180);
+                break;
+            case Facing.Left:
+                fRot = new Vector3(0, 0, 90);
+                break;
+            case Facing.Right:
+                fRot = new Vector3(0, 0, 270);
+                break;
+            default:
+                fRot = Vector3.zero;
+                break;
+        }
+
+        Vector3 pPos = GetSpawnWallPos(p.facing);
+
+        if (p.ticWingForm)
+        {
+            SpawnTicWingBumperPlayer(p, pPos, fRot);
+        }
+        else
+        {
+            p.spawnedPlayer = Instantiate(p.character.prefabs);
+            p.spawnedPlayer.transform.position = pPos;
+            p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
+            p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;
+
+            if (Mathf.Abs(p.ticWallSideOffset) > 0.01f)
+            {
+                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * p.character.positionOffset.y;
+                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.ticWallSideOffset;
+            }
+            else
+            {
+                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up
+                    * (p.character.positionOffset.y * ((p.position == 0) ? 1f : 1.5f));
+            }
+
+            p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.forward * p.character.positionOffset.z;
+
+            if (p.spawnedPlayer.GetComponent<MuriMove>() == null
+                && p.spawnedPlayer.GetComponent<Yuotay>() == null)
+            {
+                float inset = 0f;
+                if (p.spawnedPlayer.GetComponent<Gaurd>() != null)
+                    inset = Gaurd.BallBehindGap;
+                else if (p.spawnedPlayer.GetComponent<Tic>() == null && p.character != null)
+                    inset = Mathf.Max(0f, p.character.positionOffset.y);
+                SnapFlushToHomeWall(p.spawnedPlayer.transform, p.facing, inset);
+            }
+
+            PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
+            if (pG != null)
+                pG.playerIndex = p.index;
+
+            if (p.computer)
+                ComputerBrain.Ensure(p.spawnedPlayer);
+
+            if (p.spawnedPlayer.GetComponent<Gaurd>() == null
+                && !string.IsNullOrEmpty(p.name)
+                && p.name.Equals("Gaurd", StringComparison.OrdinalIgnoreCase))
+                p.spawnedPlayer.AddComponent<Gaurd>();
+
+            if (!SkipPlayerSkin.ShouldSkipRoot(p.spawnedPlayer)
+                && p.spawnedPlayer.GetComponentInChildren<Field_Info>(true) == null)
+                PlayerSkin.Apply(p.spawnedPlayer, p, this);
+
+            MuriMove muri = p.spawnedPlayer.GetComponent<MuriMove>();
+            if (muri != null)
+                muri.PlaceOnBestSupport();
+
+            if (p.lifeline != null && p.lifeline.prefabs != null && !p.celarusShareGuest)
+            {
+                p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
+                PlaceLifelineOnWall(p.spawnedLifeline, p.facing, p.spawnedPlayer.transform.position, fRot, p.lifeline);
+                SpreadTriggerLifelineParts(p.spawnedLifeline, p);
+                PlayerGrab lifePG = p.spawnedLifeline.GetComponent<PlayerGrab>();
+                if (lifePG != null)
+                    lifePG.playerIndex = p.index;
+                if (!SkipPlayerSkin.ShouldSkipRoot(p.spawnedLifeline))
+                    PlayerSkin.Apply(p.spawnedLifeline, p, this);
+            }
+        }
+
+        GameObject sIB = p.playerInfo != null ? p.playerInfo : playerInfo;
+        if (sIB != null)
+        {
+            GameObject iB = Instantiate(sIB);
+            if ((infoSideIndex % 2) == 0)
+                iB.transform.SetParent(playerInfoHolderRS);
+            else
+                iB.transform.SetParent(playerInfoHolderLS);
+
+            PlayerGrab ibpG = iB.GetComponent<PlayerGrab>();
+            if (ibpG != null)
+                ibpG.playerIndex = p.index;
+        }
     }
 
     /// <summary>

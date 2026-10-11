@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40b457e84db8bc749afb6ea37b14ff3b, type: 3}
+  m_Name: Solo 6 Heavy Hands
+  m_EditorClassIdentifier: Assembly-CSharp::ArcadeMatch
+  matchName: Heavy Hands
+  challengeLevel: 6
+  coop: 0
+  fieldName: Test Zone
+  ballNames:
+  - Size Ball
+  seats:
+  - characterName: 
+    humanSlot: 0
+    facing: 0
+    team: 1
+    wallOffset: 0
+  - characterName: Bahrue
+    humanSlot: -1
+    facing: 1
+    team: 2
+    wallOffset: -2.2
+  - characterName: Yuotay
+    humanSlot: -1
+    facing: 1
+    team: 2
+    wallOffset: 2.2
+  ballDamageScale: 2
+  ballSizeScale: 1.15
+  hazards: 1
+  enemiesRegenerate: 0
+  regenInterval: 3.5
+  regenAmount: 1
+  enemiesInfiniteHealth: 0
+  surviveSeconds: 0
+  coopSplit: 0

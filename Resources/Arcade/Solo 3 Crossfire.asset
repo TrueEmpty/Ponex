@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40b457e84db8bc749afb6ea37b14ff3b, type: 3}
+  m_Name: Solo 3 Crossfire
+  m_EditorClassIdentifier: Assembly-CSharp::ArcadeMatch
+  matchName: Crossfire
+  challengeLevel: 3
+  coop: 0
+  fieldName: Kingdom of Nuoryn
+  ballNames:
+  - Basic Ball
+  seats:
+  - characterName: 
+    humanSlot: 0
+    facing: 0
+    team: 1
+    wallOffset: 0
+  - characterName: Trigger
+    humanSlot: -1
+    facing: 3
+    team: 3
+    wallOffset: 0
+  - characterName: Gaurd
+    humanSlot: -1
+    facing: 2
+    team: 4
+    wallOffset: 0
+  ballDamageScale: 1
+  ballSizeScale: 1
+  hazards: 1
+  enemiesRegenerate: 0
+  regenInterval: 3.5
+  regenAmount: 1
+  enemiesInfiniteHealth: 0
+  surviveSeconds: 0
+  coopSplit: 0

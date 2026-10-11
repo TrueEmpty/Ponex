@@ -251,4 +251,26 @@ public class CharacterSelect : MonoBehaviour
         if (p.pso != null)
             p.pso.cpuControl = -1;
     }
+
+    public void PruneMissingPortraits()
+    {
+        if (db == null)
+            db = Database.instance;
+        for (int i = portaits.Count - 1; i >= 0; i--)
+        {
+            PortraitClicked portrait = portaits[i];
+            if (portrait == null)
+            {
+                portaits.RemoveAt(i);
+                continue;
+            }
+
+            bool kept = db != null && db.players != null && db.players.Exists(p => p != null && p.index == portrait.attachedIndex);
+            if (kept)
+                continue;
+
+            Destroy(portrait.gameObject);
+            portaits.RemoveAt(i);
+        }
+    }
 }

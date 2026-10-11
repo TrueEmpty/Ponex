@@ -76,6 +76,15 @@ public class Player
     [System.NonSerialized] public bool ticHostFused;
     /// <summary>Tic coop: lateral wall offset for side-by-side machines.</summary>
     [System.NonSerialized] public float ticWallSideOffset;
+
+    /// <summary>Arcade opponent added for the current round.</summary>
+    [System.NonSerialized] public bool arcadeCpu;
+    /// <summary>Coop partner who was still down when the round was won. Skipped until a new run.</summary>
+    [System.NonSerialized] public bool arcadeOut;
+    /// <summary>Arcade enemy that cannot be knocked out.</summary>
+    [System.NonSerialized] public bool arcadeInfiniteHealth;
+    /// <summary>0 or 1 for the humans who started this arcade run. -1 otherwise.</summary>
+    [System.NonSerialized] public int arcadeHumanSlot = -1;
     /// <summary>Tic coop: partner player index (-1 none).</summary>
     [System.NonSerialized] public int ticPartnerIndex = -1;
 
@@ -414,6 +423,11 @@ public class Player
             currentHealth -= amount;
             if (currentHealth < floor)
                 currentHealth = floor;
+            if (arcadeInfiniteHealth)
+            {
+                currentHealth = maxHealth;
+                return 0;
+            }
             int leftover = amount - lost;
             if (leftover > 0)
                 Stats.pendingOverkill += leftover;
