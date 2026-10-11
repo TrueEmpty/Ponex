@@ -81,6 +81,19 @@ public class PlayerSelectorObj : MonoBehaviour
     {
         if (cLink != null)
         {
+            if (db != null && db.storySharedCursor && !IsSharedCursorOwner())
+            {
+                if (circle != null)
+                    circle.enabled = false;
+                if (clickimg != null)
+                    clickimg.enabled = false;
+                return;
+            }
+            if (circle != null)
+                circle.enabled = true;
+            if (clickimg != null)
+                clickimg.enabled = true;
+
             // Win screen: while manually scrolling a stats card, Move scrolls text — freeze cursor/clicks
             if (IsWinScrolling())
             {
@@ -166,6 +179,84 @@ public class PlayerSelectorObj : MonoBehaviour
         return ControllingCPU() ? cpuControl : pI;
     }
 
+    bool SharedCursor()
+    {
+        return db != null && db.storySharedCursor;
+    }
+
+    bool IsSharedCursorOwner()
+    {
+        if (!SharedCursor())
+            return true;
+        PlayerSelectorObj[] all = FindObjectsByType<PlayerSelectorObj>(FindObjectsInactive.Exclude);
+        int best = pI;
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] != null && all[i].pI < best)
+                best = all[i].pI;
+        }
+        return pI == best;
+    }
+
+    Vector2 ReadMove()
+    {
+        if (!SharedCursor())
+        {
+            ControllerButtons own = cLink != null ? cLink["Move"] : null;
+            return own != null ? own.value : Vector2.zero;
+        }
+
+        Vector2 sum = Vector2.zero;
+        if (db.controllers != null)
+        {
+            for (int i = 0; i < db.controllers.Count; i++)
+            {
+                ControllerLink link = db.controllers[i];
+                ControllerButtons move = link != null ? link["Move"] : null;
+                if (move != null)
+                    sum += move.value;
+            }
+        }
+        if (sum.sqrMagnitude > 1f)
+            sum.Normalize();
+        return sum;
+    }
+
+    bool ReadPressed(string action)
+    {
+        return ReadButton(action, false);
+    }
+
+    bool ReadPressedDown(string action)
+    {
+        return ReadButton(action, true);
+    }
+
+    bool ReadButton(string action, bool down)
+    {
+        if (!SharedCursor())
+        {
+            ControllerButtons own = cLink != null ? cLink[action] : null;
+            if (own == null)
+                return false;
+            return down ? own.wasPressedThisFrame : own.isPressed;
+        }
+
+        if (db.controllers != null)
+        {
+            for (int i = 0; i < db.controllers.Count; i++)
+            {
+                ControllerLink link = db.controllers[i];
+                ControllerButtons button = link != null ? link[action] : null;
+                if (button == null)
+                    continue;
+                if (down ? button.wasPressedThisFrame : button.isPressed)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public void SetCircleColor(PlayerColors c)
     {
         pC = c;
@@ -176,9 +267,9 @@ public class PlayerSelectorObj : MonoBehaviour
         if (rt == null)
             return;
 
-        Vector2 move = cLink["Move"].value;
+        Vector2 move = ReadMove();
 
-        int multiplier = cLink["Sprint"].isPressed ? 2 : 1;
+        int multiplier = ReadPressed("Sprint") ? 2 : 1;
 
         float dt = Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
         Vector2 current = rt.anchoredPosition;
@@ -381,12 +472,10 @@ public class PlayerSelectorObj : MonoBehaviour
 
     void HandleActions()
     {
-        string clickAction = "Jump";
-        ControllerButtons clickBtn = cLink != null ? cLink[clickAction] : null;
-        if (clickBtn == null)
+        if (cLink == null || (cLink["Jump"] == null && !SharedCursor()))
             return;
 
-        if (clickBtn.wasPressedThisFrame &&
+        if (ReadPressedDown("Jump") &&
             clicking == 0 &&
             !cooldown)
         {
@@ -395,7 +484,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
         if (clicking > 0)
         {
-            if (!clickBtn.isPressed)
+            if (!ReadPressed("Jump"))
             {
                 cooldown = true;
             }
@@ -413,7 +502,7 @@ public class PlayerSelectorObj : MonoBehaviour
 
             float clickDt = Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
             clicking +=
-                ((clickBtn.isPressed && !cooldown) ? .25f : 20)
+                ((ReadPressed("Jump") && !cooldown) ? .25f : 20)
                 * clickDt;
 
             if (clicking > 1)

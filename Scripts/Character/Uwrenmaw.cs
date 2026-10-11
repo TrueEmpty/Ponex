@@ -6,6 +6,7 @@ using UnityEngine;
 /// Head is about half of Nari's head mesh (1.3 → 0.65). Health is 3 per finished pillar.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
+[DefaultExecutionOrder(200)]
 public class Uwrenmaw : MonoBehaviour
 {
     const int SegmentCount = 8;
@@ -40,6 +41,9 @@ public class Uwrenmaw : MonoBehaviour
     bool leftIgnoreRange;
     bool placed;
     float flySpeed;
+    float reverseLockUntil;
+    Renderer headRend;
+    Material headMat;
     Vector3 flyDir = Vector3.up;
 
     public float circleDashMultiply = 2.15f;
@@ -81,7 +85,8 @@ public class Uwrenmaw : MonoBehaviour
             Collider extra = view.GetComponent<Collider>();
             if (extra != null)
                 Destroy(extra);
-            Paint(view.GetComponent<Renderer>(), UwrenmawArt.Body());
+            headRend = view.GetComponent<Renderer>();
+            Paint(headRend, Texture2D.whiteTexture);
         }
 
         BuildTail();
@@ -156,19 +161,20 @@ public class Uwrenmaw : MonoBehaviour
             if (radial.sqrMagnitude < 0.0001f)
                 radial = Vector3.right;
             radial = radial.normalized * OrbitRadius;
-            Vector3 tangent = new Vector3(-radial.y, radial.x, 0f) * circleSign;
             float ang = angSpeed * Time.fixedDeltaTime;
             Vector3 spun = Quaternion.AngleAxis(ang * Mathf.Rad2Deg * circleSign, Vector3.forward) * radial;
             Vector3 next = center + spun;
             next.z = playZ;
             if (WallAhead(next))
             {
-                circleSign *= -1f;
+                ReverseCircle();
                 spun = Quaternion.AngleAxis(ang * Mathf.Rad2Deg * circleSign, Vector3.forward) * radial;
                 next = center + spun;
                 next.z = playZ;
+                if (WallAhead(next))
+                    next = pos;
             }
-            radial = spun;
+            Vector3 tangent = new Vector3(-radial.y, radial.x, 0f) * circleSign;
             rb.MovePosition(next);
             rb.linearVelocity = tangent.normalized * speed;
             flyDir = tangent.normalized;
@@ -228,15 +234,10 @@ public class Uwrenmaw : MonoBehaviour
         if (pg == null || pg.player == null)
             return;
         Color scheme = PlayerSkin.GetColor(pg.player, db);
+        scheme.a = 1f;
+        ApplyHeadColor(scheme);
         Color tint = Color.Lerp(Color.white, scheme, 0.82f);
         tint.a = 1f;
-        Renderer[] body = GetComponentsInChildren<Renderer>(true);
-        for (int i = 0; i < body.Length; i++)
-        {
-            if (body[i] == null || body[i] is ParticleSystemRenderer)
-                continue;
-            TintRenderer(body[i], tint);
-        }
         for (int i = 0; i < segments.Count; i++)
         {
             if (segments[i] == null)
@@ -273,7 +274,7 @@ public class Uwrenmaw : MonoBehaviour
         if (orbit != null)
         {
             if (!ball)
-                circleSign *= -1f;
+                ReverseCircle();
             return;
         }
 
@@ -420,6 +421,49 @@ public class Uwrenmaw : MonoBehaviour
         return PaddleWall.IntoField(pg.player.facing);
     }
 
+    void ReverseCircle()
+    {
+        if (Time.time < reverseLockUntil)
+            return;
+        circleSign *= -1f;
+        reverseLockUntil = Time.time + 0.45f;
+    }
+
+    void ApplyHeadColor(Color scheme)
+    {
+        if (headRend == null)
+        {
+            Transform head = transform.Find("Head");
+            if (head != null)
+                headRend = head.GetComponent<Renderer>();
+            if (headRend == null)
+                headRend = GetComponent<Renderer>();
+        }
+        if (headRend == null)
+            return;
+
+        if (headMat == null)
+        {
+            Shader shader = Shader.Find("Standard");
+            if (shader == null)
+                shader = Shader.Find("Unlit/Color");
+            if (shader == null)
+                return;
+            headMat = new Material(shader);
+            headMat.mainTexture = Texture2D.whiteTexture;
+        }
+
+        headMat.color = scheme;
+        if (headMat.HasProperty("_Color"))
+            headMat.SetColor("_Color", scheme);
+        if (headMat.HasProperty("_BaseColor"))
+            headMat.SetColor("_BaseColor", scheme);
+        if (headMat.HasProperty("_EmissionColor"))
+            headMat.SetColor("_EmissionColor", Color.black);
+        headRend.sharedMaterial = headMat;
+        headRend.SetPropertyBlock(null);
+    }
+
     bool WallAhead(Vector3 spot)
     {
         Collider[] hits = Physics.OverlapSphere(spot, 0.42f, ~0, QueryTriggerInteraction.Ignore);
@@ -557,12 +601,13 @@ public class Uwrenmaw : MonoBehaviour
         PlayerGrab other = ball != null ? ball.GetComponent<PlayerGrab>() : null;
         if (other == null && ball != null)
             other = ball.GetComponentInParent<PlayerGrab>();
+        bool ownOrTeam = false;
         if (other != null && other.IsLinked() && other.player != null && pg.player != null)
         {
             if (other.playerIndex == pg.playerIndex)
-                return;
-            if (other.player.team == pg.player.team && other.playerIndex != pg.playerIndex)
-                return;
+                ownOrTeam = true;
+            else if (other.player.team == pg.player.team && other.playerIndex != pg.playerIndex)
+                ownOrTeam = true;
         }
 
         int ballId = ball != null ? ball.GetEntityId().GetHashCode() : 0;
@@ -585,7 +630,7 @@ public class Uwrenmaw : MonoBehaviour
         if (lost > 0)
         {
             pg.player.RecordGoalConceded(lost);
-            if (other != null && other.IsLinked() && other.player != null)
+            if (!ownOrTeam && other != null && other.IsLinked() && other.player != null)
             {
                 other.player.RecordDamageDealt(lost, pg.player);
                 other.player.RecordGoalScored(lost, pg.player);

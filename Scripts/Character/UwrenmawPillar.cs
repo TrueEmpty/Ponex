@@ -197,8 +197,22 @@ public class UwrenmawPillar : MonoBehaviour
     {
         if (!complete || owner == null || hp <= 0 || collision == null)
             return;
-        if (!collision.collider.CompareTag("Ball"))
+        if (!IsDamagingHit(collision.collider))
             return;
         owner.DamagePillar(this, collision.gameObject);
+    }
+
+    static bool IsDamagingHit(Collider hit)
+    {
+        if (hit == null)
+            return false;
+        if (hit.GetComponent<BallInfo>() != null || hit.GetComponentInParent<BallInfo>() != null)
+            return true;
+        if (hit.GetComponent<ExplosionBall>() != null || hit.GetComponentInParent<ExplosionBall>() != null)
+            return true;
+        if (hit.GetComponent<DroppedMine>() != null || hit.GetComponentInParent<DroppedMine>() != null)
+            return true;
+        string tag = hit.tag;
+        return tag == "Ball";
     }
 }

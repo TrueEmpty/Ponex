@@ -98,6 +98,10 @@ public class Database : MonoBehaviour
     public static bool MatchPlayActive => instance != null && instance.gameStart;
     public GridControl mmOp;
     public bool gameStart = false;
+    public bool skipStoryCutscenes = false;
+    public bool storyPlaying = false;
+    public bool storyPauseOpen = false;
+    public bool storySharedCursor = false;
     /// <summary>True while AI Training session is driving matches (Training scene / panel).</summary>
     public bool aiTrainingSession = false;
     #endregion
@@ -130,24 +134,30 @@ public class Database : MonoBehaviour
 
     private void Awake()
     {
-        if(instance != null)
+        if(instance != null && instance != this)
         {
-            Destroy(this);
+            Destroy(gameObject);
+            return;
         }
         else
         {
             instance = this;
+            DontDestroyOnLoad(gameObject);
+            PersistCharacterControllers();
             EnsureBallSlots();
             EnsurePlayerColorSchemes();
             LoadCharactersFromAssets();
             LoadFieldsFromAssets();
             LoadMatchPrefs();
+        StoryProgress.EnsureLoaded(this);
         GameSettings.EnsureLoaded();
         AudioSettings.Ensure();
         FieldCatalog.EnsureRegistered(this);
         // Before ControllerLink.Start (-200) so Character Creation can claim pads
             CharacterCreationManager.EnsureExists();
             TrainingManager.EnsureExists();
+            if (GetComponent<StoryMenuController>() == null)
+                gameObject.AddComponent<StoryMenuController>();
         }
     }
 
@@ -156,6 +166,7 @@ public class Database : MonoBehaviour
     {
         mm = MenuManager.instance;
         cS = CharacterSelect.instance;
+        PersistCharacterControllers();
         ComputerAI.EnsureLoaded();
         if (characters == null || characters.Count == 0)
             LoadCharactersFromAssets();
@@ -1215,10 +1226,26 @@ public class Database : MonoBehaviour
 
     bool? lastPlayerSelectorsShown;
 
+    void PersistCharacterControllers()
+    {
+        GameObject named = GameObject.Find("Character Controllers");
+        if (named != null && named != gameObject)
+            DontDestroyOnLoad(named);
+
+        ControllerLink[] links = FindObjectsByType<ControllerLink>(FindObjectsInactive.Include);
+        for (int i = 0; i < links.Length; i++)
+        {
+            if (links[i] != null)
+                DontDestroyOnLoad(links[i].gameObject);
+        }
+    }
+
     void ShowAndHidePlayerSelectors()
     {
         // Hide during active match; show on the win screen and the pause menu
         bool show = winnerScreen || pauseMenuOpen || !(gameStart || startingGame);
+        if (storyPlaying)
+            show = storyPauseOpen;
         if (lastPlayerSelectorsShown.HasValue && lastPlayerSelectorsShown.Value == show)
             return;
         lastPlayerSelectorsShown = show;

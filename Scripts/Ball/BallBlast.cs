@@ -14,6 +14,7 @@ public static class BallBlast
 
     static readonly Collider[] overlapBuffer = new Collider[64];
     static readonly HashSet<int> hitPlayers = new HashSet<int>();
+    static readonly HashSet<int> hitPillars = new HashSet<int>();
 
     public static bool TreatCollisionAsExplosion(GameObject ball)
     {
@@ -77,6 +78,7 @@ public static class BallBlast
 
         int blastId = source.GetEntityId().GetHashCode();
         hitPlayers.Clear();
+        hitPillars.Clear();
 
         int count = Physics.OverlapSphereNonAlloc(center, radius, overlapBuffer);
         for (int i = 0; i < count; i++)
@@ -98,6 +100,12 @@ public static class BallBlast
                     otherRb.linearVelocity += away * pushForce;
                 }
             }
+
+            UwrenmawPillar pillar = hit.GetComponent<UwrenmawPillar>();
+            if (pillar == null)
+                pillar = hit.GetComponentInParent<UwrenmawPillar>();
+            if (pillar != null && pillar.owner != null && hitPillars.Add(pillar.GetEntityId().GetHashCode()))
+                pillar.owner.DamagePillar(pillar, source);
 
             bool isLifeline = hit.CompareTag("Lifeline")
                 || (hit.transform.parent != null && hit.transform.parent.CompareTag("Lifeline"))
