@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
   rosterOrder: 11
   characterName: Tic
-  maxHealth: 7
+  maxHealth: 5
   movementSpeed: 5
   pushBack: 1000
   ignoreFacing: 0
@@ -28,8 +28,8 @@ MonoBehaviour:
     amount: 30
     max: 50
     cost: 50
-    speed: 5
-    readyPercent: 3.819505
+    speed: 1
+    readyPercent: 0
   dash:
     amount: 2
     max: 2

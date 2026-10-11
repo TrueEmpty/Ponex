@@ -31,10 +31,10 @@ MonoBehaviour:
     speed: 5
     readyPercent: 0
   dash:
-    amount: 2
-    max: 2
+    amount: 6
+    max: 6
     cost: 1
-    speed: 3
+    speed: 0.5
     readyPercent: 0
   character:
     prefabs: {fileID: 3118831733282305689, guid: 10bd51cce9a375f49bf74961f45a7ac8, type: 3}

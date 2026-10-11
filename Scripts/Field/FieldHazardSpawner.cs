@@ -302,46 +302,53 @@ public static class FieldHazardSpawner
 
         float half = (field.size + 10) * 0.5f;
         float inset = 7f;
+        float limit = Mathf.Max(2f, half - inset);
         float z = Database.instance != null ? Database.instance.FieldPlaySize : fieldRoot.position.z;
-        Vector3[] spots =
-        {
-            new Vector3(-half * 0.55f, half * 0.34f, 0f),
-            new Vector3(-half * 0.18f, half * 0.5f, 0f),
-            new Vector3(half * 0.22f, half * 0.46f, 0f),
-            new Vector3(half * 0.52f, half * 0.22f, 0f),
-            new Vector3(-half * 0.48f, -half * 0.18f, 0f),
-            new Vector3(-half * 0.16f, -half * 0.42f, 0f),
-            new Vector3(half * 0.14f, -half * 0.5f, 0f),
-            new Vector3(half * 0.48f, -half * 0.28f, 0f),
-            new Vector3(0f, half * 0.08f, 0f),
-            new Vector3(half * 0.08f, -half * 0.08f, 0f)
-        };
+        int count = Random.Range(4, 11);
+        float minSep = 4.2f;
+        List<Vector3> occupied = new List<Vector3>(count);
 
-        for (int i = 0; i < spots.Length; i++)
+        for (int placed = 0; placed < count; placed++)
         {
-            Vector3 local = spots[i];
-            if (Mathf.Abs(local.x) > half - inset)
-                local.x = Mathf.Sign(local.x) * (half - inset);
-            if (Mathf.Abs(local.y) > half - inset)
-                local.y = Mathf.Sign(local.y) * (half - inset);
-            // Keep clear of the four wall-center player spawns
-            if (Mathf.Abs(local.x) < 3.5f && Mathf.Abs(Mathf.Abs(local.y) - half) < 6f)
-                local.x += 6f;
-            if (Mathf.Abs(local.y) < 3.5f && Mathf.Abs(Mathf.Abs(local.x) - half) < 6f)
-                local.y += 6f;
+            Vector3 local = Vector3.zero;
+            bool found = false;
+            for (int attempt = 0; attempt < 28; attempt++)
+            {
+                local = new Vector3(Random.Range(-limit, limit), Random.Range(-limit, limit), 0f);
+                if (BlocksPlayerSpawn(local, half))
+                    continue;
+                Vector3 worldTry = fieldRoot.TransformPoint(local);
+                if (TooClose(worldTry, occupied, minSep))
+                    continue;
+                found = true;
+                break;
+            }
+            if (!found)
+                break;
 
             GameObject go = Object.Instantiate(prefab, fieldRoot);
             go.name = "Sand Dune";
             go.transform.localPosition = new Vector3(local.x, local.y, 0f);
             go.transform.localRotation = Quaternion.Euler(0f, 0f, 30f);
             Vector3 world = go.transform.position;
-            // Sit lower than a half-buried mound so only a low crown sticks up.
             float halfDepth = Mathf.Abs(go.transform.lossyScale.z) * 0.42f;
             world.z = z + halfDepth;
             go.transform.position = world;
+            occupied.Add(world);
             if (go.GetComponent<SandDuneDeflect>() == null)
                 go.AddComponent<SandDuneDeflect>();
         }
+    }
+
+    static bool BlocksPlayerSpawn(Vector3 local, float half)
+    {
+        const float sideClear = 3.5f;
+        const float wallClear = 6f;
+        if (Mathf.Abs(local.x) < sideClear && Mathf.Abs(Mathf.Abs(local.y) - half) < wallClear)
+            return true;
+        if (Mathf.Abs(local.y) < sideClear && Mathf.Abs(Mathf.Abs(local.x) - half) < wallClear)
+            return true;
+        return false;
     }
 
     static void SetupDeepHarborWater(Transform fieldRoot, Field field)

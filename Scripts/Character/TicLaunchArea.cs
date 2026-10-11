@@ -43,6 +43,10 @@ public class TicLaunchArea : MonoBehaviour
         owner = tic;
     }
 
+    public bool HasHeldBall => heldBalls.Count > 0;
+
+    public bool HasBumperInBay => inside.Count > 0;
+
     public void RegisterBumperPassThrough(TicBumper bumper)
     {
         if (bumper == null)

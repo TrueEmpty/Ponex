@@ -16,7 +16,7 @@ public class ArcadeRun : MonoBehaviour
     public static ArcadeRun instance;
     public static bool Running => instance != null && instance.running;
 
-    const float IntroSeconds = 3f;
+    const float IntroSeconds = 5f;
     const float ReviveHoldSeconds = 2f;
     const float ReviveRange = 3.4f;
 
@@ -770,6 +770,8 @@ public class ArcadeRun : MonoBehaviour
         card = BuildVersusCard();
     }
 
+    public bool HasEndCard => endCard != null;
+
     public void HideCard()
     {
         if (card != null)
@@ -843,7 +845,7 @@ public class ArcadeRun : MonoBehaviour
         root.offsetMax = Vector2.zero;
 
         Image bg = endCard.AddComponent<Image>();
-        bg.color = new Color(0.02f, 0.03f, 0.06f, 0.88f);
+        bg.color = new Color(0.02f, 0.03f, 0.06f, 1f);
 
         Font font = MenuFont();
         if (won)
@@ -963,7 +965,7 @@ public class ArcadeRun : MonoBehaviour
         root.offsetMax = Vector2.zero;
 
         Image bg = rootGo.AddComponent<Image>();
-        bg.color = new Color(0.02f, 0.04f, 0.08f, 0.9f);
+        bg.color = new Color(0.02f, 0.04f, 0.08f, 1f);
         bg.raycastTarget = true;
 
         Font font = MenuFont();
@@ -971,14 +973,16 @@ public class ArcadeRun : MonoBehaviour
         string diffName = DifficultyLabel(difficulty);
         string field = current != null ? current.fieldName : "";
 
+        MakeText(root, "Match Number", "Match " + Mathf.Clamp(level, 1, 10), 40, FontStyle.Bold, TextAnchor.MiddleLeft,
+            new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(230f, -52f), new Vector2(400f, 64f), font, Color.white);
         MakeText(root, "Match Name", matchName, 48, FontStyle.Bold, TextAnchor.MiddleCenter,
             new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(900f, 64f), font, Color.white);
         MakeText(root, "Difficulty", diffName, 26, FontStyle.Bold, TextAnchor.MiddleCenter,
             new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -88f), new Vector2(500f, 36f), font, DifficultyColor(difficulty));
         MakeText(root, "Vs", "Vs", 72, FontStyle.Bold, TextAnchor.MiddleCenter,
             new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200f, 90f), font, Color.white);
-        MakeText(root, "Level", field, 18, FontStyle.Normal, TextAnchor.MiddleCenter,
-            new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 28f), new Vector2(700f, 28f), font, new Color(0.8f, 0.86f, 0.92f, 1f));
+        MakeText(root, "Level", field, 22, FontStyle.Normal, TextAnchor.MiddleCenter,
+            new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 36f), new Vector2(700f, 36f), font, new Color(0.8f, 0.86f, 0.92f, 1f));
 
         Image line = NewImage(root, "Diagonal", Color.white);
         RectTransform lineRt = line.rectTransform;
@@ -993,29 +997,33 @@ public class ArcadeRun : MonoBehaviour
             List<Player> humans = ActiveHumans(db);
             if (humans.Count == 0)
                 humans = LivingLobbyHumans(db);
+            const float humanSize = 280f;
             for (int i = 0; i < humans.Count; i++)
             {
-                float x = 90f + i * 150f;
-                MakeText(root, "P" + (humans[i].index + 1), "P" + (humans[i].index + 1), 22, FontStyle.Bold, TextAnchor.MiddleCenter,
-                    new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(x + 48f, 250f), new Vector2(120f, 30f), font, Color.white);
-                Portrait(root, humans[i], new Vector2(x, 130f), new Vector2(0f, 0f));
+                float x = 70f + i * (humanSize + 28f);
+                MakeText(root, "P" + (humans[i].index + 1), "P" + (humans[i].index + 1), 36, FontStyle.Bold, TextAnchor.MiddleCenter,
+                    new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(x + humanSize * 0.5f, 90f + humanSize + 28f), new Vector2(humanSize, 44f), font, Color.white);
+                Portrait(root, humans[i], new Vector2(x, 90f), new Vector2(0f, 0f), humanSize);
             }
 
             List<Player> foes = Foes(db);
+            int cols = foes.Count <= 3 ? Mathf.Max(1, foes.Count) : (foes.Count <= 4 ? 2 : 3);
+            float foeSize = foes.Count > 4 ? 200f : 240f;
+            float foeStep = foeSize + 16f;
             for (int i = 0; i < foes.Count; i++)
             {
-                int col = i % 4;
-                int row = i / 4;
-                float x = -90f - col * 120f;
-                float y = -80f - row * 120f;
-                Portrait(root, foes[i], new Vector2(x, y), new Vector2(1f, 1f));
+                int col = i % cols;
+                int row = i / cols;
+                float x = -48f - col * foeStep;
+                float y = -150f - row * foeStep;
+                Portrait(root, foes[i], new Vector2(x, y), new Vector2(1f, 1f), foeSize);
             }
         }
 
         return rootGo;
     }
 
-    void Portrait(RectTransform parent, Player p, Vector2 anchored, Vector2 anchor)
+    void Portrait(RectTransform parent, Player p, Vector2 anchored, Vector2 anchor, float size = 96f)
     {
         GameObject go = new GameObject("Portrait", typeof(RectTransform), typeof(CanvasRenderer), typeof(RawImage));
         go.layer = 5;
@@ -1025,7 +1033,7 @@ public class ArcadeRun : MonoBehaviour
         rt.anchorMax = anchor;
         rt.pivot = anchor;
         rt.anchoredPosition = anchored;
-        rt.sizeDelta = new Vector2(96f, 96f);
+        rt.sizeDelta = new Vector2(size, size);
         RawImage image = go.GetComponent<RawImage>();
         image.texture = p != null ? p.portrait : null;
         image.color = p != null && p.portrait == null ? p.portraitColor : Color.white;

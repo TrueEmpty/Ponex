@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.UI;
 
 public class Database : MonoBehaviour
@@ -968,17 +969,42 @@ public class Database : MonoBehaviour
 
     bool MenuPressedThisFrame()
     {
-        if (controllers == null)
-            return false;
-
-        for (int i = 0; i < controllers.Count; i++)
+        if (controllers != null)
         {
-            ControllerLink link = controllers[i];
-            if (link == null)
-                continue;
-            ControllerButtons menu = link["Menu"];
-            if (menu != null && menu.wasPressedThisFrame)
+            for (int i = 0; i < controllers.Count; i++)
+            {
+                ControllerLink link = controllers[i];
+                if (link == null)
+                    continue;
+                ControllerButtons menu = link["Menu"];
+                if (menu != null && menu.wasPressedThisFrame)
+                    return true;
+            }
+        }
+
+        return GamepadStartPressed();
+    }
+
+    static bool GamepadStartPressed()
+    {
+        for (int i = 0; i < Gamepad.all.Count; i++)
+        {
+            Gamepad pad = Gamepad.all[i];
+            if (pad != null && pad.startButton.wasPressedThisFrame)
                 return true;
+        }
+
+        for (int i = 0; i < Joystick.all.Count; i++)
+        {
+            Joystick joy = Joystick.all[i];
+            if (joy == null)
+                continue;
+            for (int n = 7; n <= 9; n++)
+            {
+                ButtonControl button = joy.TryGetChildControl("button" + n) as ButtonControl;
+                if (button != null && button.wasPressedThisFrame)
+                    return true;
+            }
         }
 
         return false;
@@ -1003,7 +1029,10 @@ public class Database : MonoBehaviour
             return;
         if (winnerScreen || someoneWon)
             return;
-        if (!pauseMenuOpen && !PlayingMenuOpen())
+        if (ArcadeRun.instance != null && ArcadeRun.instance.HasEndCard)
+            return;
+        bool arcadeLive = gametype == Gametype.Arcade && (gameStart || startingGame);
+        if (!pauseMenuOpen && !PlayingMenuOpen() && !arcadeLive)
             return;
 
         if (pauseMenuOpen)
@@ -1024,11 +1053,13 @@ public class Database : MonoBehaviour
             Time.timeScale = 0f;
 
         mm.OpenMenu("Pause");
+        RaisePauseMenu();
         if (playerSelectors != null)
         {
             playerSelectors.gameObject.SetActive(true);
-            EnsureSelectorsDrawOnTop();
+            EnsureSelectorsDrawOnTop(860);
             lastPlayerSelectorsShown = true;
+            lastSelectorSort = 860;
         }
 
         if (players == null)
@@ -1181,14 +1212,19 @@ public class Database : MonoBehaviour
             mm = MenuManager.instance;
         if (mm != null)
         {
-            if (mm.openMenu != null && mm.openMenu.Count > 1)
-                mm.BackUnitl("Character Select");
-            MenuClass open = mm.GetOpenMenu(true);
-            if (open == null || string.IsNullOrEmpty(open.title)
-                || !open.title.Trim().Equals("Character Select", StringComparison.OrdinalIgnoreCase))
+            // Pop match screens until Character Select is on top. BackUnitl always
+            // removes one menu first, which drops Character Select and leaves Main Menu under it.
+            while (mm.openMenu != null && mm.openMenu.Count > 1)
             {
-                mm.OpenMenu("Character Select");
+                string top = mm.openMenu[mm.openMenu.Count - 1];
+                if (!string.IsNullOrEmpty(top)
+                    && top.Trim().Equals("Character Select", StringComparison.OrdinalIgnoreCase))
+                    break;
+                mm.BackMenu();
             }
+
+            if (!mm.IsMenuVisible("Character Select"))
+                mm.OpenMenu("Character Select");
         }
 
         if (players == null)
@@ -1234,6 +1270,7 @@ public class Database : MonoBehaviour
     }
 
     bool? lastPlayerSelectorsShown;
+    int lastSelectorSort = -1;
 
     void PersistCharacterControllers()
     {
@@ -1251,22 +1288,26 @@ public class Database : MonoBehaviour
 
     void ShowAndHidePlayerSelectors()
     {
-        // Hide during active match; show on the win screen and the pause menu
+        // Hide during active match; show on the win screen and the pause menu.
+        // Arcade results cover the field, so the cursor has to draw above that card.
+        bool arcadeEnd = ArcadeRun.instance != null && ArcadeRun.instance.HasEndCard;
         bool show = winnerScreen || pauseMenuOpen || !(gameStart || startingGame);
         if (storyPlaying)
             show = storyPauseOpen;
-        if (lastPlayerSelectorsShown.HasValue && lastPlayerSelectorsShown.Value == show)
+        int sort = arcadeEnd ? 720 : (pauseMenuOpen ? 860 : 400);
+        if (lastPlayerSelectorsShown.HasValue && lastPlayerSelectorsShown.Value == show && lastSelectorSort == sort)
             return;
         lastPlayerSelectorsShown = show;
+        lastSelectorSort = sort;
         if (playerSelectors != null)
         {
             playerSelectors.gameObject.SetActive(show);
             if (show)
-                EnsureSelectorsDrawOnTop();
+                EnsureSelectorsDrawOnTop(sort);
         }
     }
 
-    void EnsureSelectorsDrawOnTop()
+    void EnsureSelectorsDrawOnTop(int sortingOrder)
     {
         if (playerSelectors == null)
             return;
@@ -1276,10 +1317,29 @@ public class Database : MonoBehaviour
         if (canvas == null)
             canvas = playerSelectors.gameObject.AddComponent<Canvas>();
         canvas.overrideSorting = true;
-        canvas.sortingOrder = 400;
+        canvas.sortingOrder = sortingOrder;
         // Physics triggers drive selector clicks. A GraphicRaycaster here sits over
         // Training / other UI and steals the mouse.
         GraphicRaycaster stolen = playerSelectors.GetComponent<GraphicRaycaster>();
+        if (stolen != null)
+            Destroy(stolen);
+    }
+
+    void RaisePauseMenu()
+    {
+        if (mm == null)
+            return;
+        MenuClass pause = mm.FindMenu("Pause");
+        if (pause == null || pause.holder == null)
+            return;
+
+        Canvas canvas = pause.holder.GetComponent<Canvas>();
+        if (canvas == null)
+            canvas = pause.holder.AddComponent<Canvas>();
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 800;
+
+        GraphicRaycaster stolen = pause.holder.GetComponent<GraphicRaycaster>();
         if (stolen != null)
             Destroy(stolen);
     }

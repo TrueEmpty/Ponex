@@ -375,9 +375,17 @@ public class Tic : MonoBehaviour
 
     void UpdatePlungerInput()
     {
-        bool want = pg.player.computer
-            ? thought == Thought.MoveUp
-            : (pg.inp.tf_bump || pg.inp.bump);
+        bool want;
+        if (pg.player.computer)
+        {
+            // A loaded ball should leave immediately. An empty bay is not worth the cooldown.
+            // Bumpers still launch into an approaching ball the way the old bump thought did.
+            bool loadedBall = launchArea != null && launchArea.HasHeldBall;
+            bool loadedBumper = launchArea != null && launchArea.HasBumperInBay;
+            want = loadedBall || (loadedBumper && thought == Thought.MoveUp);
+        }
+        else
+            want = pg.inp.tf_bump || pg.inp.bump;
 
         // Edge for human: prefer tf; hold OK for AI thought one-shot
         if (!pg.player.computer && !pg.inp.tf_bump)

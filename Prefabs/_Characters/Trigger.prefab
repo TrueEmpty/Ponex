@@ -86,7 +86,7 @@ MonoBehaviour:
   bumpOffsetY: 0.25
   super: {fileID: 5475585873972406756, guid: c1985b39d197111489beaf973fe7f6c2, type: 3}
   superDelay: 0.1
-  superShots: 10
+  superShots: 20
   thinkTime: 0.5
   thought: 0
   chanceToDoNothing: 50
@@ -120,7 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b84ad79613f0a404a958cd4d07d31dd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amount: 5
+  amount: 10
 --- !u!54 &6370832027294281625
 Rigidbody:
   m_ObjectHideFlags: 0
