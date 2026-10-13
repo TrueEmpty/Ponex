@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class PlayerSelectorObj : MonoBehaviour
@@ -104,7 +105,10 @@ public class PlayerSelectorObj : MonoBehaviour
             }
 
             MoveCircle();
+            if (ucd != null && db != null && (db.pauseMenuOpen || db.storyPauseOpen || Time.timeScale < 0.01f))
+                ucd.PollOverlaps();
             HandleActions();
+            TryMousePauseClick();
             HandleCharacterSelectShortcuts();
             ShowOverlay();
             UpdateLeaveUnfill();
@@ -464,6 +468,69 @@ public class PlayerSelectorObj : MonoBehaviour
             {
                 cachedActiveBack = brt;
                 return brt;
+            }
+        }
+
+        return null;
+    }
+
+    static int mousePauseFrame = -1;
+
+    /// <summary>
+    /// Pause menus drop the GraphicRaycaster so it cannot steal clicks from the
+    /// cursor. Hit-test the pointer ourselves while a pause menu is up.
+    /// </summary>
+    void TryMousePauseClick()
+    {
+        if (db == null || (!db.pauseMenuOpen && !db.storyPauseOpen))
+            return;
+        if (mousePauseFrame == Time.frameCount)
+            return;
+
+        Mouse mouse = Mouse.current;
+        if (mouse == null || !mouse.leftButton.wasPressedThisFrame)
+            return;
+
+        GameObject hit = PausedButtonAt(mouse.position.ReadValue());
+        if (hit == null)
+            return;
+
+        mousePauseFrame = Time.frameCount;
+        hit.SendMessage("OnClick", ClickPlayerIndex(), SendMessageOptions.DontRequireReceiver);
+    }
+
+    GameObject PausedButtonAt(Vector2 screen)
+    {
+        Camera cam = null;
+        Canvas canvas = GetComponentInParent<Canvas>();
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            cam = canvas.worldCamera;
+
+        if (db.storyPauseOpen)
+        {
+            StoryButton[] storyButtons = FindObjectsByType<StoryButton>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < storyButtons.Length; i++)
+            {
+                StoryButton button = storyButtons[i];
+                if (button == null || !button.gameObject.activeInHierarchy)
+                    continue;
+                RectTransform rect = button.GetComponent<RectTransform>();
+                if (rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, screen, cam))
+                    return button.gameObject;
+            }
+        }
+
+        if (db.pauseMenuOpen)
+        {
+            PauseMenuButton[] pauseButtons = FindObjectsByType<PauseMenuButton>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < pauseButtons.Length; i++)
+            {
+                PauseMenuButton button = pauseButtons[i];
+                if (button == null || !button.gameObject.activeInHierarchy)
+                    continue;
+                RectTransform rect = button.GetComponent<RectTransform>();
+                if (rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, screen, cam))
+                    return button.gameObject;
             }
         }
 

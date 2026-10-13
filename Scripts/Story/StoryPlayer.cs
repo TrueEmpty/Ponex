@@ -21,8 +21,9 @@ public class StoryPlayer : MonoBehaviour
         if (body == null)
             body = gameObject.AddComponent<CharacterController>();
         body.height = 2f;
-        body.radius = 0.45f;
-        body.center = new Vector3(0f, 1f, 0f);
+        body.radius = 0.4f;
+        body.center = Vector3.zero;
+        body.skinWidth = 0.02f;
     }
 
     void Update()

@@ -1295,6 +1295,8 @@ public class Database : MonoBehaviour
         if (storyPlaying)
             show = storyPauseOpen;
         int sort = arcadeEnd ? 720 : (pauseMenuOpen ? 860 : 400);
+        if (storyPauseOpen)
+            sort = 960;
         if (lastPlayerSelectorsShown.HasValue && lastPlayerSelectorsShown.Value == show && lastSelectorSort == sort)
             return;
         lastPlayerSelectorsShown = show;

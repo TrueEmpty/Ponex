@@ -153,7 +153,7 @@ public class MuriMove : MonoBehaviour
             float dist = delta.magnitude;
             if (dist > 0.0001f && Physics.SphereCast(from, bodyRadius * 0.9f, delta / dist, out RaycastHit land, dist + standOffset, ~0, QueryTriggerInteraction.Ignore))
             {
-                if (IsSolid(land.collider) && !IsSelf(land.collider))
+                if (IsSolid(land.collider) && !IsSelf(land.collider) && land.collider.GetComponent<CelarusResidue>() == null)
                 {
                     Attach(land.collider.transform, land.point, FaceIntoField(land.normal, from), false);
                     return;
@@ -284,7 +284,9 @@ public class MuriMove : MonoBehaviour
             RaycastHit hit = rayHits[i];
             if (hit.collider == null || IsSelf(hit.collider))
                 continue;
-            if (!IsWall(hit.collider))
+            if (hit.collider.GetComponent<CelarusResidue>() != null)
+                continue;
+            if (!IsWall(hit.collider) && !IsLifeline(hit.collider))
                 continue;
             if (support != null && (hit.collider.transform == support || hit.collider.transform.IsChildOf(support)))
                 continue;
@@ -587,6 +589,20 @@ public class MuriMove : MonoBehaviour
         return col != null && HasWallTag(col.transform);
     }
 
+    public static bool IsLifeline(Collider col)
+    {
+        if (col == null)
+            return false;
+        Transform p = col.transform;
+        while (p != null)
+        {
+            if (p.tag == "Lifeline")
+                return true;
+            p = p.parent;
+        }
+        return false;
+    }
+
     public static bool IsBorderWall(Collider col)
     {
         if (col == null)
@@ -594,7 +610,8 @@ public class MuriMove : MonoBehaviour
         Transform p = col.transform;
         while (p != null)
         {
-            if (p.CompareTag("Wall") || p.CompareTag("Walls"))
+            // "Wall" is not in the tag list — CompareTag throws. String compare is safe.
+            if (p.tag == "Walls" || p.tag == "Wall")
                 return true;
             p = p.parent;
         }
@@ -688,7 +705,7 @@ public class MuriMove : MonoBehaviour
         Transform p = t;
         while (p != null)
         {
-            if (p.CompareTag("Player") || p.CompareTag("Paddle"))
+            if (p.tag == "Player" || p.tag == "Paddle")
                 return true;
             p = p.parent;
         }

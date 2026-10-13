@@ -14,7 +14,9 @@ public class UniversalCollisionDetector : MonoBehaviour
     private bool debugLogs = false;
 
     readonly HashSet<Collider> trackedLookup = new HashSet<Collider>(32);
+    readonly HashSet<Collider> seen = new HashSet<Collider>(32);
     readonly List<Collider> stale = new List<Collider>(8);
+    static readonly Collider[] overlapBuffer = new Collider[48];
 
     void OnDisable()
     {
@@ -88,6 +90,68 @@ public class UniversalCollisionDetector : MonoBehaviour
     public void RefreshColliders()
     {
         // Kept for callers that used the old overlap detector.
+    }
+
+    /// <summary>
+    /// Physics does not step while Time.timeScale is 0, so trigger enter/exit
+    /// never fires for a cursor that is moved by hand. Query overlaps directly.
+    /// </summary>
+    public void PollOverlaps()
+    {
+        Collider self = GetComponent<Collider>();
+        if (self == null || !self.enabled || !self.gameObject.activeInHierarchy)
+            return;
+
+        Physics.SyncTransforms();
+
+        int mask = self.includeLayers.value;
+        if (mask == 0)
+            mask = Physics.AllLayers;
+
+        Vector3 center = self.bounds.center;
+        float radius = Mathf.Max(self.bounds.extents.x, self.bounds.extents.y);
+        if (radius < 0.01f)
+            radius = 0.01f;
+
+        int count = Physics.OverlapSphereNonAlloc(
+            center,
+            radius,
+            overlapBuffer,
+            mask,
+            QueryTriggerInteraction.Collide);
+
+        seen.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            Collider other = overlapBuffer[i];
+            overlapBuffer[i] = null;
+            if (!IsTrackable(other))
+                continue;
+            if (!seen.Add(other))
+                continue;
+            if (!trackedLookup.Add(other))
+                continue;
+
+            trackedColliders.Add(other);
+            OnManualCollisionEnter(other);
+        }
+
+        stale.Clear();
+        for (int i = 0; i < trackedColliders.Count; i++)
+        {
+            Collider tracked = trackedColliders[i];
+            if (tracked == null || !seen.Contains(tracked))
+                stale.Add(tracked);
+        }
+
+        for (int i = 0; i < stale.Count; i++)
+        {
+            Collider removed = stale[i];
+            trackedColliders.Remove(removed);
+            trackedLookup.Remove(removed);
+            if (removed != null)
+                OnManualCollisionExit(removed);
+        }
     }
 
     public bool IsTouching(Collider other)

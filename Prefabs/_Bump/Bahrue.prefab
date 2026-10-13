@@ -81,6 +81,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   duration: 7
+  armOnStart: 0
 --- !u!114 &8716575126981774196
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,7 +95,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
-  time: 0.5
+  time: -1
 --- !u!33 &1004996888895259539
 MeshFilter:
   m_ObjectHideFlags: 0

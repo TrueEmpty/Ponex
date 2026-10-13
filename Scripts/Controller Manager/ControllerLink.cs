@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.Layouts;
 
 [RequireComponent(typeof(PlayerInput))]
 [DefaultExecutionOrder(-200)] // Before PlayerGrab so wasPressedThisFrame / isPressed are fresh
@@ -21,6 +22,15 @@ public class ControllerLink : MonoBehaviour
     public float leaveHoldSeconds = 1.25f;
     float leaveHold;
     bool leaveFired;
+
+    bool deviceLost;
+    string rememberedSerial;
+    string rememberedProduct;
+    string rememberedManufacturer;
+    string rememberedInterface;
+    bool rememberedIsJoystick;
+
+    static int deviceListenCount;
 
     /// <summary>0–1 progress while holding Leave (for selector unfill visual).</summary>
     public float LeaveHoldProgress
@@ -46,6 +56,34 @@ public class ControllerLink : MonoBehaviour
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
+    }
+
+    void OnEnable()
+    {
+        if (deviceListenCount++ == 0)
+            InputSystem.onDeviceChange += OnDeviceChange;
+    }
+
+    void OnDisable()
+    {
+        if (--deviceListenCount == 0)
+            InputSystem.onDeviceChange -= OnDeviceChange;
+    }
+
+    /// <summary>PlayerInput sends this when its paired pad is removed. The link stays.</summary>
+    void OnDeviceLost(PlayerInput input)
+    {
+        deviceLost = true;
+        leaveHold = 0f;
+        leaveFired = false;
+    }
+
+    void OnDeviceRegained(PlayerInput input)
+    {
+        deviceLost = false;
+        leaveHold = 0f;
+        leaveFired = false;
+        RememberCurrentDevice();
     }
 
 
@@ -189,6 +227,8 @@ public class ControllerLink : MonoBehaviour
     {
         if (isAIControlled) return; // Skip input read if AI controlled
 
+        NoteDevicePresence();
+
         if (ready > 0)
         {
             ready -= Time.timeScale < 0.01f ? Time.unscaledDeltaTime : Time.deltaTime;
@@ -316,12 +356,160 @@ public class ControllerLink : MonoBehaviour
     /// Main Menu: removes the player. Character Select: removes if above minPlayers, else CPU.
     /// Past Character Select / in match: converts the slot to CPU.
     /// </summary>
+    void NoteDevicePresence()
+    {
+        int count = playerInput != null ? playerInput.devices.Count : 0;
+        if (count > 0)
+        {
+            deviceLost = false;
+            RememberCurrentDevice();
+            return;
+        }
+
+        if (!deviceLost)
+        {
+            deviceLost = true;
+            leaveHold = 0f;
+            leaveFired = false;
+        }
+    }
+
+    void RememberCurrentDevice()
+    {
+        if (playerInput == null || playerInput.devices.Count == 0)
+            return;
+
+        InputDevice device = playerInput.devices[0];
+        if (device == null)
+            return;
+
+        InputDeviceDescription description = device.description;
+        rememberedSerial = description.serial;
+        rememberedProduct = description.product;
+        rememberedManufacturer = description.manufacturer;
+        rememberedInterface = description.interfaceName;
+        rememberedIsJoystick = device is Joystick;
+    }
+
+    static void OnDeviceChange(InputDevice device, InputDeviceChange change)
+    {
+        if (device == null)
+            return;
+        if (change != InputDeviceChange.Added && change != InputDeviceChange.Reconnected)
+            return;
+        if (!(device is Gamepad) && !(device is Joystick))
+            return;
+        if (PlayerInput.FindFirstPairedToDevice(device) != null)
+            return;
+
+        ControllerLink[] links = FindObjectsByType<ControllerLink>(FindObjectsInactive.Exclude);
+        bool deviceIsJoystick = device is Joystick;
+        ControllerLink onlyWaiting = null;
+        int waiting = 0;
+        ControllerLink serialMatch = null;
+        int serialMatches = 0;
+        ControllerLink productMatch = null;
+        int productMatches = 0;
+
+        for (int i = 0; i < links.Length; i++)
+        {
+            ControllerLink link = links[i];
+            if (link == null || !link.deviceLost || link.isAIControlled)
+                continue;
+            if (link.rememberedIsJoystick != deviceIsJoystick)
+                continue;
+
+            waiting++;
+            onlyWaiting = link;
+
+            InputDeviceDescription description = device.description;
+            if (!string.IsNullOrEmpty(link.rememberedSerial) && link.rememberedSerial == description.serial)
+            {
+                serialMatches++;
+                serialMatch = link;
+            }
+            else if (link.MatchesRemembered(device))
+            {
+                productMatches++;
+                productMatch = link;
+            }
+        }
+
+        ControllerLink match = null;
+        if (serialMatches == 1)
+            match = serialMatch;
+        else if (serialMatches == 0 && productMatches == 1)
+            match = productMatch;
+        else if (waiting == 1)
+            match = onlyWaiting;
+
+        match?.Reclaim(device);
+    }
+
+    bool MatchesRemembered(InputDevice device)
+    {
+        if (device == null || string.IsNullOrEmpty(rememberedProduct))
+            return false;
+
+        InputDeviceDescription description = device.description;
+        if (!string.IsNullOrEmpty(rememberedSerial) && rememberedSerial == description.serial)
+            return true;
+
+        return string.IsNullOrEmpty(rememberedSerial)
+            && rememberedProduct == description.product
+            && rememberedManufacturer == description.manufacturer
+            && rememberedInterface == description.interfaceName;
+    }
+
+    void Reclaim(InputDevice device)
+    {
+        if (playerInput == null || device == null || !playerInput.user.valid)
+            return;
+
+        string scheme = playerInput.currentControlScheme;
+        if (string.IsNullOrEmpty(scheme))
+            scheme = device is Joystick ? "Joystick" : "Gamepad";
+
+        playerInput.SwitchCurrentControlScheme(scheme, device);
+        playerInput.ActivateInput();
+        deviceLost = false;
+        leaveHold = 0f;
+        leaveFired = false;
+        RememberCurrentDevice();
+    }
+
+    bool LeaveHoldAllowed()
+    {
+        if (deviceLost)
+            return false;
+        if (playerInput == null || playerInput.devices.Count == 0)
+            return false;
+
+        if (db == null)
+            db = Database.instance;
+        if (db == null)
+            return false;
+
+        bool inMatch = db.gameStart || db.startingGame || db.winnerScreen || db.storyPlaying;
+        if (!inMatch)
+            return true;
+
+        return db.pauseMenuOpen || db.storyPauseOpen;
+    }
+
     void UpdateLeaveHold()
     {
         if (db == null)
             db = Database.instance;
         if (db == null || index < 0)
             return;
+
+        if (!LeaveHoldAllowed())
+        {
+            leaveHold = 0f;
+            leaveFired = false;
+            return;
+        }
 
         ControllerButtons leave = this["Leave"];
         bool held = leave != null && leave.isPressed;

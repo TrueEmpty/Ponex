@@ -29,6 +29,9 @@ public class Bahrue : MonoBehaviour
 
     public float bumpCooldown = 2;
     float timeTillReset = 0;
+    float lateralScale = 1f;
+    bool bumpWasHeld;
+    readonly List<GameObject> travelingBumps = new List<GameObject>();
     public int healthGain = 4;
     [Tooltip("Super charge lost when hit while charging (cost is 1).")]
     public float chargeLossOnHit = 0.45f;
@@ -97,10 +100,7 @@ public class Bahrue : MonoBehaviour
                     OnDash();
             }
 
-            if (pg.player.CanBump && !chargingSuper)
-            {
-                ActivateBump();
-            }
+            ActivateBump(pg.player.CanBump && !chargingSuper);
 
             if (dashEnd > 0)
                 dashEnd -= Time.deltaTime;
@@ -225,6 +225,7 @@ public class Bahrue : MonoBehaviour
             wallDis = halfDis;
         }
 
+        wallDis *= lateralScale;
         wallDis += PaddleWall.LineSideClearance;
         Transform wallOrigin = holder != null ? holder : transform;
         return PaddleWall.WallInDirection(wallOrigin, dir, hitTags, wallDis);
@@ -248,11 +249,13 @@ public class Bahrue : MonoBehaviour
             }
 
             if (lastHealth != pg.player.currentHealth || bahrueObjs.Count != pg.player.currentHealth)
-            {
                 UpdateBahrue();
-            }
+            else if (bahrueObjs.Count > 0)
+                ApplyStackLayout();
 
-            pg.player.movementSpeed = (1.5f * (50 / (float)pg.player.currentHealth))/4;
+            // More blocks = slower, but never so slow that he can't slide
+            float scaled = (1.5f * (50f / Mathf.Max(1, pg.player.currentHealth))) / 4f;
+            pg.player.movementSpeed = Mathf.Max(1.6f, scaled);
         }
     }
 
@@ -300,22 +303,26 @@ public class Bahrue : MonoBehaviour
             }
         }
 
-        //Update offsets
-        if (bahrueObjs.Count > 0)
-        {
-            amountPerRow = AmountPerRow();
-            for (int i = 0; i < bahrueObjs.Count; i++)
-            {
-                Vector3 getPosOff = GetPosition(i);
-
-                if (getPosOff != bahrueObjs[i].offset)
-                {
-                    bahrueObjs[i].LerpOffset(getPosOff, 5.5f);
-                }
-            }
-        }
-
+        ApplyStackLayout();
         lastHealth = pg.player.currentHealth;
+    }
+
+    void ApplyStackLayout()
+    {
+        if (bahrueObjs.Count <= 0)
+            return;
+
+        amountPerRow = AmountPerRow();
+        UpdateLateralScale();
+        for (int i = 0; i < bahrueObjs.Count; i++)
+        {
+            if (bahrueObjs[i] == null)
+                continue;
+
+            Vector3 getPosOff = GetPosition(i);
+            if (getPosOff != bahrueObjs[i].offset)
+                bahrueObjs[i].LerpOffset(getPosOff, 5.5f);
+        }
     }
 
     void ActivateSuper()
@@ -370,7 +377,7 @@ public class Bahrue : MonoBehaviour
         pg.player.maxHealth = pg.player.currentHealth;
     }
 
-    void ActivateBump()
+    void ActivateBump(bool allowFire)
     {
         float bP = timeTillReset / bumpCooldown;
 
@@ -385,46 +392,87 @@ public class Bahrue : MonoBehaviour
 
         pg.player.bump.readyPercent = bP;
 
-        if (pg.inp.up || thought == Thought.MoveUp)
+        bool bumpHeld = pg.inp.up || thought == Thought.MoveUp;
+        bool bumpPressed = bumpHeld && !bumpWasHeld;
+        bumpWasHeld = bumpHeld;
+
+        PruneTravelingBumps();
+        bool stoppedByPress = false;
+        if (travelingBumps.Count > 0 && (bumpPressed || timeTillReset >= bumpCooldown))
         {
-            if (timeTillReset >= bumpCooldown && pg.player.CanBump)
+            stoppedByPress = bumpPressed;
+            HaltTravelingBumps();
+        }
+
+        // Holding bump still refires once the cooldown ends.
+        // The press that stops a bump already in flight does not also launch a new one.
+        if (allowFire && bumpHeld && !stoppedByPress && timeTillReset >= bumpCooldown && pg.player.CanBump)
+        {
+            if (bahrueObjs.Count > 1)
             {
-                if (bahrueObjs.Count > 1)
+                if (amountPerRow.Count > 1)
                 {
-                    if (amountPerRow.Count > 1)
+                    int cILR = amountPerRow[^1].x;
+
+                    if (bahrueObjs.Count > cILR)
                     {
-                        int cILR = amountPerRow[^1].x;
-
-                        if (bahrueObjs.Count > cILR)
+                        for (int i = 0; i < cILR; i++)
                         {
-                            for (int i = 0; i < cILR; i++)
-                            {
-                                GameObject bo = bahrueObjs[^1].gameObject;
+                            GameObject bo = bahrueObjs[^1].gameObject;
 
-                                Vector3 spawnPos = bo.transform.position;
-                                GameObject go = Instantiate(bahrueBump, spawnPos, transform.rotation) as GameObject;
+                            Vector3 spawnPos = bo.transform.position;
+                            GameObject go = Instantiate(bahrueBump, spawnPos, transform.rotation) as GameObject;
 
-                                PlayerGrab bpg = go.GetComponent<PlayerGrab>();
+                            PlayerGrab bpg = go.GetComponent<PlayerGrab>();
 
-                                if (pg != null)
-                                {
-                                    bpg.playerIndex = pg.playerIndex;
-                                }
+                            if (bpg != null && pg != null)
+                                bpg.playerIndex = pg.playerIndex;
 
-                                pg.player.currentHealth--;
-                                pg.player.maxHealth = pg.player.currentHealth;
-                                Destroy(bo);
-                                bahrueObjs.RemoveAt(bahrueObjs.Count - 1);
-                            }
+                            travelingBumps.Add(go);
 
-                            timeTillReset = 0;
+                            pg.player.currentHealth--;
+                            pg.player.maxHealth = pg.player.currentHealth;
+                            Destroy(bo);
+                            bahrueObjs.RemoveAt(bahrueObjs.Count - 1);
                         }
+
+                        timeTillReset = 0;
                     }
                 }
             }
         }
 
         timeTillReset += Time.deltaTime;
+    }
+
+    void PruneTravelingBumps()
+    {
+        for (int i = travelingBumps.Count - 1; i >= 0; i--)
+        {
+            if (travelingBumps[i] == null)
+                travelingBumps.RemoveAt(i);
+        }
+    }
+
+    void HaltTravelingBumps()
+    {
+        for (int i = travelingBumps.Count - 1; i >= 0; i--)
+        {
+            GameObject go = travelingBumps[i];
+            if (go == null)
+                continue;
+
+            ConstantForward flight = go.GetComponent<ConstantForward>();
+            if (flight != null)
+                flight.Halt();
+
+            // Linger for the normal lifetime, starting when travel stops
+            DestroyAfterLifetime linger = go.GetComponent<DestroyAfterLifetime>();
+            if (linger != null)
+                linger.ArmCountdown();
+
+            travelingBumps.RemoveAt(i);
+        }
     }
 
     Vector3 GetPosition(int index)
@@ -452,13 +500,80 @@ public class Bahrue : MonoBehaviour
             if (row >= 0 && row < amountPerRow.Count)
             {
                 Vector2Int apr = amountPerRow[row];
-                float maxDis = (apr.x * offsetAmounts.x) * .5f;
-                result.x = (maxDis + (col * offsetAmounts.x)) - (offsetAmounts.x / 2);
+                float step = offsetAmounts.x * lateralScale;
+                float maxDis = (apr.x * step) * .5f;
+                result.x = (maxDis + (col * step)) - (step / 2);
                 result.y = row * offsetAmounts.y;
             }
         }
 
         return result;
+    }
+
+    static readonly RaycastHit[] wallHits = new RaycastHit[16];
+
+    void UpdateLateralScale()
+    {
+        lateralScale = 1f;
+        if (amountPerRow == null || amountPerRow.Count == 0 || offsetAmounts.x <= 0.01f)
+            return;
+
+        int widest = 1;
+        for (int i = 0; i < amountPerRow.Count; i++)
+            widest = Mathf.Max(widest, amountPerRow[i].x);
+
+        float halfReach = (widest * offsetAmounts.x) * 0.5f;
+        if (halfReach <= 0.01f)
+            return;
+
+        if (!WallDistance(1, out float right) || !WallDistance(-1, out float left))
+            return;
+
+        float scaleX = Mathf.Abs(transform.lossyScale.x);
+        if (scaleX < 0.001f)
+            scaleX = 1f;
+        left /= scaleX;
+        right /= scaleX;
+
+        // Full spacing until each end is against a wall. Then stop extending.
+        if (halfReach < left || halfReach < right)
+            return;
+
+        float span = left + right;
+        float natural = halfReach * 2f;
+        if (natural > span && span > 0.01f)
+            lateralScale = span / natural;
+    }
+
+    bool WallDistance(int dir, out float distance)
+    {
+        distance = 0f;
+        Transform originT = holder != null ? holder : transform;
+        Vector3 direction = PaddleWall.AbsAxes(originT.right) * Mathf.Sign(dir);
+        if (direction.sqrMagnitude < 0.0001f)
+            return false;
+
+        int count = Physics.RaycastNonAlloc(originT.position, direction, wallHits, 80f, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.MaxValue;
+        bool found = false;
+        for (int i = 0; i < count; i++)
+        {
+            Transform t = wallHits[i].transform;
+            if (t == null || t == originT || t.IsChildOf(originT) || originT.IsChildOf(t))
+                continue;
+            if (!PaddleWall.MatchesWallTag(t.tag, hitTags))
+                continue;
+            if (wallHits[i].distance < best)
+            {
+                best = wallHits[i].distance;
+                found = true;
+            }
+        }
+
+        if (!found)
+            return false;
+        distance = best;
+        return true;
     }
 
     List<Vector2Int> AmountPerRow()

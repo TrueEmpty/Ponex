@@ -44,7 +44,7 @@ public class CelarusResidue : MonoBehaviour
         float r = Mathf.Max(0.08f, radius);
 
         GameObject go = new GameObject(pullToTarget ? "CelarusDropTrail" : "CelarusSpinResidue");
-        go.tag = "Paddle";
+        go.tag = "Obstacle";
         go.layer = 3;
         go.transform.position = position;
 
@@ -397,44 +397,7 @@ public class CelarusResidue : MonoBehaviour
     public void SetPullTarget(Vector3 target)
     {
         pullTarget = target;
-        pullToTarget = true;
-    }
-
-    void FixedUpdate()
-    {
-        if (!pullToTarget || !Database.MatchPlayActive)
-            return;
-
-        Vector3 residuePosition = transform.position;
-        float radiusSq = pullRadius * pullRadius;
-        for (int i = 0; i < LiveBallRegistry.Count; i++)
-        {
-            BallInfo info = LiveBallRegistry.GetAt(i);
-            if (info == null || info.gameObject == null || !info.gameObject.activeInHierarchy)
-                continue;
-
-            Collider hit = info.GetComponent<Collider>();
-            Vector3 closest = hit != null ? hit.ClosestPoint(residuePosition) : info.transform.position;
-            if ((closest - residuePosition).sqrMagnitude > radiusSq)
-                continue;
-
-            Rigidbody ballRb = info.GetComponent<Rigidbody>();
-            if (ballRb == null)
-                continue;
-
-            Vector3 toTarget = pullTarget - ballRb.position;
-            toTarget.z = 0f;
-            float dist = toTarget.magnitude;
-            if (dist < 0.01f)
-                continue;
-
-            float falloff = 1f - Mathf.Clamp01(dist / Mathf.Max(0.1f, pullRadius));
-            ballRb.AddForce(toTarget.normalized * (pullStrength * (0.35f + 0.65f * falloff)) * Time.fixedDeltaTime, ForceMode.Acceleration);
-
-            PlayerGrab ballGrab = info.GetComponent<PlayerGrab>();
-            if (ballGrab != null && grab != null)
-                ballGrab.playerIndex = grab.playerIndex;
-        }
+        pullToTarget = false;
     }
 
     void OnCollisionEnter(Collision collision)

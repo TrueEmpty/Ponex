@@ -35,6 +35,8 @@ public class StoryMenuController : MonoBehaviour
         if (builtForOpen)
             return;
         builtForOpen = true;
+        if (db != null)
+            db.gametype = Gametype.Story;
 
         if (StoryProgress.ShouldSkipMenus(db))
         {

@@ -16,6 +16,14 @@ public class StoryWorld : MonoBehaviour
     public bool Paused => StoryPauseMenu.IsOpen;
     public Transform CameraTransform => cam != null ? cam.transform : null;
 
+    const float RoomSize = 96f;
+    const float WallHeight = 12f;
+    const float WallThickness = 1f;
+    const float CameraBack = 4.2f;
+    const float CameraHeight = 2.4f;
+    const float CameraLookHeight = 1.2f;
+    static readonly RaycastHit[] cameraHits = new RaycastHit[24];
+
     void Awake()
     {
         instance = this;
@@ -85,6 +93,7 @@ public class StoryWorld : MonoBehaviour
         if (body != null)
             body.enabled = false;
         avatar.SetPositionAndRotation(save.Position, save.Rotation);
+        PlantOnFloor(body);
         if (body != null)
             body.enabled = true;
         SnapPlayCamera();
@@ -92,11 +101,13 @@ public class StoryWorld : MonoBehaviour
 
     void BuildRoom()
     {
-        CreateBox("Floor", new Vector3(0f, -0.5f, 0f), new Vector3(16f, 1f, 16f), new Color(0.35f, 0.33f, 0.3f));
-        CreateBox("Wall North", new Vector3(0f, 2f, 8f), new Vector3(16f, 5f, 0.4f), new Color(0.55f, 0.52f, 0.48f));
-        CreateBox("Wall South", new Vector3(0f, 2f, -8f), new Vector3(16f, 5f, 0.4f), new Color(0.55f, 0.52f, 0.48f));
-        CreateBox("Wall East", new Vector3(8f, 2f, 0f), new Vector3(0.4f, 5f, 16f), new Color(0.5f, 0.48f, 0.45f));
-        CreateBox("Wall West", new Vector3(-8f, 2f, 0f), new Vector3(0.4f, 5f, 16f), new Color(0.5f, 0.48f, 0.45f));
+        float half = RoomSize * 0.5f;
+        float wallReach = RoomSize + WallThickness * 2f;
+        CreateBox("Floor", new Vector3(0f, -0.5f, 0f), new Vector3(RoomSize, 1f, RoomSize), new Color(0.35f, 0.33f, 0.3f));
+        CreateBox("Wall North", new Vector3(0f, WallHeight * 0.5f, half + WallThickness * 0.5f), new Vector3(wallReach, WallHeight, WallThickness), new Color(0.55f, 0.52f, 0.48f));
+        CreateBox("Wall South", new Vector3(0f, WallHeight * 0.5f, -(half + WallThickness * 0.5f)), new Vector3(wallReach, WallHeight, WallThickness), new Color(0.55f, 0.52f, 0.48f));
+        CreateBox("Wall East", new Vector3(half + WallThickness * 0.5f, WallHeight * 0.5f, 0f), new Vector3(WallThickness, WallHeight, wallReach), new Color(0.5f, 0.48f, 0.45f));
+        CreateBox("Wall West", new Vector3(-(half + WallThickness * 0.5f), WallHeight * 0.5f, 0f), new Vector3(WallThickness, WallHeight, wallReach), new Color(0.5f, 0.48f, 0.45f));
 
         GameObject body = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         body.name = "Test";
@@ -112,6 +123,7 @@ public class StoryWorld : MonoBehaviour
         avatar = body.transform;
         player = body.AddComponent<StoryPlayer>();
         player.Setup(this);
+        PlantOnFloor(body.GetComponent<CharacterController>());
 
         GameObject lightGo = new GameObject("Story Light");
         lightGo.transform.SetParent(transform, false);
@@ -156,8 +168,8 @@ public class StoryWorld : MonoBehaviour
     {
         if (cam == null || avatar == null)
             return;
-        Vector3 want = avatar.position - avatar.forward * 4.2f + Vector3.up * 2.4f;
-        Vector3 look = avatar.position + Vector3.up * 1.2f;
+        Vector3 look = avatar.position + Vector3.up * CameraLookHeight;
+        Vector3 want = PullCamera(look, avatar.position - avatar.forward * CameraBack + Vector3.up * CameraHeight);
         cam.transform.position = want;
         cam.transform.rotation = Quaternion.LookRotation(look - want, Vector3.up);
     }
@@ -174,7 +186,9 @@ public class StoryWorld : MonoBehaviour
 
         cutsceneT += Time.deltaTime / 4.5f;
         float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(cutsceneT));
-        cam.transform.position = Vector3.Lerp(shot.cameraFrom, shot.cameraTo, t);
+        Vector3 camPos = Vector3.Lerp(shot.cameraFrom, shot.cameraTo, t);
+        camPos = PullCamera(shot.lookAt, camPos);
+        cam.transform.position = camPos;
         cam.transform.rotation = Quaternion.LookRotation(shot.lookAt - cam.transform.position, Vector3.up);
 
         if (t >= 1f || bumpHeld >= 3f)
@@ -186,9 +200,11 @@ public class StoryWorld : MonoBehaviour
         if (cutscene || cam == null || avatar == null || Paused)
             return;
 
-        Vector3 want = avatar.position - avatar.forward * 4.2f + Vector3.up * 2.4f;
-        cam.transform.position = Vector3.Lerp(cam.transform.position, want, 8f * Time.deltaTime);
-        Vector3 look = avatar.position + Vector3.up * 1.2f;
+        Vector3 look = avatar.position + Vector3.up * CameraLookHeight;
+        Vector3 want = avatar.position - avatar.forward * CameraBack + Vector3.up * CameraHeight;
+        Vector3 next = Vector3.Lerp(cam.transform.position, want, 8f * Time.deltaTime);
+        next = PullCamera(look, next);
+        cam.transform.position = next;
         cam.transform.rotation = Quaternion.Slerp(
             cam.transform.rotation,
             Quaternion.LookRotation(look - cam.transform.position, Vector3.up),
@@ -221,10 +237,52 @@ public class StoryWorld : MonoBehaviour
         Debug.Log("Story interact. Nothing in this room yet.");
     }
 
-    static void CreateBox(string name, Vector3 position, Vector3 scale, Color color)
+    void PlantOnFloor(CharacterController body)
+    {
+        if (avatar == null || body == null)
+            return;
+        bool wasEnabled = body.enabled;
+        body.enabled = false;
+        float feet = avatar.position.y + body.center.y - body.height * 0.5f;
+        if (feet < 0.02f)
+            avatar.position += Vector3.up * (0.02f - feet);
+        body.enabled = wasEnabled;
+    }
+
+    Vector3 PullCamera(Vector3 from, Vector3 want)
+    {
+        Vector3 delta = want - from;
+        float dist = delta.magnitude;
+        if (dist < 0.05f)
+            return want;
+
+        Vector3 dir = delta / dist;
+        const float radius = 0.35f;
+        int count = Physics.SphereCastNonAlloc(from, radius, dir, cameraHits, dist, ~0, QueryTriggerInteraction.Ignore);
+        float nearest = dist;
+        for (int i = 0; i < count; i++)
+        {
+            Transform hit = cameraHits[i].transform;
+            if (hit == null || hit == avatar || hit.IsChildOf(avatar))
+                continue;
+            float allowed = cameraHits[i].distance - 0.2f;
+            if (allowed < nearest)
+                nearest = allowed;
+        }
+
+        if (nearest < 0.4f)
+            nearest = 0.4f;
+        Vector3 pos = from + dir * nearest;
+        if (pos.y < 0.45f)
+            pos.y = 0.45f;
+        return pos;
+    }
+
+    void CreateBox(string name, Vector3 position, Vector3 scale, Color color)
     {
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.name = name;
+        go.transform.SetParent(transform, true);
         go.transform.position = position;
         go.transform.localScale = scale;
         Renderer rend = go.GetComponent<Renderer>();

@@ -69,8 +69,8 @@ public class Celarus : MonoBehaviour
     public float slamCooldownTime = 1.25f;
     [Header("Star Dash")]
     [Tooltip("Short left/right burst while skating. Cooldown blocks spam.")]
-    public float dashSpeed = 34f;
-    public float dashDuration = 0.12f;
+    public float dashSpeed = 72f;
+    public float dashDuration = 0.22f;
     public float dashCooldownTime = 1.4f;
     public float bounceRestitution = 0.9f;
     public float maxBounceBoost = 1.55f;
@@ -92,8 +92,8 @@ public class Celarus : MonoBehaviour
     public float pullClimbRate = 2.8f;
 
     [Header("Moon Residue")]
-    public float spinResidueDuration = 1.5f;
-    public float dropTrailDuration = 0.75f;
+    public float spinResidueDuration = 3.2f;
+    public float dropTrailDuration = 2.2f;
     [Tooltip("Distance between drop-trail samples as a multiple of star diameter.")]
     public float dropTrailSpacingScale = 0.85f;
     public float dropTrailPullStrength = 2600f;
@@ -197,6 +197,7 @@ public class Celarus : MonoBehaviour
                 slamCooldown -= Time.deltaTime;
             if (dashCooldown > 0f)
                 dashCooldown -= Time.deltaTime;
+            SyncReadyMeters();
         }
         else
         {
@@ -283,7 +284,32 @@ public class Celarus : MonoBehaviour
                     break;
             }
         }
-        pendingDashDir = dash;
+        // Keep a press until the dash actually starts. Clearing it every frame
+        // dropped the tap when the star was still on cooldown.
+        if (dash != 0)
+            pendingDashDir = dash;
+    }
+
+    void SyncReadyMeters()
+    {
+        if (phaseLock == CelarusPhaseLock.ForceSun || pg == null || pg.player == null)
+            return;
+
+        WriteCooldownMeter(pg.player.bump, spinCooldown, spinCooldownTime);
+        WriteCooldownMeter(pg.player.super, slamCooldown, slamCooldownTime);
+        WriteCooldownMeter(pg.player.dash, dashCooldown, dashCooldownTime);
+    }
+
+    static void WriteCooldownMeter(Skill skill, float cooldownLeft, float cooldownTotal)
+    {
+        if (skill == null)
+            return;
+
+        skill.max = 1f;
+        skill.cost = 1f;
+        float total = Mathf.Max(0.05f, cooldownTotal);
+        skill.amount = 1f - Mathf.Clamp01(cooldownLeft / total);
+        skill.readyPercent = 0f;
     }
 
     bool JumpPressed()
@@ -481,7 +507,7 @@ public class Celarus : MonoBehaviour
 
         // No overall speed leash on air L/R — only cap slam/boost spikes while on/near moon
         Vector3 newVel = tangentRight * tanSpeed + radialOut * radSpeed;
-        if (onMoon || slamming)
+        if ((onMoon || slamming) && !dashing)
         {
             float speedCap = maxSkateSpeed * (slamming ? 1.6f : 1.35f);
             if (newVel.magnitude > speedCap)
@@ -532,11 +558,11 @@ public class Celarus : MonoBehaviour
     {
         if (pendingDashDir == 0)
             return;
+        if (dashing || dashCooldown > 0f || spinLeft > 0f || slamming)
+            return;
 
         int dir = pendingDashDir;
         pendingDashDir = 0;
-        if (dashing || dashCooldown > 0f || spinLeft > 0f || slamming)
-            return;
 
         dashing = true;
         dashDir = dir > 0 ? 1 : -1;
@@ -600,10 +626,7 @@ public class Celarus : MonoBehaviour
             dropTrailDuration,
             starR,
             c,
-            true,
-            pullAim,
-            dropTrailPullStrength,
-            starR * dropTrailPullRadiusScale);
+            false);
 
         if (residue != null)
             activeDropResidues.Add(residue);

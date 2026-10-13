@@ -174,8 +174,8 @@ public class MuriKunaiProjectile : MonoBehaviour
                 continue;
             }
 
-            // Interior props (towers, wagons, logs in the field) are not the border.
-            if (!IsBorderWall(hit.collider))
+            // Interior props are not the border. Lifelines stop the knife the same way.
+            if (!IsBorderWall(hit.collider) && !MuriMove.IsLifeline(hit.collider))
                 continue;
 
             if (hit.distance < stickDist)
@@ -226,7 +226,7 @@ public class MuriKunaiProjectile : MonoBehaviour
             RaycastHit hit = rayHits[i];
             if (hit.collider == null || IsOwner(hit.collider) || IsKunaiPart(hit.collider))
                 continue;
-            if (!IsBorderWall(hit.collider))
+            if (!IsBorderWall(hit.collider) && !MuriMove.IsLifeline(hit.collider))
                 continue;
             if (hit.distance < best)
             {
@@ -334,7 +334,7 @@ public class MuriKunaiProjectile : MonoBehaviour
             Collider hit = crushHits[i];
             if (hit == null || IsKunaiPart(hit) || IsOwner(hit) || IsBall(hit) || hit.isTrigger)
                 continue;
-            if (IsStickFamily(hit) || IsBorderWall(hit))
+            if (IsStickFamily(hit) || IsBorderWall(hit) || MuriMove.IsLifeline(hit))
                 continue;
             extras++;
         }
@@ -392,7 +392,7 @@ public class MuriKunaiProjectile : MonoBehaviour
 
     static bool IsStickable(Collider other)
     {
-        return IsBorderWall(other) && !other.isTrigger;
+        return (IsBorderWall(other) || MuriMove.IsLifeline(other)) && !other.isTrigger;
     }
 
     static Vector3 Flatten(Vector3 v)

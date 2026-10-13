@@ -23,6 +23,7 @@ public static class StorySession
         Database db = Database.instance;
         if (db != null)
         {
+            db.gametype = Gametype.Story;
             db.storyPlaying = true;
             db.storyPauseOpen = false;
             db.storySharedCursor = false;

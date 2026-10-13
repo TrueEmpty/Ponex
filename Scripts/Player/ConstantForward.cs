@@ -9,6 +9,7 @@ public class ConstantForward : MonoBehaviour
     public float speed = 1;
     public float time = -1;
     float lifetime = 0;
+    bool halted;
 
     // Start is called before the first frame update
     void Start()
@@ -16,17 +17,32 @@ public class ConstantForward : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
+    /// <summary>Stop forward travel and hold position.</summary>
+    public void Halt()
+    {
+        halted = true;
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.linearVelocity = Vector3.zero;
+    }
+
     void Update()
     {
-        if (!Database.MatchPlayActive)
+        if (rb == null)
             return;
+
+        if (halted || !Database.MatchPlayActive)
+        {
+            if (halted)
+                rb.linearVelocity = Vector3.zero;
+            return;
+        }
 
         rb.linearVelocity = transform.up * speed;
         lifetime += Time.deltaTime;
 
         if (time != -1 && time <= lifetime)
-        {
-            rb.linearVelocity = Vector3.zero;
-        }
+            Halt();
     }
 }
