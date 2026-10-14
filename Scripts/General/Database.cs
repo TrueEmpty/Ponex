@@ -161,6 +161,7 @@ public class Database : MonoBehaviour
                 gameObject.AddComponent<StoryMenuController>();
             if (GetComponent<ArcadeRun>() == null)
                 gameObject.AddComponent<ArcadeRun>();
+            OnlineMode.Ensure(this);
         }
     }
 
@@ -232,6 +233,7 @@ public class Database : MonoBehaviour
             if (playerColors[i] != null)
                 playerColors[i].EnsureScheme();
         }
+        OnlineMode.EnsureColors(this);
     }
 
     public void LoadMatchPrefs()
@@ -522,6 +524,8 @@ public class Database : MonoBehaviour
     {
         if (CharacterCreationManager.IsActive)
             return true;
+        if (OnlineFieldFocus.Typing)
+            return false;
         if (TrainingManager.instance != null && TrainingManager.instance.IsMouseOverPanel())
             return false;
         return !IsPastCharacterSelect();
@@ -1107,6 +1111,7 @@ public class Database : MonoBehaviour
         switch (action)
         {
             case "Resume":
+                OnlineMode.ResumeInputs();
                 ClosePauseMenu();
                 break;
             case "Reset Match":
@@ -1297,6 +1302,8 @@ public class Database : MonoBehaviour
         int sort = arcadeEnd ? 720 : (pauseMenuOpen ? 860 : 400);
         if (storyPauseOpen)
             sort = 960;
+        if (OnlineMode.OverlayOpen)
+            sort = 2100;
         if (lastPlayerSelectorsShown.HasValue && lastPlayerSelectorsShown.Value == show && lastSelectorSort == sort)
             return;
         lastPlayerSelectorsShown = show;
@@ -1359,6 +1366,13 @@ public class Database : MonoBehaviour
                 return bound;
         }
 
+        if (cL != null)
+        {
+            int adopted = OnlineMode.TryAdoptLostAccount(cL);
+            if (adopted >= 0)
+                return adopted;
+        }
+
         if (cL != null && !CanAddHumanPlayer())
             return -1;
 
@@ -1372,7 +1386,8 @@ public class Database : MonoBehaviour
             }
         }
 
-        if (players.Count < 8)
+        int playerCap = Mathf.Max(8, OnlineMode.PlayerCap);
+        if (players.Count < playerCap)
         {
             if(cL == null)
             {
@@ -1407,7 +1422,7 @@ public class Database : MonoBehaviour
                 p.cpuDifficulty = ComputerAI.CpuDifficulty.Easy;
 
             int index = -1;
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < playerCap; i++)
             {
                 if (!players.Exists(x => x.index == i))
                 {
@@ -1423,6 +1438,13 @@ public class Database : MonoBehaviour
             { }
             else
                 ApplyIndexSeatDefaults(p);
+
+            if (OnlineMode.InLobby)
+            {
+                bool seatTaken = players.Exists(other => other != null && other != p && other.position == p.position && other.facing == p.facing && other.position >= 0);
+                if (seatTaken)
+                    p.position = -1;
+            }
 
             if (cS != null)
             {
@@ -1800,6 +1822,18 @@ public class Database : MonoBehaviour
         MatchStatTicker.Reset();
     }
 
+    public void EndOnlineMatch()
+    {
+        if (!gameStart || someoneWon)
+            return;
+        ComputerAI.OnMatchEnd(players);
+        AudioSettings.StopLevelMusic();
+        MatchStatTicker.FinalizeMatch(this);
+        winnerScreen = true;
+        someoneWon = true;
+        StartCoroutine(SomeoneWon());
+    }
+
     IEnumerator SomeoneWon()
     {
         Time.timeScale = .3f;
@@ -2040,6 +2074,9 @@ public class Database : MonoBehaviour
 
     public void CharactersPicked(string fromSelect)
     {
+        if (fromSelect != null && fromSelect.Trim().Equals("positions", StringComparison.OrdinalIgnoreCase))
+            OnlineMode.FillOpenPositions();
+
         bool startGame = false;
 
         //Reset all player controls

@@ -1,0 +1,9 @@
+{
+  "apiKey": "AIzaSyDIwCJ5XkM4lapgdLMD4iKIrQ7TtPaaQR0",
+  "authDomain": "ponex-ba91b.firebaseapp.com",
+  "projectId": "ponex-ba91b",
+  "bucket": "ponex-ba91b.firebasestorage.app",
+  "googleClientId": "435238908137-cpilva0lj2t17pasotk4vmgjv5jk8peh.apps.googleusercontent.com",
+  "googleClientSecret": "",
+  "relayUrl": "wss://ponexweb.onrender.com"
+}

@@ -38,6 +38,8 @@ public class PlayerSelectorObj : MonoBehaviour
     Sprite lastCircleSprite;
     float nextCpuSelectCheck;
     float lastClickFill = -1f;
+    readonly List<Collider> clickHits = new List<Collider>(8);
+    OnlineFieldFocus clickField;
     float lastLeaveFill = -1f;
     static RectTransform cachedActiveBack;
 
@@ -108,6 +110,7 @@ public class PlayerSelectorObj : MonoBehaviour
             if (ucd != null && db != null && (db.pauseMenuOpen || db.storyPauseOpen || Time.timeScale < 0.01f))
                 ucd.PollOverlaps();
             HandleActions();
+            ReleaseBlockedHighlights();
             TryMousePauseClick();
             HandleCharacterSelectShortcuts();
             ShowOverlay();
@@ -136,6 +139,9 @@ public class PlayerSelectorObj : MonoBehaviour
     {
         if (hit == null)
             return false;
+        if (OnlineMode.OverlayOpen && OnlineMode.OverlayRoot != null)
+            return hit.transform == OnlineMode.OverlayRoot || hit.transform.IsChildOf(OnlineMode.OverlayRoot);
+
         if (db == null || !db.pauseMenuOpen)
             return true;
 
@@ -155,10 +161,33 @@ public class PlayerSelectorObj : MonoBehaviour
             return false;
         for (int i = 0; i < ucd.trackedColliders.Count; i++)
         {
+            if (!IsMenuSelectable(ucd.trackedColliders[i]))
+                continue;
             if (IsUnderTopMenu(ucd.trackedColliders[i]))
                 return true;
         }
         return false;
+    }
+
+    bool ClickHitAllowed(Collider hit, bool topOnly, bool hittingCpuLevel)
+    {
+        if (hit == null || !IsMenuSelectable(hit))
+            return false;
+        if (topOnly && !IsUnderTopMenu(hit) && FieldOn(hit) == null)
+            return false;
+        if (hittingCpuLevel && GetTargetInfo(hit).isPortrait)
+            return false;
+        return true;
+    }
+
+    static OnlineFieldFocus FieldOn(Collider hit)
+    {
+        if (hit == null)
+            return null;
+        OnlineFieldFocus field = hit.GetComponent<OnlineFieldFocus>();
+        if (field != null)
+            return field;
+        return hit.GetComponentInParent<OnlineFieldFocus>();
     }
 
     static bool IsUnderTopMenu(Collider hit)
@@ -553,6 +582,8 @@ public class PlayerSelectorObj : MonoBehaviour
         {
             if (!ReadPressed("Jump"))
             {
+                if (!cooldown)
+                    CaptureClick();
                 cooldown = true;
             }
             else
@@ -587,32 +618,84 @@ public class PlayerSelectorObj : MonoBehaviour
                 }
 
                 bool topOnly = HasHitOnTopMenu();
-                foreach (Collider hit in ucd.trackedColliders)
+                bool shortClick = cooldown;
+                bool hitField = clickField != null;
+                IEnumerable<Collider> hits = shortClick ? clickHits : ucd.trackedColliders;
+                if (shortClick && !hitField)
                 {
-                    if (hit == null || !IsMenuSelectable(hit))
-                        continue;
-                    if (topOnly && !IsUnderTopMenu(hit))
-                        continue;
-
-                    // Prefer the CPU level chip over the portrait skin cycle when both overlap
-                    if (hittingCpuLevel && GetTargetInfo(hit).isPortrait)
-                        continue;
-
-                    if (cooldown)
+                    foreach (Collider hit in hits)
                     {
-                        // Short Press
+                        if (!ClickHitAllowed(hit, topOnly, hittingCpuLevel))
+                            continue;
+                        if (FieldOn(hit) != null)
+                            hitField = true;
+                    }
+                }
+                if (shortClick && hitField && clickField != null)
+                    clickField.Focus();
+                foreach (Collider hit in hits)
+                {
+                    if (!ClickHitAllowed(hit, topOnly, hittingCpuLevel))
+                        continue;
+
+                    if (shortClick)
+                    {
+                        OnlineFieldFocus field = FieldOn(hit);
+                        if (hitField)
+                        {
+                            if (field != null)
+                                field.Focus();
+                            continue;
+                        }
+                        if (OnlineMode.InLobby)
+                            OnlineMode.BroadcastClick(hit.gameObject.name, clickPlayer);
                         hit.SendMessage("OnClick", clickPlayer, SendMessageOptions.DontRequireReceiver);
                     }
                     else
                     {
-                        // Long Press
                         hit.SendMessage("OnLongClick", clickPlayer, SendMessageOptions.DontRequireReceiver);
                     }
                 }
 
+                if (shortClick && !hitField)
+                    OnlineFieldFocus.Clear();
+
                 clicking = 0;
                 cooldown = false;
+                clickHits.Clear();
+                clickField = null;
             }
+        }
+    }
+
+    void CaptureClick()
+    {
+        clickHits.Clear();
+        clickField = null;
+        if (ucd != null)
+        {
+            for (int i = 0; i < ucd.trackedColliders.Count; i++)
+            {
+                Collider hit = ucd.trackedColliders[i];
+                if (hit != null)
+                    clickHits.Add(hit);
+            }
+        }
+        Canvas canvas = GetComponentInParent<Canvas>();
+        Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        Vector2 screen = RectTransformUtility.WorldToScreenPoint(cam, transform.position);
+        clickField = OnlineFieldFocus.At(screen);
+    }
+
+    void ReleaseBlockedHighlights()
+    {
+        if (ucd == null || !OnlineMode.OverlayOpen)
+            return;
+        for (int i = 0; i < ucd.trackedColliders.Count; i++)
+        {
+            Collider hit = ucd.trackedColliders[i];
+            if (hit != null && !IsMenuSelectable(hit))
+                hit.SendMessage("OnUnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
         }
     }
 
@@ -728,11 +811,10 @@ public class PlayerSelectorObj : MonoBehaviour
 
     void CollisionEntered(Collider other)
     {
-        if (other != null)
-        {
-            CacheTargetInfo(other);
-            other.SendMessage("OnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
-        }
+        if (other == null || !IsMenuSelectable(other))
+            return;
+        CacheTargetInfo(other);
+        other.SendMessage("OnHighlighted", pI, SendMessageOptions.DontRequireReceiver);
     }
 
     void CollisionExited(Collider other)

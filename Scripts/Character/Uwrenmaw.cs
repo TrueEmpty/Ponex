@@ -26,6 +26,8 @@ public class Uwrenmaw : MonoBehaviour
     Database db;
 
     readonly List<Transform> segments = new List<Transform>();
+    readonly HashSet<Collider> bodyContacts = new HashSet<Collider>();
+    int bouncedFrame = -1;
     readonly List<Vector3> trail = new List<Vector3>(96);
     readonly List<UwrenmawPillar> pillars = new List<UwrenmawPillar>();
 
@@ -227,6 +229,7 @@ public class Uwrenmaw : MonoBehaviour
 
         RecordTrail();
         PlaceTail();
+        SenseBody();
     }
 
     void LateUpdate()
@@ -253,15 +256,21 @@ public class Uwrenmaw : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        HandleHit(collision);
+    }
+
+    public void HandleHit(Collision collision)
+    {
         if (collision == null || collision.collider == null)
             return;
-        if (collision.collider.GetComponentInParent<Uwrenmaw>() == this)
+        if (IsSelf(collision.collider))
             return;
+        ClaimBall(collision.collider);
+
         UwrenmawPillar hitPillar = collision.collider.GetComponentInParent<UwrenmawPillar>();
-        if (hitPillar != null && orbit != null && hitPillar == orbit)
+        if (hitPillar != null && hitPillar.owner == this && (hitPillar == orbit || hitPillar == ignorePillar))
             return;
 
-        bool ball = collision.collider.CompareTag("Ball");
         bool tail = false;
         for (int i = 0; i < segments.Count; i++)
         {
@@ -271,13 +280,6 @@ public class Uwrenmaw : MonoBehaviour
                 break;
             }
         }
-        if (orbit != null)
-        {
-            if (!ball)
-                ReverseCircle();
-            return;
-        }
-
         Vector3 incoming = flyDir.sqrMagnitude > 0.01f ? flyDir : Vector3.up;
         Vector3 normal = Vector3.zero;
         float best = 0.05f;
@@ -298,6 +300,22 @@ public class Uwrenmaw : MonoBehaviour
         }
         if (normal.sqrMagnitude < 0.0001f)
             return;
+        BounceAlong(normal, tail);
+    }
+
+    void BounceAlong(Vector3 normal, bool tail)
+    {
+        if (bouncedFrame == Time.frameCount)
+            return;
+        bouncedFrame = Time.frameCount;
+        if (orbit != null)
+            Release(true);
+
+        Vector3 incoming = flyDir.sqrMagnitude > 0.01f ? flyDir : Vector3.up;
+        normal.z = 0f;
+        if (normal.sqrMagnitude < 0.0001f)
+            return;
+        normal.Normalize();
 
         Vector3 reflected = Vector3.Reflect(incoming, normal);
         reflected.z = 0f;
@@ -610,7 +628,6 @@ public class Uwrenmaw : MonoBehaviour
                 ownOrTeam = true;
         }
 
-        // A ball your team owns passes the pillar. It does not crack it or score.
         if (ownOrTeam)
             return;
 
@@ -735,9 +752,7 @@ public class Uwrenmaw : MonoBehaviour
                 SphereCollider sphere = col as SphereCollider;
                 if (sphere != null)
                     sphere.radius = 0.42f;
-                // The first links overlap the head. Later links can block him and change a bounce.
-                if (i < 2)
-                    Physics.IgnoreCollision(col, GetComponent<Collider>(), true);
+                Physics.IgnoreCollision(col, GetComponent<Collider>(), true);
                 for (int p = 0; p < segments.Count; p++)
                 {
                     Collider other = segments[p].GetComponent<Collider>();
@@ -748,6 +763,8 @@ public class Uwrenmaw : MonoBehaviour
             Paint(go.GetComponent<Renderer>(), UwrenmawArt.Body());
             if (go.GetComponent<ClearAfterTheGame>() == null)
                 go.AddComponent<ClearAfterTheGame>();
+            UwrenmawBody link = go.AddComponent<UwrenmawBody>();
+            link.owner = this;
             segments.Add(go.transform);
         }
     }
@@ -792,6 +809,49 @@ public class Uwrenmaw : MonoBehaviour
             if (tangent.sqrMagnitude > 0.0001f)
                 seg.rotation = Quaternion.LookRotation(Vector3.forward, tangent);
         }
+    }
+
+    void SenseBody()
+    {
+        HashSet<Collider> now = new HashSet<Collider>();
+        for (int i = 0; i < segments.Count; i++)
+        {
+            Transform seg = segments[i];
+            if (seg == null)
+                continue;
+            Collider[] hits = Physics.OverlapSphere(seg.position, 0.34f, ~0, QueryTriggerInteraction.Ignore);
+            for (int h = 0; h < hits.Length; h++)
+            {
+                Collider hit = hits[h];
+                if (hit == null || IsSelf(hit))
+                    continue;
+                now.Add(hit);
+                if (bodyContacts.Contains(hit))
+                    continue;
+                ClaimBall(hit);
+                bool ball = hit.CompareTag("Ball")
+                    || hit.GetComponent<BallInfo>() != null
+                    || hit.GetComponentInParent<BallInfo>() != null;
+                if (ball)
+                    continue;
+                UwrenmawPillar pillar = hit.GetComponentInParent<UwrenmawPillar>();
+                if (pillar != null && pillar.owner == this && (pillar == orbit || pillar == ignorePillar))
+                    continue;
+                Vector3 normal = seg.position - hit.ClosestPoint(seg.position);
+                normal.z = 0f;
+                if (normal.sqrMagnitude < 0.0001f)
+                {
+                    normal = transform.position - hit.transform.position;
+                    normal.z = 0f;
+                }
+                if (normal.sqrMagnitude < 0.0001f)
+                    normal = Vector3.up;
+                BounceAlong(normal, true);
+            }
+        }
+        bodyContacts.Clear();
+        foreach (Collider hit in now)
+            bodyContacts.Add(hit);
     }
 
     Vector3 PointBehind(float distance, out Vector3 tangent)
@@ -1000,5 +1060,46 @@ public class Uwrenmaw : MonoBehaviour
     {
         if (col != null)
             col.material = BounceMaterial();
+    }
+
+    bool IsSelf(Collider hit)
+    {
+        if (hit == null)
+            return true;
+        if (hit.transform == transform || hit.transform.IsChildOf(transform))
+            return true;
+        if (hit.GetComponentInParent<Uwrenmaw>() == this)
+            return true;
+        UwrenmawBody body = hit.GetComponent<UwrenmawBody>();
+        if (body == null)
+            body = hit.GetComponentInParent<UwrenmawBody>();
+        return body != null && body.owner == this;
+    }
+
+    void ClaimBall(Collider hit)
+    {
+        if (hit == null || pg == null)
+            return;
+        bool ball = hit.CompareTag("Ball")
+            || hit.GetComponent<BallInfo>() != null
+            || hit.GetComponentInParent<BallInfo>() != null;
+        if (!ball)
+            return;
+        PlayerGrab grab = hit.GetComponent<PlayerGrab>();
+        if (grab == null)
+            grab = hit.GetComponentInParent<PlayerGrab>();
+        if (grab != null)
+            grab.playerIndex = pg.playerIndex;
+    }
+}
+
+public class UwrenmawBody : MonoBehaviour
+{
+    public Uwrenmaw owner;
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (owner != null)
+            owner.HandleHit(collision);
     }
 }

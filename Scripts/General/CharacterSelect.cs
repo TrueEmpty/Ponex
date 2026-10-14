@@ -132,7 +132,9 @@ public class CharacterSelect : MonoBehaviour
             return;
 
         // Multiplayer lobbies allow up to 8 (VS or Team)
-        if (db.gametype == Gametype.Vs || db.gametype == Gametype.Coop)
+        if (OnlineMode.InLobby)
+            db.maxPlayers = 32;
+        else if (db.gametype == Gametype.Vs || db.gametype == Gametype.Coop)
             db.maxPlayers = 8;
 
         if (db.players != null && db.players.Count >= db.maxPlayers)

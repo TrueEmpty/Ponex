@@ -61,9 +61,9 @@ public class PositionSlot : MonoBehaviour, IDropHandler
         if (p == null || p.characterSelected) return;
 
         // One player per spot: swap with occupant (if not locked), else take empty
-        Player occupant = db.players.Find(x => x != p && x.facing == facing && x.position == slot);
-        if (occupant != null && occupant.characterSelected)
-            return; // locked occupant keeps the spot
+        Player occupant = db.players.Find(x => x != p && x.facing == facing && x.position == slot && x.position >= 0);
+        if (occupant != null && (occupant.characterSelected || OnlineMode.InLobby))
+            return; // locked occupant keeps the spot; online seats are not forced swaps
 
         Facing oldFacing = p.facing;
         int oldSlot = p.position;

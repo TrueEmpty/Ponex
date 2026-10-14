@@ -13,6 +13,14 @@ public class ControllerLink : MonoBehaviour
     Database db;
     public int index = -1;
     public bool isAIControlled = false;
+    public bool remoteDrive;
+    public Vector2 remoteMove;
+    public bool remoteJump;
+    public bool remoteInteract;
+    public bool remoteMenu;
+    public bool remoteSprint;
+    public bool DeviceLost => deviceLost;
+    public static bool spawningRemote;
 
     PlayerInput playerInput;
     public List<ControllerButtons> buttons = new List<ControllerButtons>();
@@ -91,6 +99,19 @@ public class ControllerLink : MonoBehaviour
     void Start()
     {
         db = Database.instance;
+        if (remoteDrive || spawningRemote)
+        {
+            remoteDrive = true;
+            spawningRemote = false;
+            buttons.Add(new ControllerButtons("Move", ControllerButtonType.Vector2));
+            buttons.Add(new ControllerButtons("Jump", ControllerButtonType.Button));
+            buttons.Add(new ControllerButtons("Interact", ControllerButtonType.Button));
+            buttons.Add(new ControllerButtons("Menu", ControllerButtonType.Button));
+            buttons.Add(new ControllerButtons("Sprint", ControllerButtonType.Button));
+            if (db != null)
+                index = db.PlayerAdd(this);
+            return;
+        }
 
         // Character Creation: always route onto the draft (even if this instance was already listed)
         if (CharacterCreationManager.IsActive)
@@ -226,6 +247,11 @@ public class ControllerLink : MonoBehaviour
     void Update()
     {
         if (isAIControlled) return; // Skip input read if AI controlled
+        if (remoteDrive)
+        {
+            ApplyRemoteState();
+            return;
+        }
 
         NoteDevicePresence();
 
@@ -461,7 +487,16 @@ public class ControllerLink : MonoBehaviour
             && rememberedInterface == description.interfaceName;
     }
 
-    void Reclaim(InputDevice device)
+    public bool TryGetDevice(out InputDevice device)
+    {
+        device = null;
+        if (playerInput == null || playerInput.devices.Count == 0)
+            return false;
+        device = playerInput.devices[0];
+        return device != null;
+    }
+
+    public void Reclaim(InputDevice device)
     {
         if (playerInput == null || device == null || !playerInput.user.valid)
             return;
@@ -490,11 +525,42 @@ public class ControllerLink : MonoBehaviour
         if (db == null)
             return false;
 
+        if (OnlineMode.LoggedIn)
+        {
+            Player self = db.players != null ? db.players.Find(x => x != null && x.cLink == this) : null;
+            if (self != null && self.nickName != null && self.nickName.EndsWith("_guest") && deviceLost)
+                return false;
+            if (self != null && (self.nickName == null || !self.nickName.EndsWith("_guest")))
+                return false;
+        }
+
         bool inMatch = db.gameStart || db.startingGame || db.winnerScreen || db.storyPlaying;
         if (!inMatch)
             return true;
 
         return db.pauseMenuOpen || db.storyPauseOpen;
+    }
+
+    void ApplyRemoteState()
+    {
+        Drive("Move", remoteMove.sqrMagnitude > 0.01f, remoteMove);
+        Drive("Jump", remoteJump, Vector2.zero);
+        Drive("Interact", remoteInteract, Vector2.zero);
+        Drive("Menu", remoteMenu, Vector2.zero);
+        Drive("Sprint", remoteSprint, Vector2.zero);
+    }
+
+    void Drive(string action, bool down, Vector2 vector)
+    {
+        ControllerButtons button = this[action];
+        if (button == null)
+            return;
+        button.wasPressedThisFrame = down && !button.isPressed;
+        button.wasReleasedThisFrame = !down && button.isPressed;
+        button.isPressed = down;
+        button.value = vector;
+        button.trueValue = vector;
+        button.flatValue = new Vector2Int(vector.x > 0.2f ? 1 : (vector.x < -0.2f ? -1 : 0), vector.y > 0.2f ? 1 : (vector.y < -0.2f ? -1 : 0));
     }
 
     void UpdateLeaveHold()

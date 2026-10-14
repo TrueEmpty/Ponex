@@ -160,6 +160,13 @@ public class PositionSelect : MonoBehaviour
                         ol.effectColor = p.characterSelected ? readyColor : outlineColor;
                 }
 
+                if (p.position < 0)
+                {
+                    marker.rectTransform.anchoredPosition = new Vector2(520f, 220f - p.index * 36f);
+                    marker.text = label + " (wait)";
+                    continue;
+                }
+
                 Vector2 cP = new Vector2(p.position == 0 ? setPos.z : -setPos.z, p.position == 0 ? setPos.x : setPos.y);
                 switch (p.facing)
                 {

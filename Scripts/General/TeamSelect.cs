@@ -133,6 +133,16 @@ public class TeamSelect : MonoBehaviour
                     b.team = a.team;
             }
         }
+
+        if (!HasAtLeastTwoTeams() && db.players.Count > 1)
+        {
+            for (int i = 0; i < db.players.Count; i++)
+            {
+                Player p = db.players[i];
+                if (p != null && (p.facing == Facing.Down || p.facing == Facing.Right))
+                    p.team = 2;
+            }
+        }
     }
 
     public void RefreshAll()
