@@ -12,17 +12,20 @@ public class Gaurd : MonoBehaviour
 
     public List<string> hitTags = new List<string>();
 
-    public GameObject defenders;
     public GameObject reflectors;
     public GameObject attackers;
+    public GameObject patrollers;
+    public GameObject rangers;
+    public GameObject defenders;
 
     public List<Pawn> pawns = new List<Pawn>();
+    public Pawn hovering = null;
+
     bool savedByPawns = false;
 
     [SerializeField]
-#pragma warning disable CS0414 // Inspector AI-thought debug
     Thought thought = Thought.Nothing;
-#pragma warning restore CS0414
+    ComputerBrain brain;
 
     bool ignoredHomeWall;
     bool pinned;
@@ -52,6 +55,7 @@ public class Gaurd : MonoBehaviour
             gameObject.AddComponent<DestroyOnDeath>();
 
         PinCurrentPose();
+        pg.player.movementSpeed = 0;
     }
 
     void Update()
@@ -65,6 +69,9 @@ public class Gaurd : MonoBehaviour
         }
 
         HoldStill();
+        PlayerInfoNavigation();
+        ShowTroopGhost();
+        BuyTroop();
 
         if (pg == null || !pg.IsLinked())
             return;
@@ -82,6 +89,57 @@ public class Gaurd : MonoBehaviour
 
         if (p.currentHealth <= 0 && !CharacterCreationManager.IsActive)
             DespawnSelfAndSpawns();
+    }
+
+    void PlayerInfoNavigation()
+    {
+        if (pg.player.CanMove)
+        {
+            int moveDir = 0;
+
+            if (pg.player.computer)
+            {
+                ComputerAI.Decision d = brain != null
+                    ? brain.Lane
+                    : ComputerAI.Evaluate(transform, pg.player, hitTags, PaddleWall.LateralStopDistance(transform));
+                moveDir = d.moveDir;
+                thought = brain != null
+                    ? brain.Thought
+                    : (d.wantBump ? Thought.MoveUp : (d.wantSuper ? Thought.MoveDown : Thought.Nothing));
+            }
+            else
+            {
+                thought = Thought.Nothing;
+                if (pg.inp.tf_dashRight)
+                    moveDir += 1;
+                if (pg.inp.tf_dashLeft)
+                    moveDir -= 1;
+            }
+
+            pg.player.movementSpeed += moveDir;
+
+            if (pg.player.movementSpeed < 0)
+            {
+                pg.player.movementSpeed = 4;
+            }
+            else if (pg.player.movementSpeed > 4)
+            {
+                pg.player.movementSpeed = 0;
+            }
+        }
+    }
+
+    void ShowTroopGhost()
+    {
+        //Move ghost's spawn location while checking collisions
+
+        //Show red if cant purchase or if overlapping another
+
+    }
+
+    void BuyTroop()
+    {
+
     }
 
     void FixedUpdate()

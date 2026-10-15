@@ -155,12 +155,6 @@ public class CharacterGrab : MonoBehaviour
             }
 
             p.SetRandomCharacterPending();
-            if (p.pso != null)
-            {
-                PlayerColors pc = PlayerSkin.GetPlayerColors(p, db);
-                if (pc != null)
-                    p.pso.SetCircleColor(pc);
-            }
             db.RememberSelectedCharacter(p.index, Database.RandomCharacterSentinel);
             AudioSettings.PlaySelection();
             Debug.Log("Player " + player + " selected Random character (rolls at match start).");
@@ -175,12 +169,6 @@ public class CharacterGrab : MonoBehaviour
 
         p.SetUpCharacter(ch);
         PlayerSkin.AssignUniqueForCharacter(p, db);
-        if (p.pso != null)
-        {
-            PlayerColors pc = PlayerSkin.GetPlayerColors(p, db);
-            if (pc != null)
-                p.pso.SetCircleColor(pc);
-        }
         db.RememberSelectedCharacter(p.index, ch.name);
         AudioSettings.PlaySelection();
     }

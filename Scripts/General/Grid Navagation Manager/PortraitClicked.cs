@@ -260,19 +260,8 @@ public class PortraitClicked : MonoBehaviour
         if (attachedIndex == player || p.computer)
         {
             PlayerSkin.Cycle(p, db);
-            RefreshSelectorColor(p);
             LoadPortrait(p);
         }
-    }
-
-    void RefreshSelectorColor(Player p)
-    {
-        if (p == null || p.pso == null)
-            return;
-
-        PlayerColors pc = PlayerSkin.GetPlayerColors(p, db);
-        if (pc != null)
-            p.pso.SetCircleColor(pc);
     }
 
     public void OnLongClick(int player)

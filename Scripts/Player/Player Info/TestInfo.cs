@@ -6,6 +6,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(PlayerGrab))]
 public class TestInfo : MonoBehaviour
 {
+    //Image font used was Cooper Black in word with both Bold and Italizied
     PlayerGrab pg;
 
     public RawImage background;

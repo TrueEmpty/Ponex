@@ -1544,11 +1544,8 @@ public class Database : MonoBehaviour
 
         PlayerSelectorObj pso = go.GetComponent<PlayerSelectorObj>();
         pso.cLink = cL;
-        PlayerSkin.AssignUniqueForCharacter(p, this);
-        PlayerColors startColor = PlayerSkin.GetPlayerColors(p, this);
-        pso.SetCircleColor(startColor != null
-            ? startColor
-            : playerColors[Mathf.Clamp(p.index, 0, playerColors.Count - 1)]);
+        int colorIndex = Mathf.Clamp(p.index, 0, playerColors.Count - 1);
+        pso.SetCircleColor(playerColors[colorIndex]);
         pso.pI = p.index;
         p.pso = pso;
     }

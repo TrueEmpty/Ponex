@@ -416,8 +416,30 @@ public class ArcadeRun : MonoBehaviour
                 if (roster != null)
                     p.SetUpCharacter(roster);
             }
+            if (MatchesHumanColor(p, db))
+                PlayerSkin.AssignUniqueForCharacter(p, db);
         }
         db.maxPlayers = cap;
+    }
+
+    static bool MatchesHumanColor(Player enemy, Database db)
+    {
+        if (enemy == null || db == null || db.players == null || string.IsNullOrEmpty(enemy.name))
+            return false;
+
+        Color mine = PlayerSkin.GetColor(enemy, db);
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player human = db.players[i];
+            if (human == null || human == enemy || human.arcadeCpu)
+                continue;
+            if (!PlayerSkin.SharesSkinGroup(human.name, enemy.name))
+                continue;
+            if (PlayerSkin.ColorsClose(PlayerSkin.GetColor(human, db), mine))
+                return true;
+        }
+
+        return false;
     }
 
     void RemoveOpponents(Database db)
@@ -1045,7 +1067,11 @@ public class ArcadeRun : MonoBehaviour
         rt.sizeDelta = new Vector2(size, size);
         RawImage image = go.GetComponent<RawImage>();
         image.texture = p != null ? p.portrait : null;
-        image.color = p != null && p.portrait == null ? p.portraitColor : Color.white;
+        bool recolored = p != null && p.arcadeCpu && !PlayerSkin.UsesBaseColor(p);
+        if (recolored)
+            image.color = PlayerSkin.GetColor(p);
+        else
+            image.color = p != null && p.portrait == null ? p.portraitColor : Color.white;
         if (image.texture == null && (p == null || p.portraitColor.a < 0.1f))
             image.color = new Color(0.2f, 0.55f, 0.7f, 1f);
     }

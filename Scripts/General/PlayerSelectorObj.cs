@@ -430,12 +430,6 @@ public class PlayerSelectorObj : MonoBehaviour
             return;
 
         PlayerSkin.Cycle(target, db, skinDir);
-
-        PlayerColors pc = PlayerSkin.GetPlayerColors(target, db);
-        if (pc != null && target.pso != null)
-            target.pso.SetCircleColor(pc);
-        if (skinPlayer == pI && pc != null)
-            SetCircleColor(pc);
     }
 
     void JumpSelectorToBack()

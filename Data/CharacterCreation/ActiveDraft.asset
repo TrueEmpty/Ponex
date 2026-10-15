@@ -26,11 +26,11 @@ MonoBehaviour:
     speed: 2
     readyPercent: 0
   super:
-    amount: 34
+    amount: 37
     max: 50
     cost: 50
     speed: 5
-    readyPercent: 1.270062
+    readyPercent: 2.3597806
   dash:
     amount: 2
     max: 2
@@ -39,11 +39,11 @@ MonoBehaviour:
     readyPercent: 0
   character:
     prefabs: {fileID: 6101373401462468849, guid: 7844c0ca75749f442b1036de8361417b, type: 3}
-    positionOffset: {x: 0.22, y: 0.28, z: 0}
+    positionOffset: {x: 0.22, y: 0.6199999, z: 0}
     rotationOffset: {x: 0, y: 0, z: 0}
   lifeline:
     prefabs: {fileID: 8650209118600638217, guid: 609022151a1d3df499c5a8e0204395d9, type: 3}
-    positionOffset: {x: -0.95000005, y: 0.25, z: 0}
+    positionOffset: {x: -0.95000005, y: 0.5699997, z: 0}
     rotationOffset: {x: 0, y: 0, z: 0}
   sourceCharacterPrefab: {fileID: 6101373401462468849, guid: 7844c0ca75749f442b1036de8361417b, type: 3}
   sourceLifelinePrefab: {fileID: 8650209118600638217, guid: 609022151a1d3df499c5a8e0204395d9, type: 3}
