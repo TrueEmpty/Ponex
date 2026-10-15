@@ -40,7 +40,7 @@ public class TagTriggerCollisions : MonoBehaviour
     {
         if (hits.Count > 0)
         {
-            hits.RemoveAll(x => x = other.gameObject);
+            hits.RemoveAll(x => x == other.gameObject);
         }
     }
 }
