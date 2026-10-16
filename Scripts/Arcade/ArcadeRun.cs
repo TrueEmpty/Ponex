@@ -133,6 +133,14 @@ public class ArcadeRun : MonoBehaviour
         List<Player> humans = ActiveHumans(db);
         List<ArcadeSeat> humanSeats = Seats(true);
         List<ArcadeSeat> enemySeats = Seats(false);
+        while (humanSeats.Count < humans.Count)
+        {
+            int slot = humanSeats.Count;
+            Facing face = humanSeats.Count > 0 ? humanSeats[0].facing : Facing.Up;
+            int team = humanSeats.Count > 0 ? humanSeats[0].team : 1;
+            float spread = (slot - (humans.Count - 1) * 0.5f) * 1.6f;
+            humanSeats.Add(ArcadeSeat.Human(slot, face, team, spread));
+        }
         FixSharedSides(humanSeats, enemySeats);
 
         for (int i = 0; i < humans.Count; i++)
@@ -278,6 +286,9 @@ public class ArcadeRun : MonoBehaviour
             return;
         }
 
+        if (OnlineMode.InLobby && !OnlineMode.IsHost)
+            return;
+
         PickMatch();
         db.CharactersPicked("balls");
     }
@@ -353,7 +364,7 @@ public class ArcadeRun : MonoBehaviour
 
         db.teamSelect = false;
         db.positionSelect = false;
-        db.maxPlayers = 2;
+        db.maxPlayers = Mathf.Max(2, humans.Count);
         PickMatch();
     }
 
@@ -375,6 +386,8 @@ public class ArcadeRun : MonoBehaviour
         }
     }
 
+    public static string forcedMatch;
+
     void PickMatch()
     {
         List<ArcadeMatch> pool = ArcadeMatchDefaults.Matching(coopRun, Mathf.Clamp(level, 1, 10));
@@ -383,7 +396,21 @@ public class ArcadeRun : MonoBehaviour
             current = null;
             return;
         }
+        if (!OnlineMode.IsHost && !string.IsNullOrEmpty(forcedMatch))
+        {
+            for (int i = 0; i < pool.Count; i++)
+            {
+                if (pool[i] != null && pool[i].matchName == forcedMatch)
+                {
+                    current = pool[i];
+                    forcedMatch = "";
+                    return;
+                }
+            }
+        }
         current = pool[UnityEngine.Random.Range(0, pool.Count)];
+        if (OnlineMode.IsHost && current != null)
+            OnlineMode.PublishArcadeMatch(current);
     }
 
     void BuildOpponents(Database db)

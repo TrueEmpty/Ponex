@@ -71,6 +71,10 @@ public class OnlineMode : MonoBehaviour
     readonly Dictionary<int, string> poseCache = new Dictionary<int, string>();
     readonly Dictionary<string, Vector2> selectorCache = new Dictionary<string, Vector2>();
     readonly Dictionary<string, RectTransform> remoteCursors = new Dictionary<string, RectTransform>();
+    readonly Dictionary<string, RemoteSeat> remoteSeats = new Dictionary<string, RemoteSeat>();
+    readonly Dictionary<string, string> loadoutCache = new Dictionary<string, string>();
+    string lastMenuSent = "";
+    float nextLoadout;
     float nextStateSend;
 
     GameObject loginRoot;
@@ -182,6 +186,16 @@ public class OnlineMode : MonoBehaviour
         {
             StartCoroutine(SetLocked(true));
         }
+
+        if (InLobby && (MenuManager.instance == null || !MenuManager.instance.IsMenuVisible("Main Menu")) && Time.unscaledTime >= nextPoll)
+        {
+            nextPoll = Time.unscaledTime + 3f;
+            StartCoroutine(RefreshLobby());
+        }
+
+        SyncSharedPlayers();
+        BroadcastSharedMenu();
+        SendLoadout();
 
         if (!InLobby || (Database.instance != null && Database.instance.gameStart))
             ClearRemoteCursors();
@@ -1824,12 +1838,20 @@ public class OnlineMode : MonoBehaviour
                 ApplyAction(json);
             else if (type == "state" && !IsHost)
                 ApplyState(json);
-            else if (type == "in" && IsHost)
+            else if (type == "in" && IsHost && Database.instance != null && (Database.instance.gameStart || Database.instance.startingGame))
                 ApplyInput(json);
             else if (type == "sel")
                 ApplySelector(json);
             else if (type == "vote")
                 NoteVote(json);
+            else if (type == "menu")
+                ApplySharedMenu(json);
+            else if (type == "step")
+                ApplySharedStep(json);
+            else if (type == "arcade")
+                ApplyArcadeMatch(json);
+            else if (type == "load")
+                ApplyLoadout(json);
         }
     }
 
@@ -1858,7 +1880,8 @@ public class OnlineMode : MonoBehaviour
             poseCache[p.index] = pose;
             if (any) body.Append(',');
             any = true;
-            body.Append("{\"i\":").Append(p.index).Append(",\"d\":").Append(OnlineFirebase.Quote(pose)).Append('}');
+            string who = UidFor(p);
+            body.Append("{\"i\":").Append(p.index).Append(",\"u\":").Append(OnlineFirebase.Quote(who)).Append(",\"d\":").Append(OnlineFirebase.Quote(pose)).Append('}');
         }
         body.Append("]}");
         if (any)
@@ -1886,7 +1909,13 @@ public class OnlineMode : MonoBehaviour
             int dEnd = json.IndexOf('"', dStart);
             string[] parts = json.Substring(dStart, dEnd - dStart).Split(',');
             cursor = dEnd + 1;
-            Player p = db.players.Find(x => x != null && x.index == index);
+            string who = "";
+            int uKey = json.LastIndexOf("\"u\":\"", dKey, StringComparison.Ordinal);
+            if (uKey >= 0 && uKey > iKey)
+                who = OnlineFirebase.ReadString(json.Substring(uKey), "u");
+            Player p = PlayerForUid(who);
+            if (p == null)
+                p = db.players.Find(x => x != null && x.index == index);
             if (p == null || p.spawnedPlayer == null || parts.Length < 8)
                 continue;
             Rigidbody body = p.spawnedPlayer.GetComponent<Rigidbody>();
@@ -1967,6 +1996,14 @@ public class OnlineMode : MonoBehaviour
             return;
         float x = Parse(pose.Substring(0, comma));
         float y = Parse(pose.Substring(comma + 1));
+        Player owner = PlayerForUid(who);
+        if (owner != null && owner.pso != null)
+        {
+            RectTransform body = owner.pso.GetComponent<RectTransform>();
+            if (body != null)
+                body.anchoredPosition = new Vector2(x, y);
+            return;
+        }
         int color = MemberColor(who);
         int cKey = json.IndexOf("\"c\":", StringComparison.Ordinal);
         if (cKey >= 0)
@@ -1979,6 +2016,400 @@ public class OnlineMode : MonoBehaviour
                 int.TryParse(json.Substring(cStart, cEnd - cStart), out color);
         }
         ShowRemoteSelector(who, new Vector2(x, y), color);
+    }
+
+    class RemoteSeat
+    {
+        public string uid;
+        public ControllerLink link;
+        public int index = -1;
+        public int waits;
+    }
+
+    bool SharedPlay()
+    {
+        if (!InLobby || lobby == null || lobby.members == null)
+            return false;
+        MenuManager mm = MenuManager.instance;
+        if (mm != null && mm.IsMenuVisible("Main Menu"))
+            return false;
+        Database db = Database.instance;
+        if (db != null && (db.gameStart || db.startingGame || db.winnerScreen))
+            return db.gametype == Gametype.Arcade || db.gametype == Gametype.Vs || db.gametype == Gametype.Coop;
+        if (mm == null)
+            return false;
+        return mm.IsMenuVisible("Character Select")
+            || mm.IsMenuVisible("Field Select")
+            || mm.IsMenuVisible("Team Select")
+            || mm.IsMenuVisible("Position Select")
+            || mm.IsMenuVisible("Ball Select")
+            || mm.IsMenuVisible("Tornament");
+    }
+
+    void SyncSharedPlayers()
+    {
+        if (!SharedPlay())
+        {
+            ReleaseRemoteSeats();
+            return;
+        }
+        Database db = Database.instance;
+        if (db == null)
+            return;
+        int humans = 0;
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            if (lobby.members[i] != null && !lobby.members[i].computer)
+                humans++;
+        }
+        if (db.maxPlayers < humans)
+            db.maxPlayers = humans;
+
+        HashSet<string> keep = new HashSet<string>();
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            OnlineMember member = lobby.members[i];
+            if (member == null || member.computer || string.IsNullOrEmpty(member.uid) || IsLocalUid(member.uid))
+                continue;
+            keep.Add(member.uid);
+            if (remoteSeats.ContainsKey(member.uid))
+                continue;
+            ControllerLink.spawningRemote = true;
+            GameObject go = new GameObject("Lobby " + member.name);
+            ControllerLink link = go.AddComponent<ControllerLink>();
+            link.remoteDrive = true;
+            PlayerInput input = go.GetComponent<PlayerInput>();
+            if (input != null)
+                input.enabled = false;
+            remoteSeats[member.uid] = new RemoteSeat { uid = member.uid, link = link };
+        }
+
+        List<string> drop = new List<string>();
+        foreach (KeyValuePair<string, RemoteSeat> pair in remoteSeats)
+        {
+            if (!keep.Contains(pair.Key))
+                drop.Add(pair.Key);
+        }
+        for (int i = 0; i < drop.Count; i++)
+            ReleaseSeat(drop[i]);
+        BindRemoteSeats();
+    }
+
+    void BindRemoteSeats()
+    {
+        Database db = Database.instance;
+        if (db == null || db.players == null)
+            return;
+        List<string> failed = new List<string>();
+        foreach (KeyValuePair<string, RemoteSeat> pair in remoteSeats)
+        {
+            RemoteSeat seat = pair.Value;
+            if (seat == null || seat.link == null)
+            {
+                failed.Add(pair.Key);
+                continue;
+            }
+            Player spawned = db.players.Find(p => p != null && p.cLink == seat.link);
+            if (spawned == null)
+            {
+                seat.waits++;
+                if (seat.waits > 8)
+                    failed.Add(pair.Key);
+                continue;
+            }
+            seat.index = spawned.index;
+            spawned.computer = false;
+            OnlineMember member = FindMember(seat.uid);
+            if (member != null && !string.IsNullOrEmpty(member.name))
+                spawned.nickName = member.name;
+            if (spawned.pso != null && member != null && db.playerColors != null && db.playerColors.Count > 0)
+            {
+                EnsureColors(db);
+                spawned.pso.SetCircleColor(db.playerColors[Mathf.Clamp(member.color, 0, db.playerColors.Count - 1)]);
+            }
+        }
+        for (int i = 0; i < failed.Count; i++)
+            ReleaseSeat(failed[i]);
+    }
+
+    void ReleaseRemoteSeats()
+    {
+        if (remoteSeats.Count == 0)
+            return;
+        List<string> keys = new List<string>(remoteSeats.Keys);
+        for (int i = 0; i < keys.Count; i++)
+            ReleaseSeat(keys[i]);
+    }
+
+    void ReleaseSeat(string who)
+    {
+        if (!remoteSeats.TryGetValue(who, out RemoteSeat seat))
+            return;
+        remoteSeats.Remove(who);
+        Database db = Database.instance;
+        if (seat != null && seat.index >= 0 && db != null)
+            db.DisconnectPlayer(seat.index);
+        else if (seat != null && seat.link != null)
+            Destroy(seat.link.gameObject);
+    }
+
+    void BroadcastSharedMenu()
+    {
+        if (!IsHost || relay == null || !relay.Connected)
+            return;
+        string name = VisibleSharedMenu();
+        if (name == lastMenuSent)
+            return;
+        lastMenuSent = name;
+        if (string.IsNullOrEmpty(name))
+            return;
+        Database db = Database.instance;
+        int mode = db != null ? (int)db.gametype : 0;
+        int min = db != null ? db.minPlayers : 1;
+        int max = db != null ? db.maxPlayers : 8;
+        relay.Send("{\"t\":\"menu\",\"name\":" + OnlineFirebase.Quote(name)
+            + ",\"mode\":" + mode
+            + ",\"min\":" + min
+            + ",\"max\":" + max
+            + ",\"level\":" + (db != null && db.levelSelect ? "true" : "false")
+            + ",\"pos\":" + (db != null && db.positionSelect ? "true" : "false")
+            + ",\"team\":" + (db != null && db.teamSelect ? "true" : "false")
+            + ",\"ball\":" + (db != null && db.ballSelect ? "true" : "false") + "}");
+    }
+
+    static string VisibleSharedMenu()
+    {
+        MenuManager mm = MenuManager.instance;
+        if (mm == null || mm.IsMenuVisible("Main Menu"))
+            return "";
+        string[] names = { "Character Select", "Field Select", "Team Select", "Position Select", "Ball Select", "Tornament" };
+        for (int i = 0; i < names.Length; i++)
+        {
+            if (mm.IsMenuVisible(names[i]))
+                return names[i];
+        }
+        return "";
+    }
+
+    void ApplySharedMenu(string json)
+    {
+        if (IsHost)
+            return;
+        Database db = Database.instance;
+        MenuManager mm = MenuManager.instance;
+        if (db == null || mm == null)
+            return;
+        string name = OnlineFirebase.ReadString(json, "name");
+        if (string.IsNullOrEmpty(name))
+            return;
+        int mode = ReadJsonInt(json, "mode");
+        db.gametype = (Gametype)Mathf.Clamp(mode, 0, 3);
+        db.minPlayers = Mathf.Max(1, ReadJsonInt(json, "min"));
+        db.maxPlayers = Mathf.Max(db.minPlayers, ReadJsonInt(json, "max"));
+        db.levelSelect = json.IndexOf("\"level\":true", StringComparison.Ordinal) >= 0;
+        db.positionSelect = json.IndexOf("\"pos\":true", StringComparison.Ordinal) >= 0;
+        db.teamSelect = json.IndexOf("\"team\":true", StringComparison.Ordinal) >= 0;
+        db.ballSelect = json.IndexOf("\"ball\":true", StringComparison.Ordinal) >= 0;
+        if (db.players != null)
+        {
+            for (int i = 0; i < db.players.Count; i++)
+            {
+                if (db.players[i] != null)
+                    db.players[i].state = name;
+            }
+        }
+        mm.OpenMenu(name);
+    }
+
+    public static bool HoldSharedAdvance()
+    {
+        if (!InLobby || IsHost)
+            return false;
+        Database db = Database.instance;
+        if (db == null)
+            return false;
+        return db.gametype == Gametype.Arcade || db.gametype == Gametype.Vs || db.gametype == Gametype.Coop;
+    }
+
+    public static void NotifyAdvance(string fromSelect)
+    {
+        if (instance == null || !IsHost || !InLobby || instance.relay == null)
+            return;
+        Database db = Database.instance;
+        if (db != null && db.gametype == Gametype.Arcade)
+            return;
+        instance.relay.Send("{\"t\":\"step\",\"from\":" + OnlineFirebase.Quote(fromSelect)
+            + ",\"field\":" + (db != null ? db.selectedField : 0) + "}");
+    }
+
+    public static void PublishArcadeMatch(ArcadeMatch match)
+    {
+        if (instance == null || !IsHost || match == null || instance.relay == null)
+            return;
+        Database db = Database.instance;
+        bool live = db != null && (db.gameStart || db.startingGame);
+        instance.relay.Send("{\"t\":\"arcade\",\"name\":" + OnlineFirebase.Quote(match.matchName)
+            + ",\"from\":" + OnlineFirebase.Quote(live ? "balls" : "characters")
+            + ",\"field\":" + (db != null ? db.selectedField : 0) + "}");
+    }
+
+    void ApplySharedStep(string json)
+    {
+        if (IsHost)
+            return;
+        Database db = Database.instance;
+        if (db == null)
+            return;
+        int field = ReadJsonInt(json, "field");
+        if (json.IndexOf("\"field\":", StringComparison.Ordinal) >= 0)
+            db.selectedField = field;
+        string from = OnlineFirebase.ReadString(json, "from");
+        if (!string.IsNullOrEmpty(from))
+            db.CharactersPicked(from, true);
+    }
+
+    void ApplyArcadeMatch(string json)
+    {
+        if (IsHost)
+            return;
+        ArcadeRun.forcedMatch = OnlineFirebase.ReadString(json, "name");
+        Database db = Database.instance;
+        if (db == null)
+            return;
+        db.gametype = Gametype.Arcade;
+        db.levelSelect = false;
+        db.positionSelect = false;
+        db.teamSelect = false;
+        db.ballSelect = false;
+        if (json.IndexOf("\"field\":", StringComparison.Ordinal) >= 0)
+            db.selectedField = ReadJsonInt(json, "field");
+        string from = OnlineFirebase.ReadString(json, "from");
+        if (string.IsNullOrEmpty(from))
+            from = "characters";
+        db.CharactersPicked(from, true);
+    }
+
+    void SendLoadout()
+    {
+        if (!SharedPlay() || relay == null || !relay.Connected || Database.instance == null || Database.instance.gameStart)
+            return;
+        if (Time.unscaledTime < nextLoadout)
+            return;
+        nextLoadout = Time.unscaledTime + 0.2f;
+        Database db = Database.instance;
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player p = db.players[i];
+            if (p == null || !IsLocalAccountPlayer(p))
+                continue;
+            string sig = p.name + "|" + p.skinColorIndex + "|" + p.team + "|" + p.position + "|" + (int)p.facing + "|" + (p.characterSelected ? "1" : "0");
+            string key = UidFor(p);
+            if (loadoutCache.TryGetValue(key, out string prev) && prev == sig)
+                continue;
+            loadoutCache[key] = sig;
+            relay.Send("{\"t\":\"load\",\"uid\":" + OnlineFirebase.Quote(key)
+                + ",\"name\":" + OnlineFirebase.Quote(p.name)
+                + ",\"skin\":" + p.skinColorIndex
+                + ",\"team\":" + p.team
+                + ",\"pos\":" + p.position
+                + ",\"face\":" + (int)p.facing
+                + ",\"sel\":" + (p.characterSelected ? "true" : "false") + "}");
+        }
+    }
+
+    void ApplyLoadout(string json)
+    {
+        string who = OnlineFirebase.ReadString(json, "uid");
+        if (string.IsNullOrEmpty(who) || IsLocalUid(who))
+            return;
+        if (IsHost && relay != null)
+            relay.Send(json);
+        Player p = PlayerForUid(who);
+        if (p == null)
+            return;
+        Database db = Database.instance;
+        string character = OnlineFirebase.ReadString(json, "name");
+        if (!string.IsNullOrEmpty(character) && p.name != character && db != null && db.characters != null)
+        {
+            Characters picked = db.characters.Find(c => c != null && c.name == character);
+            if (picked != null)
+                p.SetUpCharacter(picked);
+        }
+        p.skinColorIndex = ReadJsonInt(json, "skin");
+        p.team = ReadJsonInt(json, "team");
+        p.position = ReadJsonInt(json, "pos");
+        p.facing = (Facing)ReadJsonInt(json, "face");
+        p.characterSelected = json.IndexOf("\"sel\":true", StringComparison.Ordinal) >= 0;
+        TryAdvanceShared();
+    }
+
+    void TryAdvanceShared()
+    {
+        if (!IsHost || !SharedPlay())
+            return;
+        Database db = Database.instance;
+        if (db == null || db.players == null || db.startingGame || db.gameStart)
+            return;
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            if (db.players[i] != null && !db.players[i].characterSelected)
+                return;
+        }
+        string from = "";
+        MenuManager mm = MenuManager.instance;
+        if (mm == null)
+            return;
+        if (mm.IsMenuVisible("Character Select"))
+            from = "characters";
+        else if (mm.IsMenuVisible("Field Select"))
+            from = "fields";
+        else if (mm.IsMenuVisible("Position Select"))
+            from = "positions";
+        else if (mm.IsMenuVisible("Team Select"))
+            from = "teams";
+        else if (mm.IsMenuVisible("Ball Select"))
+            from = "balls";
+        if (from != "")
+            db.CharactersPicked(from);
+    }
+
+    Player PlayerForUid(string who)
+    {
+        if (string.IsNullOrEmpty(who))
+            return null;
+        Database db = Database.instance;
+        if (db == null || db.players == null)
+            return null;
+        if (remoteSeats.TryGetValue(who, out RemoteSeat seat) && seat != null && seat.index >= 0)
+        {
+            Player remote = db.players.Find(p => p != null && p.index == seat.index);
+            if (remote != null)
+                return remote;
+        }
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player p = db.players[i];
+            if (p != null && UidFor(p) == who)
+                return p;
+        }
+        return null;
+    }
+
+    static int ReadJsonInt(string json, string key)
+    {
+        int at = json.IndexOf("\"" + key + "\":", StringComparison.Ordinal);
+        if (at < 0)
+            return 0;
+        at = json.IndexOf(':', at) + 1;
+        while (at < json.Length && (json[at] == ' ' || json[at] == '"'))
+            at++;
+        int end = at;
+        while (end < json.Length && (char.IsDigit(json[end]) || json[end] == '-'))
+            end++;
+        int number;
+        if (!int.TryParse(json.Substring(at, end - at), out number))
+            return 0;
+        return number;
     }
 
     bool IsLocalUid(string who)
@@ -2168,6 +2599,9 @@ public class OnlineMode : MonoBehaviour
         int key = json.IndexOf("\"player\":", StringComparison.Ordinal);
         if (key >= 0)
             int.TryParse(json.Substring(key + 9).Split(',')[0], out player);
+        Player owner = PlayerForUid(from);
+        if (owner != null)
+            player = owner.index;
         GameObject go = GameObject.Find(path);
         if (go != null)
             go.SendMessage("OnClick", player, SendMessageOptions.DontRequireReceiver);
@@ -2299,7 +2733,7 @@ public class OnlineMode : MonoBehaviour
         for (int i = db.players.Count - 1; i >= 0; i--)
         {
             Player p = db.players[i];
-            if (p == null || p.cLink == null)
+            if (p == null || p.cLink == null || p.cLink.remoteDrive)
                 continue;
             if (p.nickName != null && p.nickName.EndsWith("_guest") && p.cLink.DeviceLost)
                 db.DisconnectPlayer(p.index);
@@ -2316,7 +2750,7 @@ public class OnlineMode : MonoBehaviour
         for (int i = 0; i < db.players.Count; i++)
         {
             Player p = db.players[i];
-            if (p == null || p.computer || p.cLink == null)
+            if (p == null || p.computer || p.cLink == null || p.cLink.remoteDrive)
                 continue;
             if (!namedPrimary)
             {
@@ -2347,7 +2781,7 @@ public class OnlineMode : MonoBehaviour
         for (int i = 0; i < db.players.Count; i++)
         {
             Player p = db.players[i];
-            if (p == null || p.computer || p.cLink == null)
+            if (p == null || p.computer || p.cLink == null || p.cLink.remoteDrive)
                 continue;
             bool guest = p.nickName != username;
             list.Add(new OnlineMember
@@ -2607,11 +3041,21 @@ public class OnlineMode : MonoBehaviour
 
     bool IsLocalAccountPlayer(Player p)
     {
-        return p != null && (p.nickName == username || (p.nickName != null && p.nickName.StartsWith(username + "_guest")));
+        if (p == null || (p.cLink != null && p.cLink.remoteDrive))
+            return false;
+        return p.nickName == username || (p.nickName != null && p.nickName.StartsWith(username + "_guest"));
     }
 
     string UidFor(Player p)
     {
+        if (p != null && p.cLink != null && p.cLink.remoteDrive)
+        {
+            foreach (KeyValuePair<string, RemoteSeat> pair in remoteSeats)
+            {
+                if (pair.Value != null && (pair.Value.link == p.cLink || pair.Value.index == p.index))
+                    return pair.Key;
+            }
+        }
         if (p == null || p.nickName == username)
             return uid;
         return uid + ":" + p.nickName;

@@ -2069,8 +2069,13 @@ public class Database : MonoBehaviour
         return result;
     }
 
-    public void CharactersPicked(string fromSelect)
+    public void CharactersPicked(string fromSelect, bool shared = false)
     {
+        if (!shared && OnlineMode.HoldSharedAdvance())
+            return;
+        if (!shared)
+            OnlineMode.NotifyAdvance(fromSelect);
+
         if (fromSelect != null && fromSelect.Trim().Equals("positions", StringComparison.OrdinalIgnoreCase))
             OnlineMode.FillOpenPositions();
 
