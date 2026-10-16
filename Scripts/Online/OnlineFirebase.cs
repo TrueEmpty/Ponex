@@ -332,7 +332,7 @@ public static class OnlineFirebase
         OnlineLobbyData lobby = ParseLobby(raw);
         if (lobby != null && string.IsNullOrEmpty(lobby.code))
             lobby.code = code;
-        done?.Invoke(lobby, false, lobby == null ? raw : "");
+        done?.Invoke(lobby, false, lobby == null ? "Could not read that lobby." : "");
     }
 
     public static IEnumerator WriteLobby(OnlineConfig config, string token, OnlineLobbyData lobby, Action<bool, string> done, bool createNew = false)
@@ -402,38 +402,40 @@ public static class OnlineFirebase
 
     public static IEnumerator ListPublicLobbies(OnlineConfig config, string token, Action<List<OnlineLobbyData>, string> done)
     {
-        string url = WithKey(config, "https://firestore.googleapis.com/v1/projects/" + config.projectId
-            + "/databases/(default)/documents:runQuery");
-        string body = "{\"structuredQuery\":{\"from\":[{\"collectionId\":\"lobbies\"}],\"where\":{\"fieldFilter\":{\"field\":{\"fieldPath\":\"isPublic\"},\"op\":\"EQUAL\",\"value\":{\"booleanValue\":true}}}}}";
-        string text = "";
-        bool ok = false;
-        yield return SendJson(url, "POST", body, token, (status, response, success) =>
-        {
-            text = response;
-            ok = success;
-        });
+        string url = WithKey(config, CollectionUrl(config, "lobbies") + "?pageSize=50");
+        using UnityWebRequest req = UnityWebRequest.Get(url);
+        if (!string.IsNullOrEmpty(token))
+            req.SetRequestHeader("Authorization", "Bearer " + token.Trim());
+        yield return req.SendWebRequest();
         List<OnlineLobbyData> list = new List<OnlineLobbyData>();
-        if (!ok)
+        string text = req.downloadHandler != null ? req.downloadHandler.text : "";
+        if (req.result != UnityWebRequest.Result.Success)
         {
-            done?.Invoke(list, text);
+            done?.Invoke(list, string.IsNullOrEmpty(text) ? req.error : text);
             yield break;
         }
-        int search = 0;
-        while (search < text.Length)
+        int docs = text.IndexOf("\"documents\"", StringComparison.Ordinal);
+        int bracket = docs >= 0 ? text.IndexOf('[', docs) : -1;
+        if (bracket < 0)
         {
-            int doc = text.IndexOf("\"document\"", search, StringComparison.Ordinal);
-            if (doc < 0)
+            done?.Invoke(list, "");
+            yield break;
+        }
+        int i = bracket + 1;
+        while (i < text.Length)
+        {
+            while (i < text.Length && text[i] != '{' && text[i] != ']')
+                i++;
+            if (i >= text.Length || text[i] == ']')
                 break;
-            int start = text.IndexOf('{', doc);
-            if (start < 0)
-                break;
-            int end = MatchBrace(text, start);
+            int end = MatchBrace(text, i);
             if (end < 0)
                 break;
-            OnlineLobbyData lobby = ParseLobby(text.Substring(start, end - start + 1));
-            if (lobby != null && !string.IsNullOrEmpty(lobby.code))
+            string slice = text.Substring(i, end - i + 1);
+            OnlineLobbyData lobby = ParseLobby(slice);
+            if (lobby != null && lobby.isPublic && !string.IsNullOrEmpty(lobby.code))
                 list.Add(lobby);
-            search = end + 1;
+            i = end + 1;
         }
         done?.Invoke(list, "");
     }
@@ -494,11 +496,15 @@ public static class OnlineFirebase
 
     static OnlineLobbyData ParseLobby(string json)
     {
+        json = Compact(json);
         if (string.IsNullOrEmpty(json))
             return null;
 
-        if (json.IndexOf("\"members\":{\"arrayValue\"", StringComparison.Ordinal) >= 0
-            || json.IndexOf("\"hostUid\":{\"stringValue\"", StringComparison.Ordinal) >= 0)
+        if (json.IndexOf("\"stringValue\"", StringComparison.Ordinal) >= 0
+            && (json.IndexOf("\"hostUid\"", StringComparison.Ordinal) >= 0
+                || json.IndexOf("\"relayUrl\"", StringComparison.Ordinal) >= 0
+                || json.IndexOf("\"code\"", StringComparison.Ordinal) >= 0
+                || json.IndexOf("/documents/lobbies/", StringComparison.Ordinal) >= 0))
         {
             OnlineLobbyData lobby = new OnlineLobbyData();
             lobby.code = ReadField(json, "code");
@@ -623,5 +629,38 @@ public static class OnlineFirebase
             }
         }
         return -1;
+    }
+
+    static string Compact(string json)
+    {
+        if (string.IsNullOrEmpty(json))
+            return json;
+        StringBuilder packed = new StringBuilder(json.Length);
+        bool inString = false;
+        for (int i = 0; i < json.Length; i++)
+        {
+            char c = json[i];
+            if (inString)
+            {
+                packed.Append(c);
+                if (c == '\\' && i + 1 < json.Length)
+                {
+                    packed.Append(json[++i]);
+                    continue;
+                }
+                if (c == '"')
+                    inString = false;
+                continue;
+            }
+            if (c == '"')
+            {
+                inString = true;
+                packed.Append(c);
+                continue;
+            }
+            if (!char.IsWhiteSpace(c))
+                packed.Append(c);
+        }
+        return packed.ToString();
     }
 }

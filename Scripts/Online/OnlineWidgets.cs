@@ -71,8 +71,16 @@ public static class OnlineWidgets
             col = go.AddComponent<BoxCollider>();
         col.isTrigger = true;
         RectTransform rt = go.GetComponent<RectTransform>();
-        float w = rt != null && rt.rect.width > 1f ? rt.rect.width : rt != null ? rt.sizeDelta.x : 80f;
-        float h = rt != null && rt.rect.height > 1f ? rt.rect.height : rt != null ? rt.sizeDelta.y : 80f;
+        bool point = rt != null && rt.anchorMin == rt.anchorMax;
+        float w = 80f;
+        float h = 80f;
+        if (rt != null)
+        {
+            w = point ? Mathf.Abs(rt.sizeDelta.x) : rt.rect.width;
+            h = point ? Mathf.Abs(rt.sizeDelta.y) : rt.rect.height;
+            if (w < 1f) w = rt.rect.width > 1f ? rt.rect.width : 80f;
+            if (h < 1f) h = rt.rect.height > 1f ? rt.rect.height : 80f;
+        }
         col.size = new Vector3(w, h, 1f);
         float pivotX = rt != null ? rt.pivot.x : 0.5f;
         float pivotY = rt != null ? rt.pivot.y : 0.5f;
@@ -320,12 +328,6 @@ public class OnlineFieldFocus : MonoBehaviour
     {
         HookKeyboard();
         SelectorClickable.Ensure(gameObject);
-        BoxCollider box = GetComponent<BoxCollider>();
-        if (box != null)
-        {
-            box.size += new Vector3(72f, 56f, 0f);
-            sized = true;
-        }
         if (current != this || field == null)
             return;
 

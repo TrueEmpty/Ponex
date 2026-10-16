@@ -69,6 +69,7 @@ public class OnlineMode : MonoBehaviour
     readonly Dictionary<string, Color> outlineColors = new Dictionary<string, Color>();
     readonly Dictionary<int, string> poseCache = new Dictionary<int, string>();
     readonly Dictionary<string, Vector2> selectorCache = new Dictionary<string, Vector2>();
+    readonly Dictionary<string, RectTransform> remoteCursors = new Dictionary<string, RectTransform>();
     float nextStateSend;
 
     GameObject loginRoot;
@@ -181,7 +182,11 @@ public class OnlineMode : MonoBehaviour
             StartCoroutine(SetLocked(true));
         }
 
+        if (!InLobby || (Database.instance != null && Database.instance.gameStart))
+            ClearRemoteCursors();
         PumpRelay();
+        if (InLobby && Database.instance != null && !Database.instance.gameStart)
+            SendSelectors();
         if (IsHost && Database.instance != null && Database.instance.gameStart)
             SendState();
         else if (!IsHost && loggedIn && !InputsPaused)
@@ -885,6 +890,31 @@ public class OnlineMode : MonoBehaviour
         }
         ApplyMenuGates();
         PlaceLobby();
+        FitLobbyClicks();
+    }
+
+    void FitLobbyClicks()
+    {
+        if (lobbyRoot != null)
+            OnlineWidgets.CatchClicks(lobbyRoot);
+        if (joinField != null)
+            SelectorClickable.Ensure(joinField.gameObject);
+        if (joinButton != null)
+            SelectorClickable.Ensure(joinButton.gameObject);
+        if (findButton != null)
+            SelectorClickable.Ensure(findButton.gameObject);
+        if (createButton != null)
+            SelectorClickable.Ensure(createButton.gameObject);
+        if (privateButton != null)
+            SelectorClickable.Ensure(privateButton.gameObject);
+        if (publicButton != null)
+            SelectorClickable.Ensure(publicButton.gameObject);
+        if (leaveButton != null)
+            SelectorClickable.Ensure(leaveButton.gameObject);
+        if (lobbySearch != null)
+            SelectorClickable.Ensure(lobbySearch.gameObject);
+        if (lobbyBrowser != null)
+            OnlineWidgets.CatchClicks(lobbyBrowser);
     }
 
     void PlaceLobby()
@@ -1000,8 +1030,8 @@ public class OnlineMode : MonoBehaviour
             RectTransform nameRt = name.rectTransform;
             nameRt.anchorMin = Vector2.zero;
             nameRt.anchorMax = Vector2.one;
-            nameRt.offsetMin = new Vector2(30f, 0f);
-            nameRt.offsetMax = new Vector2(-6f, 0f);
+            nameRt.offsetMin = new Vector2(32f, 2f);
+            nameRt.offsetMax = new Vector2(-8f, -2f);
             SelectorClickable.Ensure(row.gameObject, 32f);
             rosterRows.Add(row.gameObject);
             row.gameObject.AddComponent<OnlineRosterClick>().label = name;
@@ -1018,7 +1048,7 @@ public class OnlineMode : MonoBehaviour
         RectTransform rootRt = rosterRoot.GetComponent<RectTransform>();
         rootRt.sizeDelta = new Vector2(RosterWidth, RosterHeader + viewHeight);
         rosterViewport.sizeDelta = new Vector2(RosterWidth, Mathf.Max(0f, viewHeight));
-        rosterContent.sizeDelta = new Vector2(RosterWidth, listHeight);
+        rosterContent.sizeDelta = new Vector2(0f, listHeight);
         float slide = (1f - fade) * openHeight;
         if (rosterScroll != null && fade > 0.98f)
             rosterContent.anchoredPosition = new Vector2(0f, Mathf.Clamp(rosterContent.anchoredPosition.y, 0f, Mathf.Max(0f, listHeight - openHeight)));
@@ -1075,14 +1105,14 @@ public class OnlineMode : MonoBehaviour
             RectTransform rt = rosterRows[i].GetComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
             rt.pivot = new Vector2(0f, 1f);
-            rt.sizeDelta = new Vector2(RosterWidth, RosterRowHeight);
-            rt.anchoredPosition = new Vector2(0f, -i * RosterRowHeight);
+            rt.sizeDelta = new Vector2(RosterWidth - 8f, RosterRowHeight);
+            rt.anchoredPosition = new Vector2(4f, -i * RosterRowHeight);
             RectTransform nameRt = text.rectTransform;
             nameRt.anchorMin = Vector2.zero;
             nameRt.anchorMax = Vector2.one;
             nameRt.pivot = new Vector2(0.5f, 0.5f);
-            nameRt.offsetMin = new Vector2(30f, 0f);
-            nameRt.offsetMax = new Vector2(-6f, 0f);
+            nameRt.offsetMin = new Vector2(32f, 2f);
+            nameRt.offsetMax = new Vector2(-8f, -2f);
             ball.rectTransform.anchorMin = ball.rectTransform.anchorMax = new Vector2(0f, 0.5f);
             ball.rectTransform.pivot = new Vector2(0f, 0.5f);
             ball.rectTransform.anchoredPosition = new Vector2(6f, 0f);
@@ -1094,6 +1124,7 @@ public class OnlineMode : MonoBehaviour
             rosterRows[i].GetComponent<OnlineRosterClick>().uid = member.uid;
         }
         ScaleSelectors(count);
+        ApplyBallColors();
     }
 
     void EnsureRosterShell(Transform parent)
@@ -1212,6 +1243,7 @@ public class OnlineMode : MonoBehaviour
         }
         lobby = made;
         NoteSave("");
+        ApplyBallColors();
         ConnectRelay(true);
         StampLocalNames();
     }
@@ -1260,11 +1292,12 @@ public class OnlineMode : MonoBehaviour
             lobby = found;
             busy = false;
             NoteSave("");
+            ApplyBallColors();
             ConnectRelay(false);
             StampLocalNames();
             yield break;
         }
-        found.members.Add(new OnlineMember { uid = uid, name = username, guest = false, color = found.members.Count, parentUid = "" });
+        found.members.Add(new OnlineMember { uid = uid, name = username, guest = false, color = NextFreeColor(found.members), parentUid = "" });
         found.revision++;
         bool wrote = false;
         string writeError = null;
@@ -1281,6 +1314,7 @@ public class OnlineMode : MonoBehaviour
         }
         lobby = found;
         NoteSave("");
+        ApplyBallColors();
         ConnectRelay(false);
         StampLocalNames();
     }
@@ -1312,6 +1346,10 @@ public class OnlineMode : MonoBehaviour
         RectTransform root = OnlineWidgets.Panel(canvas.transform, "Public Lobbies", new Vector2(0f, 1f), new Vector2(24f, -376f), new Vector2(420f, 420f), new Color(0.05f, 0.07f, 0.12f, 0.9f));
         root.pivot = new Vector2(0f, 1f);
         lobbyBrowser = root.gameObject;
+        Canvas over = lobbyBrowser.AddComponent<Canvas>();
+        over.overrideSorting = true;
+        over.sortingOrder = 560;
+        lobbyBrowser.transform.SetAsLastSibling();
         OnlineWidgets.CatchClicks(root.gameObject);
 
         lobbySearch = OnlineWidgets.Field(root, "Lobby Search", "Search", new Vector2(16f, -16f), new Vector2(388f, 48f), false);
@@ -1369,9 +1407,9 @@ public class OnlineMode : MonoBehaviour
         publicLobbies.Clear();
         if (open != null)
             publicLobbies.AddRange(open);
-        if (!string.IsNullOrEmpty(err))
-            NoteSave(err);
         RebuildLobbyList();
+        if (lobbyListStatus != null && !string.IsNullOrEmpty(err))
+            lobbyListStatus.text = ShortError(err, "Could not load public lobbies.");
     }
 
     void RebuildLobbyList()
@@ -1405,7 +1443,7 @@ public class OnlineMode : MonoBehaviour
                     lobbyBrowser.SetActive(false);
                 StartCoroutine(JoinLobby(code));
             });
-            PinTopLeft(row, new Vector2(8f, -shown * rowHeight), new Vector2(380f, rowHeight - 6f));
+            PinTopLeft(row, new Vector2(12f, -shown * rowHeight), new Vector2(360f, rowHeight - 6f));
             Text label = row.GetComponentInChildren<Text>();
             if (label != null)
             {
@@ -1417,13 +1455,13 @@ public class OnlineMode : MonoBehaviour
             lobbyListRows.Add(row.gameObject);
             shown++;
         }
-        lobbyListContent.sizeDelta = new Vector2(396f, Mathf.Max(rowHeight, shown * rowHeight));
+        lobbyListContent.sizeDelta = new Vector2(0f, Mathf.Max(rowHeight, shown * rowHeight));
         if (lobbyListStatus != null)
         {
             if (!string.IsNullOrEmpty(query) && shown == 0)
                 lobbyListStatus.text = "No lobbies match that search.";
             else if (shown == 0)
-                lobbyListStatus.text = "No public lobbies.";
+                lobbyListStatus.text = "No public lobbies. The host has to press Public.";
             else
                 lobbyListStatus.text = "";
         }
@@ -1613,6 +1651,7 @@ public class OnlineMode : MonoBehaviour
             yield return SaveOrDeleteLobby();
         }
         lobby = null;
+        ClearRemoteCursors();
         if (relay != null)
             relay.Disconnect();
         CloseCard();
@@ -1682,6 +1721,8 @@ public class OnlineMode : MonoBehaviour
                 ApplyState(json);
             else if (type == "in" && IsHost)
                 ApplyInput(json);
+            else if (type == "sel")
+                ApplySelector(json);
             else if (type == "vote")
                 NoteVote(json);
         }
@@ -1780,13 +1821,12 @@ public class OnlineMode : MonoBehaviour
                 + ",\"b\":" + bits + "}";
             relay.SendDelta("in" + p.index, packet);
         }
-        SendSelectors();
     }
 
     void SendSelectors()
     {
         Database db = Database.instance;
-        if (db == null || db.players == null || db.gameStart)
+        if (relay == null || !relay.Connected || db == null || db.players == null || db.gameStart)
             return;
         for (int i = 0; i < db.players.Count; i++)
         {
@@ -1801,7 +1841,183 @@ public class OnlineMode : MonoBehaviour
             if (selectorCache.TryGetValue(key, out Vector2 prev) && (prev - rt.anchoredPosition).sqrMagnitude < 0.25f)
                 continue;
             selectorCache[key] = rt.anchoredPosition;
-            relay.Send("{\"t\":\"sel\",\"uid\":" + OnlineFirebase.Quote(key) + ",\"d\":" + OnlineFirebase.Quote(pose) + "}");
+            relay.Send("{\"t\":\"sel\",\"uid\":" + OnlineFirebase.Quote(key) + ",\"c\":" + MemberColor(key) + ",\"d\":" + OnlineFirebase.Quote(pose) + "}");
+        }
+    }
+
+    void ApplySelector(string json)
+    {
+        string who = OnlineFirebase.ReadString(json, "uid");
+        if (string.IsNullOrEmpty(who) || IsLocalUid(who))
+        {
+            if (IsHost && relay != null && !IsLocalUid(who))
+                relay.Send(json);
+            return;
+        }
+        if (IsHost && relay != null)
+            relay.Send(json);
+        string pose = OnlineFirebase.ReadString(json, "d");
+        int comma = string.IsNullOrEmpty(pose) ? -1 : pose.IndexOf(',');
+        if (comma < 0)
+            return;
+        float x = Parse(pose.Substring(0, comma));
+        float y = Parse(pose.Substring(comma + 1));
+        int color = MemberColor(who);
+        int cKey = json.IndexOf("\"c\":", StringComparison.Ordinal);
+        if (cKey >= 0)
+        {
+            int cStart = cKey + 4;
+            int cEnd = cStart;
+            while (cEnd < json.Length && (char.IsDigit(json[cEnd]) || json[cEnd] == '-'))
+                cEnd++;
+            if (cEnd > cStart)
+                int.TryParse(json.Substring(cStart, cEnd - cStart), out color);
+        }
+        ShowRemoteSelector(who, new Vector2(x, y), color);
+    }
+
+    bool IsLocalUid(string who)
+    {
+        if (string.IsNullOrEmpty(who))
+            return false;
+        if (who == uid)
+            return true;
+        return who.StartsWith(uid + ":");
+    }
+
+    int MemberColor(string who)
+    {
+        if (lobby == null || lobby.members == null)
+            return 0;
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            OnlineMember member = lobby.members[i];
+            if (member != null && member.uid == who)
+                return member.color;
+        }
+        return 0;
+    }
+
+    void ShowRemoteSelector(string who, Vector2 pos, int color)
+    {
+        Database db = Database.instance;
+        if (db == null || db.playerSelectors == null)
+            return;
+        if (!remoteCursors.TryGetValue(who, out RectTransform rt) || rt == null)
+        {
+            GameObject go = new GameObject("Remote Selector", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.layer = 5;
+            go.transform.SetParent(db.playerSelectors, false);
+            Image image = go.GetComponent<Image>();
+            image.raycastTarget = false;
+            rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(32f, 32f);
+            remoteCursors[who] = rt;
+        }
+        rt.anchoredPosition = pos;
+        Image ball = rt.GetComponent<Image>();
+        if (ball != null && db.playerColors != null && db.playerColors.Count > 0)
+        {
+            EnsureColors(db);
+            PlayerColors colors = db.playerColors[Mathf.Clamp(color, 0, db.playerColors.Count - 1)];
+            ball.sprite = colors.sprite != null ? colors.sprite : OnlineWidgets.MenuSprite();
+            ball.color = colors.color;
+        }
+    }
+
+    void ClearRemoteCursors()
+    {
+        foreach (RectTransform rt in remoteCursors.Values)
+        {
+            if (rt != null)
+                Destroy(rt.gameObject);
+        }
+        remoteCursors.Clear();
+    }
+
+    void ApplyBallColors()
+    {
+        if (!InLobby || lobby.members == null)
+            return;
+        Database db = Database.instance;
+        if (db == null || db.players == null || db.playerColors == null || db.playerColors.Count == 0)
+            return;
+        EnsureColors(db);
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player p = db.players[i];
+            if (p == null || p.computer || p.pso == null || !IsLocalAccountPlayer(p))
+                continue;
+            OnlineMember member = MemberFor(p);
+            if (member == null)
+                continue;
+            p.pso.SetCircleColor(db.playerColors[Mathf.Clamp(member.color, 0, db.playerColors.Count - 1)]);
+        }
+    }
+
+    OnlineMember MemberFor(Player p)
+    {
+        if (lobby == null || lobby.members == null || p == null)
+            return null;
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            OnlineMember member = lobby.members[i];
+            if (member == null)
+                continue;
+            if (p.nickName == username && member.uid == uid)
+                return member;
+            if (member.parentUid == uid && member.name == p.nickName)
+                return member;
+        }
+        return null;
+    }
+
+    int NextFreeColor(List<OnlineMember> members)
+    {
+        HashSet<int> used = new HashSet<int>();
+        if (members != null)
+        {
+            for (int i = 0; i < members.Count; i++)
+            {
+                if (members[i] != null)
+                    used.Add(members[i].color);
+            }
+        }
+        return NextFreeFrom(used);
+    }
+
+    int NextFreeFrom(HashSet<int> used)
+    {
+        Database db = Database.instance;
+        EnsureColors(db);
+        int usable = db != null ? Mathf.Max(1, PlayerSkin.UsableColorCount(db)) : 8;
+        for (int i = 0; i < usable; i++)
+        {
+            if (!used.Contains(i))
+                return i;
+        }
+        return 0;
+    }
+
+    void ReserveLocalColors(List<OnlineMember> mine)
+    {
+        if (!InLobby || mine == null || lobby.members == null)
+            return;
+        HashSet<int> used = new HashSet<int>();
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            OnlineMember member = lobby.members[i];
+            if (member == null || member.uid == uid || member.parentUid == uid)
+                continue;
+            used.Add(member.color);
+        }
+        for (int i = 0; i < mine.Count; i++)
+        {
+            if (used.Contains(mine[i].color))
+                mine[i].color = NextFreeFrom(used);
+            used.Add(mine[i].color);
         }
     }
 
@@ -2041,6 +2257,7 @@ public class OnlineMode : MonoBehaviour
         }
         if (list.Count == 0)
             list.Add(new OnlineMember { uid = uid, name = username, guest = false, color = 0 });
+        ReserveLocalColors(list);
         return list;
     }
 

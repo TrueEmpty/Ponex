@@ -333,7 +333,7 @@ public class PlayerSelectorObj : MonoBehaviour
         if (sphere == null)
             sphere = gameObject.AddComponent<SphereCollider>();
         sphere.isTrigger = true;
-        sphere.radius = 25f;
+        sphere.radius = 16f;
         sphere.center = Vector3.zero;
         sphere.includeLayers = 1 << 5; // UI
         sphere.excludeLayers = 0;

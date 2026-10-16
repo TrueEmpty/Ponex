@@ -19,12 +19,12 @@ public static class SelectorClickable
         RectTransform rt = go.GetComponent<RectTransform>();
         if (rt != null)
         {
-            float w = rt.rect.width;
-            float h = rt.rect.height;
-            if (w < 1f) w = rt.sizeDelta.x > 1f ? rt.sizeDelta.x : fallbackSize;
-            if (h < 1f) h = rt.sizeDelta.y > 1f ? rt.sizeDelta.y : fallbackSize;
+            bool point = rt.anchorMin == rt.anchorMax;
+            float w = point ? Mathf.Abs(rt.sizeDelta.x) : rt.rect.width;
+            float h = point ? Mathf.Abs(rt.sizeDelta.y) : rt.rect.height;
+            if (w < 1f) w = rt.rect.width > 1f ? rt.rect.width : fallbackSize;
+            if (h < 1f) h = rt.rect.height > 1f ? rt.rect.height : fallbackSize;
             col.size = new Vector3(w, h, 1f);
-            // Pivot is often the top-left corner. Center the box on the graphic.
             col.center = new Vector3((0.5f - rt.pivot.x) * w, (0.5f - rt.pivot.y) * h, 0f);
         }
         else

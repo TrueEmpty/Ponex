@@ -9086,6 +9086,10 @@ MonoBehaviour:
   winnerScreen: 0
   mmOp: {fileID: 6677652147738950009}
   gameStart: 0
+  skipStoryCutscenes: 0
+  storyPlaying: 0
+  storyPauseOpen: 0
+  storySharedCursor: 0
   aiTrainingSession: 0
   extraSounds:
   - name: Selection
