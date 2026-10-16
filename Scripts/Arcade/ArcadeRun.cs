@@ -894,7 +894,8 @@ public class ArcadeRun : MonoBehaviour
         canvas.sortingOrder = 620;
         CanvasScaler scaler = endCard.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.referenceResolution = UiScreenFit.Reference;
+        scaler.matchWidthOrHeight = 0.5f;
 
         RectTransform root = endCard.GetComponent<RectTransform>();
         root.anchorMin = Vector2.zero;
@@ -1014,7 +1015,8 @@ public class ArcadeRun : MonoBehaviour
         canvas.sortingOrder = 560;
         CanvasScaler scaler = rootGo.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.referenceResolution = UiScreenFit.Reference;
+        scaler.matchWidthOrHeight = 0.5f;
 
         RectTransform root = rootGo.GetComponent<RectTransform>();
         root.anchorMin = Vector2.zero;

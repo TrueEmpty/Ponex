@@ -529,6 +529,7 @@ public class TrainingManager : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.overrideSorting = true;
         canvas.sortingOrder = 6000;
+        UiScreenFit.Fit(canvas);
         cGo.layer = 5;
 
         panel = new GameObject("Training Panel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
