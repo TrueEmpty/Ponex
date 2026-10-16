@@ -480,7 +480,8 @@ public static class OnlineFirebase
                 members.Append("\"guest\":{\"booleanValue\":").Append(member.guest ? "true" : "false").Append("},");
                 members.Append("\"color\":{\"integerValue\":\"").Append(member.color).Append("\"},");
                 members.Append("\"parentUid\":{\"stringValue\":").Append(Quote(member.parentUid)).Append("},");
-                members.Append("\"computer\":{\"booleanValue\":").Append(member.computer ? "true" : "false").Append("}");
+                members.Append("\"computer\":{\"booleanValue\":").Append(member.computer ? "true" : "false").Append("},");
+                members.Append("\"seen\":{\"stringValue\":").Append(Quote(member.seen)).Append("}");
                 members.Append("}}}");
             }
         }
@@ -602,7 +603,8 @@ public static class OnlineFirebase
                 guest = ReadBool(slice, "guest"),
                 color = ReadInt(slice, "color"),
                 parentUid = ReadField(slice, "parentUid"),
-                computer = ReadBool(slice, "computer")
+                computer = ReadBool(slice, "computer"),
+                seen = ReadField(slice, "seen")
             });
             i = end + 1;
         }

@@ -15,6 +15,7 @@ public class OnlineMember
     public int color;
     public string parentUid;
     public bool computer;
+    public string seen;
 }
 
 [Serializable]
@@ -60,6 +61,11 @@ public class OnlineMode : MonoBehaviour
     bool busy;
     bool triedAuto;
     float nextPoll;
+    float nextHeartbeat;
+    float nextSweep;
+    bool sweeping;
+    bool heartbeatBusy;
+    const float PresenceTimeout = 45f;
     bool refreshing;
     bool remember = true;
     bool autoSign = false;
@@ -191,6 +197,17 @@ public class OnlineMode : MonoBehaviour
         {
             nextPoll = Time.unscaledTime + 3f;
             StartCoroutine(RefreshLobby());
+        }
+
+        if (InLobby && Time.unscaledTime >= nextHeartbeat)
+        {
+            nextHeartbeat = Time.unscaledTime + 10f;
+            StartCoroutine(Heartbeat());
+        }
+        if (loggedIn && Time.unscaledTime >= nextSweep)
+        {
+            nextSweep = Time.unscaledTime + 20f;
+            StartCoroutine(SweepDeadLobbies());
         }
 
         SyncSharedPlayers();
@@ -750,10 +767,16 @@ public class OnlineMode : MonoBehaviour
 
     IEnumerator SweepDeadLobbies()
     {
+        if (sweeping || !loggedIn)
+            yield break;
+        sweeping = true;
         List<OnlineLobbyData> all = null;
         yield return OnlineFirebase.ListLobbies(config, idToken, false, (list, error) => all = list);
         if (all == null)
+        {
+            sweeping = false;
             yield break;
+        }
         for (int i = 0; i < all.Count; i++)
         {
             OnlineLobbyData found = all[i];
@@ -765,18 +788,105 @@ public class OnlineMode : MonoBehaviour
                 continue;
             yield return OnlineFirebase.DeleteLobby(config, idToken, found.code, null);
         }
+        sweeping = false;
+    }
+
+    IEnumerator Heartbeat()
+    {
+        if (!InLobby || heartbeatBusy || refreshing)
+            yield break;
+        heartbeatBusy = true;
+        string code = lobby.code;
+        OnlineLobbyData fresh = null;
+        bool missing = false;
+        yield return OnlineFirebase.ReadLobby(config, idToken, code, (data, gone, error) =>
+        {
+            fresh = data;
+            missing = gone;
+        });
+        if (!InLobby || lobby.code != code)
+        {
+            heartbeatBusy = false;
+            yield break;
+        }
+        if (missing || fresh == null || fresh.members == null)
+        {
+            if (missing)
+                lobby = null;
+            heartbeatBusy = false;
+            yield break;
+        }
+        string now = NowSeen();
+        for (int i = 0; i < fresh.members.Count; i++)
+        {
+            OnlineMember member = fresh.members[i];
+            if (member != null && IsOwnMember(member))
+                member.seen = now;
+        }
+        int before = fresh.members.Count;
+        fresh.members.RemoveAll(m => m == null || (!IsOwnMember(m) && StaleHuman(m)));
+        if (LobbyIsAbandoned(fresh))
+        {
+            yield return OnlineFirebase.DeleteLobby(config, idToken, code, null);
+            if (InLobby && lobby.code == code)
+                lobby = null;
+            heartbeatBusy = false;
+            yield break;
+        }
+        fresh.revision = Mathf.Max(fresh.revision, lobby.revision) + 1;
+        yield return OnlineFirebase.WriteLobby(config, idToken, fresh, null);
+        if (InLobby && lobby.code == code)
+            lobby = fresh;
+        heartbeatBusy = false;
+        if (fresh.members.Count == before)
+            yield break;
+    }
+
+    static string NowSeen()
+    {
+        return DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    static bool StaleHuman(OnlineMember member)
+    {
+        if (member == null || member.computer)
+            return false;
+        if (string.IsNullOrEmpty(member.seen))
+            return true;
+        DateTime when;
+        if (!DateTime.TryParse(member.seen, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out when))
+            return true;
+        return (DateTime.UtcNow - when.ToUniversalTime()).TotalSeconds > PresenceTimeout;
+    }
+
+    static bool MemberLive(OnlineMember member)
+    {
+        return member != null && !member.computer && !StaleHuman(member);
+    }
+
+    static int LiveCount(OnlineLobbyData found)
+    {
+        if (found == null || found.members == null)
+            return 0;
+        int count = 0;
+        for (int i = 0; i < found.members.Count; i++)
+        {
+            if (MemberLive(found.members[i]))
+                count++;
+        }
+        return count;
+    }
+
+    bool IsOwnMember(OnlineMember member)
+    {
+        if (member == null || string.IsNullOrEmpty(member.uid))
+            return false;
+        return member.uid == uid || member.parentUid == uid || IsLocalUid(member.uid);
     }
 
     static bool LobbyIsAbandoned(OnlineLobbyData found)
     {
-        if (found.members == null || found.members.Count == 0)
-            return true;
-        for (int i = 0; i < found.members.Count; i++)
-        {
-            if (found.members[i] != null && !found.members[i].computer)
-                return false;
-        }
-        return true;
+        return LiveCount(found) == 0;
     }
 
     IEnumerator GoOffline()
@@ -1111,6 +1221,8 @@ public class OnlineMode : MonoBehaviour
             return;
         EnsureRosterShell(canvas.transform);
         rosterRoot.SetActive(true);
+        if (lobby.members != null)
+            lobby.members.RemoveAll(m => m == null || (!IsOwnMember(m) && StaleHuman(m)));
 
         int count = lobby.members.Count;
         while (rosterRows.Count < count)
@@ -1401,7 +1513,7 @@ public class OnlineMode : MonoBehaviour
             StampLocalNames();
             yield break;
         }
-        found.members.Add(new OnlineMember { uid = uid, name = username, guest = false, color = NextFreeColor(found.members), parentUid = "" });
+        found.members.Add(new OnlineMember { uid = uid, name = username, guest = false, color = NextFreeColor(found.members), parentUid = "", seen = NowSeen() });
         found.revision++;
         bool wrote = false;
         string writeError = null;
@@ -1535,9 +1647,9 @@ public class OnlineMode : MonoBehaviour
             OnlineLobbyData candidate = publicLobbies[i];
             if (candidate == null || string.IsNullOrEmpty(candidate.code))
                 continue;
-            if (!LobbyMatches(candidate, query))
+            if (!LobbyMatches(candidate, query) || LiveCount(candidate) == 0)
                 continue;
-            int count = candidate.members != null ? candidate.members.Count : 0;
+            int count = LiveCount(candidate);
             string title = LobbyTitle(candidate);
             string players = count == 1 ? "1 player" : count + " players";
             string code = candidate.code;
@@ -1631,6 +1743,16 @@ public class OnlineMode : MonoBehaviour
             lobby = fresh;
         else if (fresh != null)
             ApplyComputerFlags(fresh);
+        if (lobby.members != null)
+        {
+            int staleBefore = lobby.members.Count;
+            lobby.members.RemoveAll(m => m == null || (!IsOwnMember(m) && StaleHuman(m)));
+            if (lobby.members.Count != staleBefore && !LobbyIsAbandoned(lobby))
+            {
+                lobby.revision++;
+                yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
+            }
+        }
         if (IsHost && MenuManager.instance != null && MenuManager.instance.IsMenuVisible("Main Menu"))
         {
             int before = lobby.members != null ? lobby.members.Count : 0;
@@ -2031,8 +2153,6 @@ public class OnlineMode : MonoBehaviour
         if (!InLobby || lobby == null || lobby.members == null)
             return false;
         MenuManager mm = MenuManager.instance;
-        if (mm != null && mm.IsMenuVisible("Main Menu"))
-            return false;
         Database db = Database.instance;
         if (db != null && (db.gameStart || db.startingGame || db.winnerScreen))
             return db.gametype == Gametype.Arcade || db.gametype == Gametype.Vs || db.gametype == Gametype.Coop;
@@ -2059,10 +2179,12 @@ public class OnlineMode : MonoBehaviour
         int humans = 0;
         for (int i = 0; i < lobby.members.Count; i++)
         {
-            if (lobby.members[i] != null && !lobby.members[i].computer)
+            if (MemberLive(lobby.members[i]))
                 humans++;
         }
-        if (db.maxPlayers < humans)
+        if (db.gametype == Gametype.Arcade)
+            db.maxPlayers = Mathf.Max(db.maxPlayers, Mathf.Max(2, humans));
+        else if (db.maxPlayers < humans)
             db.maxPlayers = humans;
 
         HashSet<string> keep = new HashSet<string>();
@@ -2238,7 +2360,20 @@ public class OnlineMode : MonoBehaviour
         Database db = Database.instance;
         if (db != null && db.gametype == Gametype.Arcade)
             return;
-        instance.relay.Send("{\"t\":\"step\",\"from\":" + OnlineFirebase.Quote(fromSelect)
+        instance.SendStep(fromSelect);
+    }
+
+    public static void RequestAdvance(string fromSelect)
+    {
+        if (instance == null || IsHost || !InLobby || instance.relay == null)
+            return;
+        instance.SendStep(fromSelect);
+    }
+
+    void SendStep(string fromSelect)
+    {
+        Database db = Database.instance;
+        relay.Send("{\"t\":\"step\",\"from\":" + OnlineFirebase.Quote(fromSelect)
             + ",\"field\":" + (db != null ? db.selectedField : 0) + "}");
     }
 
@@ -2255,17 +2390,22 @@ public class OnlineMode : MonoBehaviour
 
     void ApplySharedStep(string json)
     {
-        if (IsHost)
-            return;
         Database db = Database.instance;
         if (db == null)
             return;
+        string from = OnlineFirebase.ReadString(json, "from");
+        string key = string.IsNullOrEmpty(from) ? "" : from.Trim().ToLower();
+        if (IsHost)
+        {
+            if (key == "fields" || key == "balls")
+                db.CharactersPicked(from);
+            return;
+        }
         int field = ReadJsonInt(json, "field");
         if (json.IndexOf("\"field\":", StringComparison.Ordinal) >= 0)
             db.selectedField = field;
-        string from = OnlineFirebase.ReadString(json, "from");
         if (!string.IsNullOrEmpty(from))
-            db.CharactersPicked(from, true);
+            db.ApplyCharactersPicked(from, true);
     }
 
     void ApplyArcadeMatch(string json)
@@ -2286,7 +2426,7 @@ public class OnlineMode : MonoBehaviour
         string from = OnlineFirebase.ReadString(json, "from");
         if (string.IsNullOrEmpty(from))
             from = "characters";
-        db.CharactersPicked(from, true);
+        db.ApplyCharactersPicked(from, true);
     }
 
     void SendLoadout()
@@ -2774,7 +2914,7 @@ public class OnlineMode : MonoBehaviour
         Database db = Database.instance;
         if (db == null || db.players == null)
         {
-            list.Add(new OnlineMember { uid = uid, name = username, guest = false, color = 0 });
+            list.Add(new OnlineMember { uid = uid, name = username, guest = false, color = 0, seen = NowSeen() });
             return list;
         }
         int color = 0;
@@ -2790,12 +2930,13 @@ public class OnlineMode : MonoBehaviour
                 name = string.IsNullOrEmpty(p.nickName) ? username : p.nickName,
                 guest = guest,
                 color = color,
-                parentUid = guest ? uid : ""
+                parentUid = guest ? uid : "",
+                seen = NowSeen()
             });
             color++;
         }
         if (list.Count == 0)
-            list.Add(new OnlineMember { uid = uid, name = username, guest = false, color = 0 });
+            list.Add(new OnlineMember { uid = uid, name = username, guest = false, color = 0, seen = NowSeen() });
         ReserveLocalColors(list);
         return list;
     }
@@ -2804,7 +2945,7 @@ public class OnlineMode : MonoBehaviour
     {
         if (!loggedIn)
             return;
-        int people = InLobby && lobby.members != null ? lobby.members.Count : 1;
+        int people = InLobby ? Mathf.Max(1, LiveCount(lobby)) : 1;
         bool canHost = !InLobby || IsHost;
         SetMenuButton("Arcade", canHost && people <= 32);
         SetMenuButton("Vs", canHost && people <= 8);

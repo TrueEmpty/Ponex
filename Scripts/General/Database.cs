@@ -2069,10 +2069,20 @@ public class Database : MonoBehaviour
         return result;
     }
 
-    public void CharactersPicked(string fromSelect, bool shared = false)
+    public void CharactersPicked(string fromSelect)
+    {
+        ApplyCharactersPicked(fromSelect, false);
+    }
+
+    public void ApplyCharactersPicked(string fromSelect, bool shared)
     {
         if (!shared && OnlineMode.HoldSharedAdvance())
+        {
+            string key = fromSelect != null ? fromSelect.Trim().ToLower() : "";
+            if (key == "fields" || key == "balls")
+                OnlineMode.RequestAdvance(fromSelect);
             return;
+        }
         if (!shared)
             OnlineMode.NotifyAdvance(fromSelect);
 

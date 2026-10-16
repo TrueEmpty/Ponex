@@ -131,8 +131,29 @@ public class CharacterSelect : MonoBehaviour
         if (db == null)
             return;
 
-        // Multiplayer lobbies allow up to 8 (VS or Team)
-        if (OnlineMode.InLobby)
+        if (db.gametype == Gametype.Arcade)
+        {
+            int humans = 0;
+            int cpus = 0;
+            if (db.players != null)
+            {
+                for (int i = 0; i < db.players.Count; i++)
+                {
+                    Player p = db.players[i];
+                    if (p == null)
+                        continue;
+                    if (p.computer)
+                        cpus++;
+                    else
+                        humans++;
+                }
+            }
+            if (humans >= 2 || cpus >= 1)
+                return;
+            if (db.players != null && db.maxPlayers < db.players.Count + 1)
+                db.maxPlayers = db.players.Count + 1;
+        }
+        else if (OnlineMode.InLobby)
             db.maxPlayers = 32;
         else if (db.gametype == Gametype.Vs || db.gametype == Gametype.Coop)
             db.maxPlayers = 8;
@@ -141,7 +162,8 @@ public class CharacterSelect : MonoBehaviour
             return;
 
         db.PlayerAdd(null);
-        EnforceTeamModeForPlayerCount();
+        if (db.gametype != Gametype.Arcade)
+            EnforceTeamModeForPlayerCount();
     }
 
     public void RemovePlayer()
