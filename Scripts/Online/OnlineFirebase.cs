@@ -402,6 +402,11 @@ public static class OnlineFirebase
 
     public static IEnumerator ListPublicLobbies(OnlineConfig config, string token, Action<List<OnlineLobbyData>, string> done)
     {
+        yield return ListLobbies(config, token, true, done);
+    }
+
+    public static IEnumerator ListLobbies(OnlineConfig config, string token, bool publicOnly, Action<List<OnlineLobbyData>, string> done)
+    {
         string url = WithKey(config, CollectionUrl(config, "lobbies") + "?pageSize=50");
         using UnityWebRequest req = UnityWebRequest.Get(url);
         if (!string.IsNullOrEmpty(token))
@@ -433,7 +438,7 @@ public static class OnlineFirebase
                 break;
             string slice = text.Substring(i, end - i + 1);
             OnlineLobbyData lobby = ParseLobby(slice);
-            if (lobby != null && lobby.isPublic && !string.IsNullOrEmpty(lobby.code))
+            if (lobby != null && !string.IsNullOrEmpty(lobby.code) && (!publicOnly || lobby.isPublic))
                 list.Add(lobby);
             i = end + 1;
         }
@@ -474,7 +479,8 @@ public static class OnlineFirebase
                 members.Append("\"name\":{\"stringValue\":").Append(Quote(member.name)).Append("},");
                 members.Append("\"guest\":{\"booleanValue\":").Append(member.guest ? "true" : "false").Append("},");
                 members.Append("\"color\":{\"integerValue\":\"").Append(member.color).Append("\"},");
-                members.Append("\"parentUid\":{\"stringValue\":").Append(Quote(member.parentUid)).Append("}");
+                members.Append("\"parentUid\":{\"stringValue\":").Append(Quote(member.parentUid)).Append("},");
+                members.Append("\"computer\":{\"booleanValue\":").Append(member.computer ? "true" : "false").Append("}");
                 members.Append("}}}");
             }
         }
@@ -595,7 +601,8 @@ public static class OnlineFirebase
                 name = ReadField(slice, "name"),
                 guest = ReadBool(slice, "guest"),
                 color = ReadInt(slice, "color"),
-                parentUid = ReadField(slice, "parentUid")
+                parentUid = ReadField(slice, "parentUid"),
+                computer = ReadBool(slice, "computer")
             });
             i = end + 1;
         }

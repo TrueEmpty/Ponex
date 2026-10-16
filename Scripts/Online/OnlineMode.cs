@@ -14,6 +14,7 @@ public class OnlineMember
     public bool guest;
     public int color;
     public string parentUid;
+    public bool computer;
 }
 
 [Serializable]
@@ -673,6 +674,95 @@ public class OnlineMode : MonoBehaviour
             StampLocalNames();
         }
         EnsureLobbyPanel();
+        StartCoroutine(SweepDeadLobbies());
+    }
+
+    void OnEnable()
+    {
+        Application.wantsToQuit += OnWantsToQuit;
+    }
+
+    void OnDisable()
+    {
+        Application.wantsToQuit -= OnWantsToQuit;
+    }
+
+    bool quitReady;
+
+    bool OnWantsToQuit()
+    {
+        if (quitReady || !InLobby)
+            return true;
+        StartCoroutine(QuitAfterLobby());
+        return false;
+    }
+
+    IEnumerator QuitAfterLobby()
+    {
+        if (IsHost)
+            yield return LeaveLobbyRoutine();
+        else
+            yield return MarkLocalMembersAsComputers();
+        quitReady = true;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    IEnumerator MarkLocalMembersAsComputers()
+    {
+        if (!InLobby || lobby.members == null)
+            yield break;
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            OnlineMember member = lobby.members[i];
+            if (member != null && (member.uid == uid || member.parentUid == uid))
+                member.computer = true;
+        }
+        bool anyHuman = false;
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            if (lobby.members[i] != null && !lobby.members[i].computer)
+                anyHuman = true;
+        }
+        lobby.revision++;
+        if (!anyHuman)
+            yield return OnlineFirebase.DeleteLobby(config, idToken, lobby.code, null);
+        else
+            yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
+    }
+
+    IEnumerator SweepDeadLobbies()
+    {
+        List<OnlineLobbyData> all = null;
+        yield return OnlineFirebase.ListLobbies(config, idToken, false, (list, error) => all = list);
+        if (all == null)
+            yield break;
+        for (int i = 0; i < all.Count; i++)
+        {
+            OnlineLobbyData found = all[i];
+            if (found == null || string.IsNullOrEmpty(found.code))
+                continue;
+            if (InLobby && lobby.code == found.code)
+                continue;
+            if (!LobbyIsAbandoned(found))
+                continue;
+            yield return OnlineFirebase.DeleteLobby(config, idToken, found.code, null);
+        }
+    }
+
+    static bool LobbyIsAbandoned(OnlineLobbyData found)
+    {
+        if (found.members == null || found.members.Count == 0)
+            return true;
+        for (int i = 0; i < found.members.Count; i++)
+        {
+            if (found.members[i] != null && !found.members[i].computer)
+                return false;
+        }
+        return true;
     }
 
     IEnumerator GoOffline()
@@ -1348,7 +1438,7 @@ public class OnlineMode : MonoBehaviour
         lobbyBrowser = root.gameObject;
         Canvas over = lobbyBrowser.AddComponent<Canvas>();
         over.overrideSorting = true;
-        over.sortingOrder = 560;
+        over.sortingOrder = 350;
         lobbyBrowser.transform.SetAsLastSibling();
         OnlineWidgets.CatchClicks(root.gameObject);
 
@@ -1525,37 +1615,45 @@ public class OnlineMode : MonoBehaviour
         }
         if (fresh != null && fresh.revision >= lobby.revision)
             lobby = fresh;
-        if (IsHost)
+        else if (fresh != null)
+            ApplyComputerFlags(fresh);
+        if (IsHost && MenuManager.instance != null && MenuManager.instance.IsMenuVisible("Main Menu"))
         {
-            EnsureRemotePlayers();
-            if (HostRosterDirty())
-                yield return PublishRoster();
+            int before = lobby.members != null ? lobby.members.Count : 0;
+            if (lobby.members != null)
+                lobby.members.RemoveAll(m => m == null || m.computer);
+            if (lobby.members == null || lobby.members.Count == 0)
+            {
+                yield return OnlineFirebase.DeleteLobby(config, idToken, lobby.code, null);
+                lobby = null;
+                refreshing = false;
+                yield break;
+            }
+            if (lobby.members.Count != before)
+            {
+                lobby.revision++;
+                yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
+            }
         }
+        if (IsHost && HostRosterDirty())
+            yield return PublishRoster();
         refreshing = false;
     }
 
-    void EnsureRemotePlayers()
+    void ApplyComputerFlags(OnlineLobbyData fresh)
     {
-        Database db = Database.instance;
-        if (!IsHost || lobby == null || lobby.members == null || db == null)
+        if (fresh == null || fresh.members == null || lobby == null || lobby.members == null)
             return;
         for (int i = 0; i < lobby.members.Count; i++)
         {
             OnlineMember member = lobby.members[i];
-            if (member == null || member.uid == uid || member.parentUid == uid)
+            if (member == null || member.computer)
                 continue;
-            bool exists = db.players != null && db.players.Exists(p => p != null && p.nickName == member.name);
-            if (exists)
-                continue;
-            ControllerLink.spawningRemote = true;
-            GameObject go = new GameObject("Remote " + member.name);
-            go.AddComponent<PlayerInput>();
-            ControllerLink link = go.AddComponent<ControllerLink>();
-            Player spawned = db.players != null ? db.players.Find(p => p != null && p.cLink == link) : null;
-            if (spawned != null)
+            for (int f = 0; f < fresh.members.Count; f++)
             {
-                spawned.nickName = member.name;
-                spawned.computer = false;
+                OnlineMember other = fresh.members[f];
+                if (other != null && other.computer && other.uid == member.uid)
+                    member.computer = true;
             }
         }
     }
@@ -1629,20 +1727,27 @@ public class OnlineMode : MonoBehaviour
         if (IsHost)
         {
             OnlineMember next = null;
+            lobby.members.RemoveAll(m => m != null && (m.uid == uid || m.parentUid == uid));
+            bool anyHuman = false;
             for (int i = 0; i < lobby.members.Count; i++)
             {
                 OnlineMember member = lobby.members[i];
-                if (member != null && !member.guest && member.uid != uid)
-                {
+                if (member != null && !member.computer)
+                    anyHuman = true;
+                if (next == null && member != null && !member.guest && !member.computer && member.uid != uid)
                     next = member;
-                    break;
-                }
             }
-            lobby.members.RemoveAll(m => m != null && (m.uid == uid || m.parentUid == uid));
-            if (next != null)
-                lobby.hostUid = next.uid;
-            lobby.revision++;
-            yield return SaveOrDeleteLobby();
+            if (!anyHuman)
+            {
+                yield return OnlineFirebase.DeleteLobby(config, idToken, lobby.code, null);
+            }
+            else
+            {
+                if (next != null)
+                    lobby.hostUid = next.uid;
+                lobby.revision++;
+                yield return SaveOrDeleteLobby();
+            }
         }
         else
         {
@@ -2242,7 +2347,7 @@ public class OnlineMode : MonoBehaviour
         for (int i = 0; i < db.players.Count; i++)
         {
             Player p = db.players[i];
-            if (p == null || p.computer)
+            if (p == null || p.computer || p.cLink == null)
                 continue;
             bool guest = p.nickName != username;
             list.Add(new OnlineMember
