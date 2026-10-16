@@ -63,8 +63,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55ed96ae9e0e8c94f83bb358c6158e60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pawnType: 2
   health: 10
+  level: 1
   effects: []
+  colliders:
+  - {fileID: 187701746586579705}
+  - {fileID: 4875580622184143273}
+  - {fileID: 8158754847307535017}
+  - {fileID: 6528553801496545407}
+  selectionPiece: 0
 --- !u!114 &4255498757481318272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,20 +149,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Unit 3
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7181452840004381110, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
-      insertIndex: 3
+      insertIndex: 2
       addedObject: {fileID: 5756072327942335716}
     - targetCorrespondingSourceObject: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4822602400536220813}
+      insertIndex: 6
+      addedObject: {fileID: 6021169782980922144}
   m_SourcePrefab: {fileID: 100100000, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
 --- !u!4 &8158754847307535014 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7181452840004381109, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
+  m_PrefabInstance: {fileID: 1337600982026910483}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &8158754847307535017 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 7181452840004381114, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
   m_PrefabInstance: {fileID: 1337600982026910483}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &8158754847307535018 stripped
@@ -177,7 +191,7 @@ MonoBehaviour:
   delay: 0
   targetTags:
   - Ball
---- !u!114 &4822602400536220813
+--- !u!114 &6021169782980922144
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -186,10 +200,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8158754847307535018}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b84ad79613f0a404a958cd4d07d31dd5, type: 3}
+  m_Script: {fileID: 11500000, guid: 72a79ca9b334b804582c13252cc40efa, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GainSuperOnCollision
-  amount: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DamageOnTagHitPawn
+  pawn: {fileID: 9091600774707350153}
+  tagHit: Ball
+  damageIncrease: 0
+  damageEvenIfOwnBall: 0
+  maxDamagePerHit: 0
 --- !u!1001 &2305895723104612371
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -254,20 +272,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Unit 2
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7181452840004381110, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
-      insertIndex: 3
+      insertIndex: 2
       addedObject: {fileID: 3998032976804782265}
     - targetCorrespondingSourceObject: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3899867105048084837}
+      insertIndex: 6
+      addedObject: {fileID: 5201561705099496361}
   m_SourcePrefab: {fileID: 100100000, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
 --- !u!4 &4875580622184143270 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7181452840004381109, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
+  m_PrefabInstance: {fileID: 2305895723104612371}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &4875580622184143273 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 7181452840004381114, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
   m_PrefabInstance: {fileID: 2305895723104612371}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &4875580622184143274 stripped
@@ -290,7 +314,7 @@ MonoBehaviour:
   delay: 0
   targetTags:
   - Ball
---- !u!114 &3899867105048084837
+--- !u!114 &5201561705099496361
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -299,10 +323,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 4875580622184143274}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b84ad79613f0a404a958cd4d07d31dd5, type: 3}
+  m_Script: {fileID: 11500000, guid: 72a79ca9b334b804582c13252cc40efa, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GainSuperOnCollision
-  amount: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DamageOnTagHitPawn
+  pawn: {fileID: 9091600774707350153}
+  tagHit: Ball
+  damageIncrease: 0
+  damageEvenIfOwnBall: 0
+  maxDamagePerHit: 0
 --- !u!1001 &4121831978671808965
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -367,16 +395,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Unit 4
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7181452840004381110, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
-      insertIndex: 3
+      insertIndex: 2
       addedObject: {fileID: 6114028445888314624}
     - targetCorrespondingSourceObject: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5645952851949617395}
+      insertIndex: 6
+      addedObject: {fileID: 3114364365299237230}
   m_SourcePrefab: {fileID: 100100000, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
 --- !u!4 &6528553801496545392 stripped
 Transform:
@@ -403,7 +432,7 @@ MonoBehaviour:
   delay: 0
   targetTags:
   - Ball
---- !u!114 &5645952851949617395
+--- !u!114 &3114364365299237230
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -412,10 +441,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 6528553801496545404}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b84ad79613f0a404a958cd4d07d31dd5, type: 3}
+  m_Script: {fileID: 11500000, guid: 72a79ca9b334b804582c13252cc40efa, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GainSuperOnCollision
-  amount: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DamageOnTagHitPawn
+  pawn: {fileID: 9091600774707350153}
+  tagHit: Ball
+  damageIncrease: 0
+  damageEvenIfOwnBall: 0
+  maxDamagePerHit: 0
+--- !u!65 &6528553801496545407 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 7181452840004381114, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
+  m_PrefabInstance: {fileID: 4121831978671808965}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7004079221675727683
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -480,20 +518,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Unit 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7181452840004381110, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
-      insertIndex: 3
+      insertIndex: 2
       addedObject: {fileID: 6348383260481967086}
     - targetCorrespondingSourceObject: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3943453829294530765}
+      insertIndex: 6
+      addedObject: {fileID: 6564179373827352924}
   m_SourcePrefab: {fileID: 100100000, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
 --- !u!4 &187701746586579702 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7181452840004381109, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
+  m_PrefabInstance: {fileID: 7004079221675727683}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &187701746586579705 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 7181452840004381114, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
   m_PrefabInstance: {fileID: 7004079221675727683}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &187701746586579706 stripped
@@ -516,7 +560,7 @@ MonoBehaviour:
   delay: 0
   targetTags:
   - Ball
---- !u!114 &3943453829294530765
+--- !u!114 &6564179373827352924
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -525,7 +569,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 187701746586579706}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b84ad79613f0a404a958cd4d07d31dd5, type: 3}
+  m_Script: {fileID: 11500000, guid: 72a79ca9b334b804582c13252cc40efa, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GainSuperOnCollision
-  amount: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DamageOnTagHitPawn
+  pawn: {fileID: 9091600774707350153}
+  tagHit: Ball
+  damageIncrease: 0
+  damageEvenIfOwnBall: 0
+  maxDamagePerHit: 0

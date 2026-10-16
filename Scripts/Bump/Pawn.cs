@@ -6,13 +6,22 @@ public class Pawn : MonoBehaviour
 {
     Database db;
     PlayerGrab pg;
+
+    public PawnType pawnType = PawnType.Ranger;
     public int health = 1;
+    public int level = 1;
     Renderer ren;
     Material material;
     Color lastRenderedColor;
     bool hasRenderedColor;
 
     public List<PawnEffects> effects = new List<PawnEffects>();
+
+    [Header("Gameplay data")]
+    public List<Collider> colliders;
+
+    [HideInInspector]
+    public bool selectionPiece = false;
 
     // Start is called before the first frame update
     void Start()
@@ -49,12 +58,27 @@ public class Pawn : MonoBehaviour
             return;
         }
 
-        if(health > 0)
+        if(selectionPiece)
+        {
+            foreach(Collider collider in colliders)
+            {
+                collider.enabled = false;
+            }
+        }
+        else
+        {
+            Updater();
+        }
+    }
+
+    void Updater()
+    {
+        if (health > 0)
         {
             if (material != null)
             {
                 Color wantedColor;
-                if(health - 1 < db.pawnColors.Count)
+                if (health - 1 < db.pawnColors.Count)
                 {
                     wantedColor = db.pawnColors[health - 1];
                 }
@@ -79,7 +103,7 @@ public class Pawn : MonoBehaviour
                     PawnEffects pe = effects[i];
                     Effects e = FindEffect(pe.effect);
 
-                    if(!pe.shown)
+                    if (!pe.shown)
                     {
                         switch (pe.effect)
                         {
@@ -279,4 +303,13 @@ public class PawnEffects
         effect = effects;
         amount = amounts;
     }
+}
+
+public enum PawnType
+{
+    Reflector,
+    Attacker,
+    Patroller,
+    Ranger,
+    Defender
 }

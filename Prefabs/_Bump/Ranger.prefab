@@ -13,8 +13,10 @@ GameObject:
   - component: {fileID: 5188518499361026271}
   - component: {fileID: 1898849942632857872}
   - component: {fileID: 4543285590638443188}
+  - component: {fileID: 8999461499736334904}
   - component: {fileID: 6011619004174897091}
   - component: {fileID: 7387698575989474993}
+  - component: {fileID: 3032785579584084198}
   m_Layer: 0
   m_Name: Ranger
   m_TagString: Untagged
@@ -62,12 +64,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55ed96ae9e0e8c94f83bb358c6158e60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Pawn
+  pawnType: 3
   health: 1
+  level: 1
   effects:
   - effect: 0
     dir: {x: 0, y: 0, z: 0}
     amount: 0
     shown: 0
+  colliders:
+  - {fileID: 3032785579584084198}
+  selectionPiece: 0
 --- !u!33 &1898849942632857872
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -125,6 +132,23 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8999461499736334904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945732091154887761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72a79ca9b334b804582c13252cc40efa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageOnTagHitPawn
+  pawn: {fileID: 5188518499361026271}
+  tagHit: Ball
+  damageIncrease: 0
+  damageEvenIfOwnBall: 0
+  maxDamagePerHit: 0
 --- !u!114 &6011619004174897091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -153,3 +177,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GainSuperOnCollision
   amount: 1
+--- !u!64 &3032785579584084198
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945732091154887761}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -5495902117074765545, guid: 93947184f32e28348ae8374aad00b2ce, type: 3}

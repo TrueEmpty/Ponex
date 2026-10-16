@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3359879206475257683}
   - component: {fileID: 7181452840004381108}
   - component: {fileID: 7181452840004381115}
+  - component: {fileID: 557310461795941637}
   - component: {fileID: 7181452840004381114}
   - component: {fileID: 9199521214542187528}
   m_Layer: 3
@@ -63,8 +64,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55ed96ae9e0e8c94f83bb358c6158e60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pawnType: 4
   health: 2
+  level: 1
   effects: []
+  colliders:
+  - {fileID: 7181452840004381114}
+  selectionPiece: 0
 --- !u!114 &3359879206475257683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,6 +143,23 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &557310461795941637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7181452840004381113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72a79ca9b334b804582c13252cc40efa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageOnTagHitPawn
+  pawn: {fileID: 7181452840004381110}
+  tagHit: Ball
+  damageIncrease: 0
+  damageEvenIfOwnBall: 0
+  maxDamagePerHit: 0
 --- !u!65 &7181452840004381114
 BoxCollider:
   m_ObjectHideFlags: 0
