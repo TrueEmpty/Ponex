@@ -28,12 +28,7 @@ public class UwrenmawPillar : MonoBehaviour
             fullScale = visual.localScale;
         }
         if (!finished)
-        {
             SetGrow(0f);
-            Collider col = GetComponent<Collider>();
-            if (col != null)
-                col.enabled = false;
-        }
         else
             PlaceVisual(fullScale.z);
         RefreshCracks();
@@ -195,9 +190,16 @@ public class UwrenmawPillar : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (!complete || owner == null || hp <= 0 || collision == null)
+        if (owner == null || collision == null)
             return;
         if (!IsDamagingHit(collision.collider))
+            return;
+        if (!complete)
+        {
+            owner.BreakGrow(this);
+            return;
+        }
+        if (hp <= 0)
             return;
         owner.DamagePillar(this, collision.gameObject);
     }

@@ -946,41 +946,76 @@ public class OnlineMode : MonoBehaviour
         Canvas canvas = FindCanvas();
         if (canvas == null)
             return;
-        RectTransform root = OnlineWidgets.Panel(canvas.transform, "Online Lobby", new Vector2(0f, 1f), new Vector2(24f, -24f), new Vector2(420f, 340f), new Color(0.05f, 0.07f, 0.12f, 0.82f));
+        const float boxW = 292f;
+        const float pad = 10f;
+        const float row = 46f;
+        const float gap = 8f;
+        float inner = boxW - pad * 2f;
+        float half = (inner - gap) * 0.5f;
+        float y1 = -pad;
+        float y2 = y1 - row - gap;
+        float y3 = y2 - row - gap;
+        float noteH = 40f;
+        float yNote = y3 - row - gap;
+        float boxH = -yNote + noteH + pad;
+        RectTransform root = OnlineWidgets.Panel(canvas.transform, "Online Lobby", new Vector2(0f, 1f), new Vector2(24f, -24f), new Vector2(boxW, boxH), new Color(0.05f, 0.07f, 0.12f, 0.82f));
         root.pivot = new Vector2(0f, 1f);
         lobbyRoot = root.gameObject;
         OnlineWidgets.CatchClicks(root.gameObject);
-        joinField = OnlineWidgets.Field(root, "Join Code", "Join code", new Vector2(20f, -16f), new Vector2(380f, 52f), false);
-        PinTopLeft(joinField, new Vector2(20f, -16f), new Vector2(380f, 52f));
-        joinButton = OnlineWidgets.Button(root, "Join", new Vector2(20f, -78f), new Vector2(185f, 52f), OnlineWidgets.Green, _ => StartCoroutine(JoinLobby(joinField.text)));
-        findButton = OnlineWidgets.Button(root, "Find", new Vector2(215f, -78f), new Vector2(185f, 52f), new Color(0.25f, 0.5f, 0.95f, 1f), _ => ToggleLobbyBrowser());
-        createButton = OnlineWidgets.Button(root, "Create", new Vector2(20f, -140f), new Vector2(380f, 52f), OnlineWidgets.Yellow, _ => StartCoroutine(CreateLobby()));
-        PinTopLeft(joinButton, new Vector2(20f, -78f), new Vector2(185f, 52f));
-        PinTopLeft(findButton, new Vector2(215f, -78f), new Vector2(185f, 52f));
-        PinTopLeft(createButton, new Vector2(20f, -140f), new Vector2(380f, 52f));
-        codeText = OnlineWidgets.Label(root, "", 28, OnlineWidgets.Yellow);
+        joinField = OnlineWidgets.Field(root, "Join Code", "Join code", new Vector2(pad, y1), new Vector2(inner, row), false);
+        PinTopLeft(joinField, new Vector2(pad, y1), new Vector2(inner, row));
+        joinButton = OnlineWidgets.Button(root, "Join", new Vector2(pad, y2), new Vector2(half, row), OnlineWidgets.Green, _ => StartCoroutine(JoinLobby(joinField.text)));
+        findButton = OnlineWidgets.Button(root, "Find", new Vector2(pad + half + gap, y2), new Vector2(half, row), new Color(0.25f, 0.5f, 0.95f, 1f), _ => ToggleLobbyBrowser());
+        createButton = OnlineWidgets.Button(root, "Create", new Vector2(pad, y3), new Vector2(inner, row), OnlineWidgets.Yellow, _ => StartCoroutine(CreateLobby()));
+        PinTopLeft(joinButton, new Vector2(pad, y2), new Vector2(half, row));
+        PinTopLeft(findButton, new Vector2(pad + half + gap, y2), new Vector2(half, row));
+        PinTopLeft(createButton, new Vector2(pad, y3), new Vector2(inner, row));
+        codeText = OnlineWidgets.Label(root, "", 22, OnlineWidgets.Yellow);
         codeText.alignment = TextAnchor.MiddleCenter;
         codeText.rectTransform.anchorMin = codeText.rectTransform.anchorMax = new Vector2(0f, 1f);
         codeText.rectTransform.pivot = new Vector2(0f, 1f);
-        codeText.rectTransform.anchoredPosition = new Vector2(20f, -16f);
-        codeText.rectTransform.sizeDelta = new Vector2(380f, 52f);
+        codeText.rectTransform.anchoredPosition = new Vector2(pad, y1);
+        codeText.rectTransform.sizeDelta = new Vector2(inner, row);
         codeText.gameObject.SetActive(false);
-        privateButton = OnlineWidgets.Button(root, "Private", new Vector2(20f, -78f), new Vector2(185f, 52f), OnlineWidgets.Red, _ => StartCoroutine(SetPublic(false)));
-        publicButton = OnlineWidgets.Button(root, "Public", new Vector2(215f, -78f), new Vector2(185f, 52f), OnlineWidgets.Green, _ => StartCoroutine(SetPublic(true)));
-        leaveButton = OnlineWidgets.Button(root, "Leave Lobby", new Vector2(20f, -140f), new Vector2(380f, 52f), OnlineWidgets.Red, _ => StartCoroutine(LeaveLobbyRoutine()));
-        PinTopLeft(privateButton, new Vector2(20f, -78f), new Vector2(185f, 52f));
-        PinTopLeft(publicButton, new Vector2(215f, -78f), new Vector2(185f, 52f));
-        PinTopLeft(leaveButton, new Vector2(20f, -140f), new Vector2(380f, 52f));
+        privateButton = OnlineWidgets.Button(root, "Private", new Vector2(pad, y2), new Vector2(half, row), OnlineWidgets.Red, _ => StartCoroutine(SetPublic(false)));
+        publicButton = OnlineWidgets.Button(root, "Public", new Vector2(pad + half + gap, y2), new Vector2(half, row), OnlineWidgets.Green, _ => StartCoroutine(SetPublic(true)));
+        leaveButton = OnlineWidgets.Button(root, "Leave Lobby", new Vector2(pad, y3), new Vector2(inner, row), OnlineWidgets.Red, _ => StartCoroutine(LeaveLobbyRoutine()));
+        PinTopLeft(privateButton, new Vector2(pad, y2), new Vector2(half, row));
+        PinTopLeft(publicButton, new Vector2(pad + half + gap, y2), new Vector2(half, row));
+        PinTopLeft(leaveButton, new Vector2(pad, y3), new Vector2(inner, row));
         privateButton.gameObject.SetActive(false);
         publicButton.gameObject.SetActive(false);
         leaveButton.gameObject.SetActive(false);
-        saveNotice = OnlineWidgets.Label(root, "", 16, OnlineWidgets.Red);
-        saveNotice.alignment = TextAnchor.MiddleLeft;
+        FitLobbyText(joinButton);
+        FitLobbyText(findButton);
+        FitLobbyText(createButton);
+        FitLobbyText(privateButton);
+        FitLobbyText(publicButton);
+        FitLobbyText(leaveButton);
+        saveNotice = OnlineWidgets.Label(root, "", 14, OnlineWidgets.Red);
+        saveNotice.alignment = TextAnchor.UpperLeft;
+        saveNotice.horizontalOverflow = HorizontalWrapMode.Wrap;
+        saveNotice.verticalOverflow = VerticalWrapMode.Truncate;
         saveNotice.rectTransform.anchorMin = saveNotice.rectTransform.anchorMax = new Vector2(0f, 1f);
         saveNotice.rectTransform.pivot = new Vector2(0f, 1f);
-        saveNotice.rectTransform.anchoredPosition = new Vector2(20f, -200f);
-        saveNotice.rectTransform.sizeDelta = new Vector2(380f, 64f);
+        saveNotice.rectTransform.anchoredPosition = new Vector2(pad, yNote);
+        saveNotice.rectTransform.sizeDelta = new Vector2(inner, noteH);
         PlaceUsername();
+    }
+
+    static void FitLobbyText(Component widget)
+    {
+        if (widget == null)
+            return;
+        Text text = widget.GetComponentInChildren<Text>();
+        if (text == null)
+            return;
+        text.resizeTextForBestFit = true;
+        text.resizeTextMinSize = 10;
+        text.resizeTextMaxSize = 20;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.horizontalOverflow = HorizontalWrapMode.Wrap;
+        text.verticalOverflow = VerticalWrapMode.Truncate;
     }
 
     bool ShowOnlineChrome()

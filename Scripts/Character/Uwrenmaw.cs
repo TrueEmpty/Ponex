@@ -127,7 +127,10 @@ public class Uwrenmaw : MonoBehaviour
         if (action && !dashing)
         {
             if (orbit != null)
-                Release(false);
+            {
+                if (growing == null)
+                    Release(false);
+            }
             else if (pg.player.super != null && pg.player.super.Enough())
                 BeginGrow();
         }
@@ -267,6 +270,15 @@ public class Uwrenmaw : MonoBehaviour
             return;
         ClaimBall(collision.collider);
 
+        if (BuildingUlt())
+        {
+            if (BallHit(collision.collider) && !IsTail(collision.collider))
+                Release(true);
+            else
+                ReverseCircle();
+            return;
+        }
+
         UwrenmawPillar hitPillar = collision.collider.GetComponentInParent<UwrenmawPillar>();
         if (hitPillar != null && hitPillar.owner == this && (hitPillar == orbit || hitPillar == ignorePillar))
             return;
@@ -308,6 +320,11 @@ public class Uwrenmaw : MonoBehaviour
         if (bouncedFrame == Time.frameCount)
             return;
         bouncedFrame = Time.frameCount;
+        if (BuildingUlt())
+        {
+            ReverseCircle();
+            return;
+        }
         if (orbit != null)
             Release(true);
 
@@ -567,6 +584,7 @@ public class Uwrenmaw : MonoBehaviour
         spot.z = playZ;
         growing = SpawnPillar(spot, false);
         growing.BeginGrowDust();
+        IgnoreOwnBody(growing);
         orbit = growing;
         flying = false;
         lapAngle = 0f;
@@ -609,6 +627,68 @@ public class Uwrenmaw : MonoBehaviour
         if (dead != null)
             Destroy(dead.gameObject);
         flying = orbit == null;
+    }
+
+    public void BreakGrow(UwrenmawPillar pillar)
+    {
+        if (!BuildingUlt() || pillar != growing)
+            return;
+        Release(true);
+    }
+
+    bool BuildingUlt()
+    {
+        return growing != null && orbit == growing;
+    }
+
+    void IgnoreOwnBody(UwrenmawPillar pillar)
+    {
+        if (pillar == null)
+            return;
+        Collider pillarCol = pillar.GetComponent<Collider>();
+        if (pillarCol == null)
+            return;
+        Collider head = GetComponent<Collider>();
+        if (head != null)
+            Physics.IgnoreCollision(pillarCol, head, true);
+        for (int i = 0; i < segments.Count; i++)
+        {
+            if (segments[i] == null)
+                continue;
+            Collider body = segments[i].GetComponent<Collider>();
+            if (body != null)
+                Physics.IgnoreCollision(pillarCol, body, true);
+        }
+    }
+
+    static bool BallHit(Collider hit)
+    {
+        if (hit == null)
+            return false;
+        if (hit.CompareTag("Ball"))
+            return true;
+        if (hit.GetComponent<BallInfo>() != null || hit.GetComponentInParent<BallInfo>() != null)
+            return true;
+        if (hit.GetComponent<ExplosionBall>() != null || hit.GetComponentInParent<ExplosionBall>() != null)
+            return true;
+        return hit.GetComponent<DroppedMine>() != null || hit.GetComponentInParent<DroppedMine>() != null;
+    }
+
+    bool IsTail(Collider hit)
+    {
+        if (hit == null)
+            return false;
+        UwrenmawBody body = hit.GetComponent<UwrenmawBody>();
+        if (body == null)
+            body = hit.GetComponentInParent<UwrenmawBody>();
+        if (body != null && body.owner == this)
+            return true;
+        for (int i = 0; i < segments.Count; i++)
+        {
+            if (segments[i] != null && (hit.transform == segments[i] || hit.transform.IsChildOf(segments[i])))
+                return true;
+        }
+        return false;
     }
 
     public void DamagePillar(UwrenmawPillar pillar, GameObject ball)
@@ -835,8 +915,13 @@ public class Uwrenmaw : MonoBehaviour
                 if (ball)
                     continue;
                 UwrenmawPillar pillar = hit.GetComponentInParent<UwrenmawPillar>();
-                if (pillar != null && pillar.owner == this && (pillar == orbit || pillar == ignorePillar))
+                if (pillar != null && pillar.owner == this && (pillar == orbit || pillar == ignorePillar || pillar == growing))
                     continue;
+                if (BuildingUlt())
+                {
+                    ReverseCircle();
+                    continue;
+                }
                 Vector3 normal = seg.position - hit.ClosestPoint(seg.position);
                 normal.z = 0f;
                 if (normal.sqrMagnitude < 0.0001f)
