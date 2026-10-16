@@ -24,7 +24,7 @@ MonoBehaviour:
     facing: 0
     team: 1
     wallOffset: 0
-  - characterName: Garmen
+  - characterName: Nari
     humanSlot: -1
     facing: 1
     team: 2
