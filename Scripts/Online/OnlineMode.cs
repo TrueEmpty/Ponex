@@ -59,6 +59,7 @@ public class OnlineMode : MonoBehaviour
     bool busy;
     bool triedAuto;
     float nextPoll;
+    bool refreshing;
     bool remember = true;
     bool autoSign = false;
     bool themed;
@@ -106,6 +107,12 @@ public class OnlineMode : MonoBehaviour
     const float RosterRowHeight = 36f;
     const float RosterWidth = 188f;
     const float RosterHeader = 44f;
+    GameObject lobbyBrowser;
+    InputField lobbySearch;
+    RectTransform lobbyListContent;
+    Text lobbyListStatus;
+    readonly List<GameObject> lobbyListRows = new List<GameObject>();
+    readonly List<OnlineLobbyData> publicLobbies = new List<OnlineLobbyData>();
     GameObject playerCard;
     string cardUid;
 
@@ -676,6 +683,8 @@ public class OnlineMode : MonoBehaviour
         RestoreTheme();
         if (lobbyRoot != null)
             lobbyRoot.SetActive(false);
+        if (lobbyBrowser != null)
+            lobbyBrowser.SetActive(false);
         if (nameLabel != null)
             nameLabel.gameObject.SetActive(false);
         Database db = Database.instance;
@@ -725,7 +734,7 @@ public class OnlineMode : MonoBehaviour
         joinField = OnlineWidgets.Field(root, "Join Code", "Join code", new Vector2(20f, -16f), new Vector2(380f, 52f), false);
         PinTopLeft(joinField, new Vector2(20f, -16f), new Vector2(380f, 52f));
         joinButton = OnlineWidgets.Button(root, "Join", new Vector2(20f, -78f), new Vector2(185f, 52f), OnlineWidgets.Green, _ => StartCoroutine(JoinLobby(joinField.text)));
-        findButton = OnlineWidgets.Button(root, "Find", new Vector2(215f, -78f), new Vector2(185f, 52f), new Color(0.25f, 0.5f, 0.95f, 1f), _ => StartCoroutine(FindLobby()));
+        findButton = OnlineWidgets.Button(root, "Find", new Vector2(215f, -78f), new Vector2(185f, 52f), new Color(0.25f, 0.5f, 0.95f, 1f), _ => ToggleLobbyBrowser());
         createButton = OnlineWidgets.Button(root, "Create", new Vector2(20f, -140f), new Vector2(380f, 52f), OnlineWidgets.Yellow, _ => StartCoroutine(CreateLobby()));
         PinTopLeft(joinButton, new Vector2(20f, -78f), new Vector2(185f, 52f));
         PinTopLeft(findButton, new Vector2(215f, -78f), new Vector2(185f, 52f));
@@ -844,11 +853,15 @@ public class OnlineMode : MonoBehaviour
             lobbyRoot.SetActive(false);
             if (nameLabel != null)
                 nameLabel.gameObject.SetActive(false);
+            if (lobbyBrowser != null)
+                lobbyBrowser.SetActive(false);
             return;
         }
         lobbyRoot.SetActive(true);
         PlaceUsername();
         bool inside = InLobby;
+        if (inside && lobbyBrowser != null)
+            lobbyBrowser.SetActive(false);
         joinField.gameObject.SetActive(!inside);
         joinButton.gameObject.SetActive(!inside);
         findButton.gameObject.SetActive(!inside);
@@ -901,6 +914,17 @@ public class OnlineMode : MonoBehaviour
             }
         }
         panel.anchoredPosition = pos;
+        PlaceLobbyBrowser(pos, panel.sizeDelta.y);
+    }
+
+    void PlaceLobbyBrowser(Vector2 lobbyPos, float lobbyHeight)
+    {
+        if (lobbyBrowser == null || !lobbyBrowser.activeSelf)
+            return;
+        RectTransform rt = lobbyBrowser.GetComponent<RectTransform>();
+        if (rt == null)
+            return;
+        rt.anchoredPosition = new Vector2(lobbyPos.x, lobbyPos.y - lobbyHeight - 12f);
     }
 
     static bool ModeScreenOpen()
@@ -1175,11 +1199,11 @@ public class OnlineMode : MonoBehaviour
         made.revision = 1;
         bool ok = false;
         string err = null;
-        yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(made.code), JsonUtility.ToJson(made), true, (wrote, error) =>
+        yield return OnlineFirebase.WriteLobby(config, idToken, made, (wrote, error) =>
         {
             ok = wrote;
             err = error;
-        });
+        }, true);
         busy = false;
         if (!ok)
         {
@@ -1194,81 +1218,282 @@ public class OnlineMode : MonoBehaviour
 
     IEnumerator JoinLobby(string code)
     {
-        code = string.IsNullOrEmpty(code) ? "" : code.Trim().ToUpperInvariant();
+        code = CleanCode(code);
         if (busy || code.Length < 4)
-            yield break;
-        busy = true;
-        string json = "";
-        yield return OnlineFirebase.ReadObject(config, idToken, LobbyPath(code), (text, gen, ok) => json = text);
-        if (string.IsNullOrEmpty(json))
         {
-            busy = false;
+            if (!busy && code.Length > 0)
+                NoteSave("Enter the full join key.");
             yield break;
         }
-        OnlineLobbyData found = JsonUtility.FromJson<OnlineLobbyData>(json);
-        if (found == null || found.locked || found.members == null || found.members.Count >= 32)
+        busy = true;
+        OnlineLobbyData found = null;
+        bool missing = false;
+        string err = null;
+        yield return OnlineFirebase.ReadLobby(config, idToken, code, (data, gone, error) =>
+        {
+            found = data;
+            missing = gone;
+            err = error;
+        });
+        if (found == null)
         {
             busy = false;
+            NoteSave(missing || string.IsNullOrEmpty(err) ? "No lobby with that key." : err);
+            yield break;
+        }
+        if (found.locked)
+        {
+            busy = false;
+            NoteSave("That lobby is already in a match.");
+            yield break;
+        }
+        if (found.members == null)
+            found.members = new List<OnlineMember>();
+        if (found.members.Count >= 32)
+        {
+            busy = false;
+            NoteSave("That lobby is full.");
             yield break;
         }
         if (found.members.Exists(m => m != null && m.uid == uid))
         {
             lobby = found;
             busy = false;
+            NoteSave("");
             ConnectRelay(false);
+            StampLocalNames();
             yield break;
         }
         found.members.Add(new OnlineMember { uid = uid, name = username, guest = false, color = found.members.Count, parentUid = "" });
         found.revision++;
         bool wrote = false;
-        yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(code), JsonUtility.ToJson(found), false, (ok, err) => wrote = ok);
-        if (wrote)
+        string writeError = null;
+        yield return OnlineFirebase.WriteLobby(config, idToken, found, (ok, error) =>
         {
-            lobby = found;
-            ConnectRelay(false);
-            StampLocalNames();
-        }
+            wrote = ok;
+            writeError = error;
+        });
         busy = false;
+        if (!wrote)
+        {
+            NoteSave(string.IsNullOrEmpty(writeError) ? "Could not join that lobby." : writeError);
+            yield break;
+        }
+        lobby = found;
+        NoteSave("");
+        ConnectRelay(false);
+        StampLocalNames();
     }
 
-    IEnumerator FindLobby()
+    void ToggleLobbyBrowser()
     {
-        if (busy)
-            yield break;
-        busy = true;
-        string index = "";
-        yield return OnlineFirebase.ReadObject(config, idToken, "public/lobbies.json", (text, gen, ok) => index = text);
-        busy = false;
-        if (string.IsNullOrEmpty(index))
-            yield break;
-        string[] parts = index.Split(new[] { ',', '"', '[', ']', ' ', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        for (int i = 0; i < parts.Length; i++)
+        if (InLobby)
+            return;
+        EnsureLobbyBrowser();
+        if (lobbyBrowser == null)
+            return;
+        bool open = !lobbyBrowser.activeSelf;
+        lobbyBrowser.SetActive(open);
+        if (!open)
+            return;
+        RectTransform panel = lobbyRoot != null ? lobbyRoot.GetComponent<RectTransform>() : null;
+        if (panel != null)
+            PlaceLobbyBrowser(panel.anchoredPosition, panel.sizeDelta.y);
+        StartCoroutine(LoadPublicLobbies());
+    }
+
+    void EnsureLobbyBrowser()
+    {
+        if (lobbyBrowser != null)
+            return;
+        Canvas canvas = FindCanvas();
+        if (canvas == null)
+            return;
+        RectTransform root = OnlineWidgets.Panel(canvas.transform, "Public Lobbies", new Vector2(0f, 1f), new Vector2(24f, -376f), new Vector2(420f, 420f), new Color(0.05f, 0.07f, 0.12f, 0.9f));
+        root.pivot = new Vector2(0f, 1f);
+        lobbyBrowser = root.gameObject;
+        OnlineWidgets.CatchClicks(root.gameObject);
+
+        lobbySearch = OnlineWidgets.Field(root, "Lobby Search", "Search", new Vector2(16f, -16f), new Vector2(388f, 48f), false);
+        PinTopLeft(lobbySearch, new Vector2(16f, -16f), new Vector2(388f, 48f));
+        lobbySearch.onValueChanged.AddListener(_ => RebuildLobbyList());
+
+        lobbyListStatus = OnlineWidgets.Label(root, "Loading public lobbies...", 18, Color.white);
+        lobbyListStatus.alignment = TextAnchor.MiddleCenter;
+        lobbyListStatus.rectTransform.anchorMin = lobbyListStatus.rectTransform.anchorMax = new Vector2(0f, 1f);
+        lobbyListStatus.rectTransform.pivot = new Vector2(0f, 1f);
+        lobbyListStatus.rectTransform.anchoredPosition = new Vector2(16f, -72f);
+        lobbyListStatus.rectTransform.sizeDelta = new Vector2(388f, 36f);
+
+        GameObject viewGo = new GameObject("Lobby Viewport", typeof(RectTransform), typeof(RectMask2D));
+        viewGo.layer = 5;
+        viewGo.transform.SetParent(root, false);
+        RectTransform viewport = viewGo.GetComponent<RectTransform>();
+        viewport.anchorMin = viewport.anchorMax = new Vector2(0f, 1f);
+        viewport.pivot = new Vector2(0f, 1f);
+        viewport.anchoredPosition = new Vector2(12f, -112f);
+        viewport.sizeDelta = new Vector2(396f, 292f);
+
+        GameObject contentGo = new GameObject("Lobby Content", typeof(RectTransform));
+        contentGo.layer = 5;
+        contentGo.transform.SetParent(viewport, false);
+        lobbyListContent = contentGo.GetComponent<RectTransform>();
+        lobbyListContent.anchorMin = new Vector2(0f, 1f);
+        lobbyListContent.anchorMax = new Vector2(1f, 1f);
+        lobbyListContent.pivot = new Vector2(0.5f, 1f);
+        lobbyListContent.anchoredPosition = Vector2.zero;
+
+        ScrollRect scroll = root.gameObject.AddComponent<ScrollRect>();
+        scroll.viewport = viewport;
+        scroll.content = lobbyListContent;
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 28f;
+        lobbyBrowser.SetActive(false);
+    }
+
+    IEnumerator LoadPublicLobbies()
+    {
+        if (lobbyListStatus != null)
+            lobbyListStatus.text = "Loading public lobbies...";
+        List<OnlineLobbyData> open = null;
+        string err = null;
+        yield return OnlineFirebase.ListPublicLobbies(config, idToken, (list, error) =>
         {
-            if (parts[i].Length >= 4)
+            open = list;
+            err = error;
+        });
+        if (lobbyBrowser == null || !lobbyBrowser.activeSelf)
+            yield break;
+        publicLobbies.Clear();
+        if (open != null)
+            publicLobbies.AddRange(open);
+        if (!string.IsNullOrEmpty(err))
+            NoteSave(err);
+        RebuildLobbyList();
+    }
+
+    void RebuildLobbyList()
+    {
+        if (lobbyListContent == null)
+            return;
+        for (int i = 0; i < lobbyListRows.Count; i++)
+        {
+            if (lobbyListRows[i] != null)
+                Destroy(lobbyListRows[i]);
+        }
+        lobbyListRows.Clear();
+
+        string query = lobbySearch != null ? lobbySearch.text.Trim() : "";
+        const float rowHeight = 48f;
+        int shown = 0;
+        for (int i = 0; i < publicLobbies.Count; i++)
+        {
+            OnlineLobbyData candidate = publicLobbies[i];
+            if (candidate == null || string.IsNullOrEmpty(candidate.code))
+                continue;
+            if (!LobbyMatches(candidate, query))
+                continue;
+            int count = candidate.members != null ? candidate.members.Count : 0;
+            string title = LobbyTitle(candidate);
+            string players = count == 1 ? "1 player" : count + " players";
+            string code = candidate.code;
+            OnlineClick row = OnlineWidgets.Button(lobbyListContent, title + "    " + players, Vector2.zero, new Vector2(380f, rowHeight - 6f), new Color(0.12f, 0.16f, 0.24f, 1f), _ =>
             {
-                yield return JoinLobby(parts[i]);
-                if (InLobby)
-                    yield break;
+                if (lobbyBrowser != null)
+                    lobbyBrowser.SetActive(false);
+                StartCoroutine(JoinLobby(code));
+            });
+            PinTopLeft(row, new Vector2(8f, -shown * rowHeight), new Vector2(380f, rowHeight - 6f));
+            Text label = row.GetComponentInChildren<Text>();
+            if (label != null)
+            {
+                label.alignment = TextAnchor.MiddleLeft;
+                label.rectTransform.offsetMin = new Vector2(12f, 0f);
+                label.rectTransform.offsetMax = new Vector2(-12f, 0f);
+                label.color = Color.white;
+            }
+            lobbyListRows.Add(row.gameObject);
+            shown++;
+        }
+        lobbyListContent.sizeDelta = new Vector2(396f, Mathf.Max(rowHeight, shown * rowHeight));
+        if (lobbyListStatus != null)
+        {
+            if (!string.IsNullOrEmpty(query) && shown == 0)
+                lobbyListStatus.text = "No lobbies match that search.";
+            else if (shown == 0)
+                lobbyListStatus.text = "No public lobbies.";
+            else
+                lobbyListStatus.text = "";
+        }
+    }
+
+    static bool LobbyMatches(OnlineLobbyData lobby, string query)
+    {
+        if (string.IsNullOrEmpty(query))
+            return true;
+        if (lobby.code.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        if (LobbyTitle(lobby).IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        if (lobby.members == null)
+            return false;
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            OnlineMember member = lobby.members[i];
+            if (member != null && !string.IsNullOrEmpty(member.name) && member.name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+        return false;
+    }
+
+    static string LobbyTitle(OnlineLobbyData lobby)
+    {
+        if (lobby.members != null)
+        {
+            for (int i = 0; i < lobby.members.Count; i++)
+            {
+                OnlineMember member = lobby.members[i];
+                if (member != null && member.uid == lobby.hostUid && !string.IsNullOrEmpty(member.name))
+                    return member.name;
             }
         }
+        return lobby.code;
     }
 
     IEnumerator RefreshLobby()
     {
+        if (!InLobby || refreshing)
+            yield break;
+        refreshing = true;
+        OnlineLobbyData fresh = null;
+        bool missing = false;
+        yield return OnlineFirebase.ReadLobby(config, idToken, lobby.code, (data, gone, error) =>
+        {
+            fresh = data;
+            missing = gone;
+        });
         if (!InLobby)
+        {
+            refreshing = false;
             yield break;
-        string json = "";
-        yield return OnlineFirebase.ReadObject(config, idToken, LobbyPath(lobby.code), (text, gen, ok) => json = text);
-        if (string.IsNullOrEmpty(json))
+        }
+        if (missing)
+        {
+            lobby = null;
+            refreshing = false;
             yield break;
-        OnlineLobbyData fresh = JsonUtility.FromJson<OnlineLobbyData>(json);
+        }
         if (fresh != null && fresh.revision >= lobby.revision)
             lobby = fresh;
         if (IsHost)
         {
             EnsureRemotePlayers();
-            yield return PublishRoster();
+            if (HostRosterDirty())
+                yield return PublishRoster();
         }
+        refreshing = false;
     }
 
     void EnsureRemotePlayers()
@@ -1310,9 +1535,35 @@ public class OnlineMode : MonoBehaviour
         }
         lobby.members.AddRange(mine);
         lobby.revision++;
-        if (lobby.isPublic)
-            yield return OnlineFirebase.WriteObject(config, idToken, "public/lobbies.json", "[\"" + lobby.code + "\"]", false, null);
-        yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(lobby.code), JsonUtility.ToJson(lobby), false, null);
+        yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
+    }
+
+    bool HostRosterDirty()
+    {
+        if (lobby == null || lobby.members == null)
+            return false;
+        List<OnlineMember> mine = LocalMembers();
+        int local = 0;
+        for (int i = 0; i < lobby.members.Count; i++)
+        {
+            OnlineMember member = lobby.members[i];
+            if (member == null || (member.uid != uid && member.parentUid != uid))
+                continue;
+            local++;
+            bool match = false;
+            for (int m = 0; m < mine.Count; m++)
+            {
+                OnlineMember mineMember = mine[m];
+                if (mineMember.uid == member.uid && mineMember.name == member.name && mineMember.guest == member.guest && mineMember.color == member.color)
+                {
+                    match = true;
+                    break;
+                }
+            }
+            if (!match)
+                return true;
+        }
+        return local != mine.Count;
     }
 
     IEnumerator SetPublic(bool value)
@@ -1321,7 +1572,7 @@ public class OnlineMode : MonoBehaviour
             yield break;
         lobby.isPublic = value;
         lobby.revision++;
-        yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(lobby.code), JsonUtility.ToJson(lobby), false, null);
+        yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
     }
 
     IEnumerator SetLocked(bool value)
@@ -1330,7 +1581,7 @@ public class OnlineMode : MonoBehaviour
             yield break;
         lobby.locked = value;
         lobby.revision++;
-        yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(lobby.code), JsonUtility.ToJson(lobby), false, null);
+        yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
     }
 
     IEnumerator LeaveLobbyRoutine()
@@ -1353,15 +1604,13 @@ public class OnlineMode : MonoBehaviour
             if (next != null)
                 lobby.hostUid = next.uid;
             lobby.revision++;
-            if (lobby.members.Count == 0)
-                lobby.locked = true;
-            yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(lobby.code), JsonUtility.ToJson(lobby), false, null);
+            yield return SaveOrDeleteLobby();
         }
         else
         {
             lobby.members.RemoveAll(m => m != null && (m.uid == uid || m.parentUid == uid));
             lobby.revision++;
-            yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(lobby.code), JsonUtility.ToJson(lobby), false, null);
+            yield return SaveOrDeleteLobby();
         }
         lobby = null;
         if (relay != null)
@@ -1369,6 +1618,16 @@ public class OnlineMode : MonoBehaviour
         CloseCard();
         ScaleSelectors(1);
         ConvertLocalsToCpu();
+    }
+
+    IEnumerator SaveOrDeleteLobby()
+    {
+        if (lobby == null)
+            yield break;
+        if (lobby.members == null || lobby.members.Count == 0)
+            yield return OnlineFirebase.DeleteLobby(config, idToken, lobby.code, null);
+        else
+            yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
     }
 
     public System.Collections.IEnumerator LeaveAndQuit()
@@ -1387,7 +1646,7 @@ public class OnlineMode : MonoBehaviour
             yield break;
         lobby.members.RemoveAll(m => m != null && (m.uid == memberUid || m.parentUid == memberUid));
         lobby.revision++;
-        yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(lobby.code), JsonUtility.ToJson(lobby), false, null);
+        yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
         CloseCard();
     }
 
@@ -1397,7 +1656,7 @@ public class OnlineMode : MonoBehaviour
             yield break;
         lobby.hostUid = memberUid;
         lobby.revision++;
-        yield return OnlineFirebase.WriteObject(config, idToken, LobbyPath(lobby.code), JsonUtility.ToJson(lobby), false, null);
+        yield return OnlineFirebase.WriteLobby(config, idToken, lobby, null);
         CloseCard();
         if (relay != null)
             ConnectRelay(false);
@@ -2115,6 +2374,20 @@ public class OnlineMode : MonoBehaviour
         return string.IsNullOrEmpty(value) ? "" : value.Trim().ToLowerInvariant().Replace(" ", "");
     }
 
+    static string CleanCode(string code)
+    {
+        if (string.IsNullOrEmpty(code))
+            return "";
+        StringBuilder cleaned = new StringBuilder();
+        for (int i = 0; i < code.Length; i++)
+        {
+            char c = code[i];
+            if (char.IsLetterOrDigit(c))
+                cleaned.Append(char.ToUpperInvariant(c));
+        }
+        return cleaned.ToString();
+    }
+
     static string Code()
     {
         const string alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -2122,11 +2395,6 @@ public class OnlineMode : MonoBehaviour
         for (int i = 0; i < chars.Length; i++)
             chars[i] = alphabet[UnityEngine.Random.Range(0, alphabet.Length)];
         return new string(chars);
-    }
-
-    static string LobbyPath(string code)
-    {
-        return "lobbies/" + code + ".json";
     }
 
     static Canvas FindCanvas()

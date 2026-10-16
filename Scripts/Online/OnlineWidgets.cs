@@ -252,9 +252,11 @@ public class OnlineFieldFocus : MonoBehaviour
 
     static Keyboard hooked;
     static bool textEventThisFrame;
+    static float ignoreSpaceUntil;
 
     public void Focus()
     {
+        ignoreSpaceUntil = Time.unscaledTime + 0.3f;
         if (current != null && current != this)
             current.SetSelected(false);
         current = this;
@@ -290,7 +292,7 @@ public class OnlineFieldFocus : MonoBehaviour
             textEventThisFrame = true;
             return;
         }
-        if (char.IsControl(typed))
+        if (char.IsControl(typed) || IsActivationSpace(typed))
             return;
         current.Insert(typed);
         textEventThisFrame = true;
@@ -376,11 +378,16 @@ public class OnlineFieldFocus : MonoBehaviour
                 if (key == null || !key.wasPressedThisFrame)
                     continue;
                 char typed = ToChar(key.keyCode, shift);
-                if (typed != '\0')
+                if (typed != '\0' && !IsActivationSpace(typed))
                     Insert(typed);
             }
         }
         textEventThisFrame = false;
+    }
+
+    static bool IsActivationSpace(char typed)
+    {
+        return typed == ' ' && Time.unscaledTime <= ignoreSpaceUntil;
     }
 
     void FocusNext(bool backward)

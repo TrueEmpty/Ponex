@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -312,5 +313,315 @@ public static class OnlineFirebase
         if (end < 0)
             return "";
         return json.Substring(i, end - i);
+    }
+
+    public static IEnumerator ReadLobby(OnlineConfig config, string token, string code, Action<OnlineLobbyData, bool, string> done)
+    {
+        string raw = "";
+        bool missing = false;
+        yield return ReadDocument(config, token, "lobbies/" + code, (text, ok) =>
+        {
+            raw = text;
+            missing = string.IsNullOrEmpty(text);
+        });
+        if (missing)
+        {
+            done?.Invoke(null, true, "");
+            yield break;
+        }
+        OnlineLobbyData lobby = ParseLobby(raw);
+        if (lobby != null && string.IsNullOrEmpty(lobby.code))
+            lobby.code = code;
+        done?.Invoke(lobby, false, lobby == null ? raw : "");
+    }
+
+    public static IEnumerator WriteLobby(OnlineConfig config, string token, OnlineLobbyData lobby, Action<bool, string> done, bool createNew = false)
+    {
+        if (lobby == null || string.IsNullOrEmpty(lobby.code))
+        {
+            done?.Invoke(false, "missing lobby");
+            yield break;
+        }
+        string body = LobbyDocument(lobby);
+        string patch = WithKey(config, DocumentUrl(config, "lobbies/" + lobby.code) + "?" + LobbyMask());
+        string create = WithKey(config, CollectionUrl(config, "lobbies") + "?documentId=" + UnityWebRequest.EscapeURL(lobby.code));
+        int status = 0;
+        string text = "";
+        bool ok = false;
+        if (createNew)
+        {
+            yield return SendJson(create, "POST", body, token, (code, response, success) =>
+            {
+                status = code;
+                text = response;
+                ok = success;
+            });
+            if (!ok && status == 409)
+            {
+                yield return SendJson(patch, "PATCH", body, token, (code, response, success) =>
+                {
+                    status = code;
+                    text = response;
+                    ok = success;
+                });
+            }
+        }
+        else
+        {
+            yield return SendJson(patch, "PATCH", body, token, (code, response, success) =>
+            {
+                status = code;
+                text = response;
+                ok = success;
+            });
+            if (!ok && status == 404)
+            {
+                yield return SendJson(create, "POST", body, token, (code, response, success) =>
+                {
+                    status = code;
+                    text = response;
+                    ok = success;
+                });
+            }
+        }
+        done?.Invoke(ok, ok ? "" : text);
+    }
+
+    public static IEnumerator DeleteLobby(OnlineConfig config, string token, string code, Action<bool, string> done)
+    {
+        string url = WithKey(config, DocumentUrl(config, "lobbies/" + code));
+        using UnityWebRequest req = UnityWebRequest.Delete(url);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        if (!string.IsNullOrEmpty(token))
+            req.SetRequestHeader("Authorization", "Bearer " + token.Trim());
+        yield return req.SendWebRequest();
+        bool ok = req.result == UnityWebRequest.Result.Success || req.responseCode == 404;
+        string err = req.downloadHandler != null ? req.downloadHandler.text : req.error;
+        done?.Invoke(ok, ok ? "" : err);
+    }
+
+    public static IEnumerator ListPublicLobbies(OnlineConfig config, string token, Action<List<OnlineLobbyData>, string> done)
+    {
+        string url = WithKey(config, "https://firestore.googleapis.com/v1/projects/" + config.projectId
+            + "/databases/(default)/documents:runQuery");
+        string body = "{\"structuredQuery\":{\"from\":[{\"collectionId\":\"lobbies\"}],\"where\":{\"fieldFilter\":{\"field\":{\"fieldPath\":\"isPublic\"},\"op\":\"EQUAL\",\"value\":{\"booleanValue\":true}}}}}";
+        string text = "";
+        bool ok = false;
+        yield return SendJson(url, "POST", body, token, (status, response, success) =>
+        {
+            text = response;
+            ok = success;
+        });
+        List<OnlineLobbyData> list = new List<OnlineLobbyData>();
+        if (!ok)
+        {
+            done?.Invoke(list, text);
+            yield break;
+        }
+        int search = 0;
+        while (search < text.Length)
+        {
+            int doc = text.IndexOf("\"document\"", search, StringComparison.Ordinal);
+            if (doc < 0)
+                break;
+            int start = text.IndexOf('{', doc);
+            if (start < 0)
+                break;
+            int end = MatchBrace(text, start);
+            if (end < 0)
+                break;
+            OnlineLobbyData lobby = ParseLobby(text.Substring(start, end - start + 1));
+            if (lobby != null && !string.IsNullOrEmpty(lobby.code))
+                list.Add(lobby);
+            search = end + 1;
+        }
+        done?.Invoke(list, "");
+    }
+
+    static string LobbyMask()
+    {
+        string[] fields = { "code", "hostUid", "isPublic", "locked", "relayUrl", "relayKey", "revision", "members", "data" };
+        StringBuilder mask = new StringBuilder();
+        for (int i = 0; i < fields.Length; i++)
+        {
+            if (i > 0)
+                mask.Append('&');
+            mask.Append("updateMask.fieldPaths=");
+            mask.Append(fields[i]);
+        }
+        return mask.ToString();
+    }
+
+    static string LobbyDocument(OnlineLobbyData lobby)
+    {
+        StringBuilder members = new StringBuilder();
+        members.Append("{\"arrayValue\":{\"values\":[");
+        bool any = false;
+        if (lobby.members != null)
+        {
+            for (int i = 0; i < lobby.members.Count; i++)
+            {
+                OnlineMember member = lobby.members[i];
+                if (member == null)
+                    continue;
+                if (any)
+                    members.Append(',');
+                any = true;
+                members.Append("{\"mapValue\":{\"fields\":{");
+                members.Append("\"uid\":{\"stringValue\":").Append(Quote(member.uid)).Append("},");
+                members.Append("\"name\":{\"stringValue\":").Append(Quote(member.name)).Append("},");
+                members.Append("\"guest\":{\"booleanValue\":").Append(member.guest ? "true" : "false").Append("},");
+                members.Append("\"color\":{\"integerValue\":\"").Append(member.color).Append("\"},");
+                members.Append("\"parentUid\":{\"stringValue\":").Append(Quote(member.parentUid)).Append("}");
+                members.Append("}}}");
+            }
+        }
+        members.Append("]}}");
+
+        StringBuilder body = new StringBuilder();
+        body.Append("{\"fields\":{");
+        body.Append("\"code\":{\"stringValue\":").Append(Quote(lobby.code)).Append("},");
+        body.Append("\"hostUid\":{\"stringValue\":").Append(Quote(lobby.hostUid)).Append("},");
+        body.Append("\"isPublic\":{\"booleanValue\":").Append(lobby.isPublic ? "true" : "false").Append("},");
+        body.Append("\"locked\":{\"booleanValue\":").Append(lobby.locked ? "true" : "false").Append("},");
+        body.Append("\"relayUrl\":{\"stringValue\":").Append(Quote(lobby.relayUrl)).Append("},");
+        body.Append("\"relayKey\":{\"stringValue\":").Append(Quote(lobby.relayKey)).Append("},");
+        body.Append("\"revision\":{\"integerValue\":\"").Append(lobby.revision).Append("\"},");
+        body.Append("\"members\":").Append(members);
+        body.Append("}}");
+        return body.ToString();
+    }
+
+    static OnlineLobbyData ParseLobby(string json)
+    {
+        if (string.IsNullOrEmpty(json))
+            return null;
+
+        if (json.IndexOf("\"members\":{\"arrayValue\"", StringComparison.Ordinal) >= 0
+            || json.IndexOf("\"hostUid\":{\"stringValue\"", StringComparison.Ordinal) >= 0)
+        {
+            OnlineLobbyData lobby = new OnlineLobbyData();
+            lobby.code = ReadField(json, "code");
+            if (string.IsNullOrEmpty(lobby.code))
+                lobby.code = CodeFromName(json);
+            lobby.hostUid = ReadField(json, "hostUid");
+            lobby.relayUrl = ReadField(json, "relayUrl");
+            lobby.relayKey = ReadField(json, "relayKey");
+            lobby.isPublic = ReadBool(json, "isPublic");
+            lobby.locked = ReadBool(json, "locked");
+            lobby.revision = ReadInt(json, "revision");
+            lobby.members = ReadMembers(json);
+            return lobby;
+        }
+
+        string blob = ReadDataField(json);
+        if (string.IsNullOrEmpty(blob) || blob.TrimStart().Length == 0 || blob.TrimStart()[0] != '{')
+            return null;
+        return JsonUtility.FromJson<OnlineLobbyData>(blob);
+    }
+
+    static string CodeFromName(string json)
+    {
+        string token = "/documents/lobbies/";
+        int start = json.IndexOf(token, StringComparison.Ordinal);
+        if (start < 0)
+            return "";
+        start += token.Length;
+        int end = start;
+        while (end < json.Length && json[end] != '"' && json[end] != '/')
+            end++;
+        return json.Substring(start, end - start);
+    }
+
+    static bool ReadBool(string json, string key)
+    {
+        string token = "\"" + key + "\":{\"booleanValue\":";
+        int start = json.IndexOf(token, StringComparison.Ordinal);
+        if (start < 0)
+            return false;
+        start += token.Length;
+        while (start < json.Length && char.IsWhiteSpace(json[start]))
+            start++;
+        return start < json.Length && json[start] == 't';
+    }
+
+    static int ReadInt(string json, string key)
+    {
+        string token = "\"" + key + "\":{\"integerValue\":\"";
+        int start = json.IndexOf(token, StringComparison.Ordinal);
+        if (start < 0)
+            return 0;
+        start += token.Length;
+        int end = start;
+        while (end < json.Length && char.IsDigit(json[end]))
+            end++;
+        if (end == start || !int.TryParse(json.Substring(start, end - start), out int value))
+            return 0;
+        return value;
+    }
+
+    static List<OnlineMember> ReadMembers(string json)
+    {
+        List<OnlineMember> members = new List<OnlineMember>();
+        int membersAt = json.IndexOf("\"members\"", StringComparison.Ordinal);
+        if (membersAt < 0)
+            return members;
+        int values = json.IndexOf("\"values\"", membersAt, StringComparison.Ordinal);
+        if (values < 0)
+            return members;
+        int array = json.IndexOf('[', values);
+        if (array < 0)
+            return members;
+        int i = array + 1;
+        while (i < json.Length)
+        {
+            while (i < json.Length && json[i] != '{' && json[i] != ']')
+                i++;
+            if (i >= json.Length || json[i] == ']')
+                break;
+            int end = MatchBrace(json, i);
+            if (end < 0)
+                break;
+            string slice = json.Substring(i, end - i + 1);
+            members.Add(new OnlineMember
+            {
+                uid = ReadField(slice, "uid"),
+                name = ReadField(slice, "name"),
+                guest = ReadBool(slice, "guest"),
+                color = ReadInt(slice, "color"),
+                parentUid = ReadField(slice, "parentUid")
+            });
+            i = end + 1;
+        }
+        return members;
+    }
+
+    static int MatchBrace(string json, int open)
+    {
+        int depth = 0;
+        for (int i = open; i < json.Length; i++)
+        {
+            char c = json[i];
+            if (c == '"')
+            {
+                i++;
+                while (i < json.Length && json[i] != '"')
+                {
+                    if (json[i] == '\\')
+                        i++;
+                    i++;
+                }
+                continue;
+            }
+            if (c == '{')
+                depth++;
+            else if (c == '}')
+            {
+                depth--;
+                if (depth == 0)
+                    return i;
+            }
+        }
+        return -1;
     }
 }
