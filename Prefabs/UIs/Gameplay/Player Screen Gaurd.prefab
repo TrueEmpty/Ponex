@@ -631,7 +631,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 289.31, y: 159.35}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3261407216933943314
 MonoBehaviour:
@@ -658,10 +658,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14eb7bb5eb0ce694495f411450e9be48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GaurdInfo
-  background: {fileID: 0}
-  playerName: {fileID: 0}
-  characterName: {fileID: 0}
-  health: {fileID: 0}
+  background: {fileID: 5637541927427356058}
+  playerName: {fileID: 6060511358842972176}
+  characterName: {fileID: 3337644405101944452}
+  health: {fileID: 7541673155184205992}
   currency: {fileID: 5061656207596928872}
   reflector_Im: {fileID: 4157910401600717003}
   reflector_Outline: {fileID: 2026544330087232386}

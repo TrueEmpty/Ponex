@@ -67,6 +67,7 @@ public class PlayerGrab : MonoBehaviour
         bool lf_dashL = inp.dashLeft;
         bool lf_dashR = inp.dashRight;
         bool lf_super = inp.superHeld;
+        bool lf_bump = inp.bumpHeld;
 
         bool r = false, l = false, u = false, d = false;
         bool bumpBtn = false, superBtn = false, laneRightBtn = false, laneLeftBtn = false;
@@ -88,26 +89,11 @@ public class PlayerGrab : MonoBehaviour
             dashRightBtn |= IsPressed(cL, "DashRight");
         }
 
-        // Facing-relative stick "back" (toward your wall) — separate from Interact
-        bool stickBack;
-        if (p.ignoreFacing)
-            stickBack = d;
-        else
-        {
-            switch (p.facing)
-            {
-                case Facing.Down: stickBack = u; break;
-                case Facing.Left: stickBack = l; break;
-                case Facing.Right: stickBack = r; break;
-                default: stickBack = d; break;
-            }
-        }
-
-        // Movement axes (bump/super buttons do NOT get remapped into lane left/right)
+        // Directions are the stick, d-pad, and WASD only. Jump (south) and Interact (north) are not movement.
         if (p.ignoreFacing)
         {
-            inp.up = u || bumpBtn;
-            inp.down = d || superBtn;
+            inp.up = u;
+            inp.down = d;
             inp.right = r || laneRightBtn;
             inp.left = l || laneLeftBtn;
         }
@@ -116,34 +102,36 @@ public class PlayerGrab : MonoBehaviour
             switch (p.facing)
             {
                 case Facing.Up:
-                    inp.up = u || bumpBtn;
-                    inp.down = d || superBtn;
+                    inp.up = u;
+                    inp.down = d;
                     inp.right = r || laneRightBtn;
                     inp.left = l || laneLeftBtn;
                     break;
                 case Facing.Down:
-                    inp.up = d || bumpBtn;
-                    inp.down = u || superBtn;
+                    inp.up = d;
+                    inp.down = u;
                     inp.right = r || laneRightBtn;
                     inp.left = l || laneLeftBtn;
                     break;
                 case Facing.Left:
-                    inp.up = r || bumpBtn;
-                    inp.down = l || superBtn;
+                    inp.up = r;
+                    inp.down = l;
                     inp.right = d || laneRightBtn;
                     inp.left = u || laneLeftBtn;
                     break;
                 case Facing.Right:
-                    inp.up = l || bumpBtn;
-                    inp.down = r || superBtn;
+                    inp.up = l;
+                    inp.down = r;
                     inp.right = u || laneRightBtn;
                     inp.left = d || laneLeftBtn;
                     break;
             }
         }
 
-        // Dedicated super channel: Interact and/or stick-back (for hold-charge chars like Bahrue)
-        inp.superHeld = stickBack || superBtn;
+        inp.bumpHeld = bumpBtn;
+
+        // North / Interact only. Pulling the stick back is not super.
+        inp.superHeld = superBtn;
         inp.dashLeft = dashLeftBtn;
         inp.dashRight = dashRightBtn;
 
@@ -153,6 +141,7 @@ public class PlayerGrab : MonoBehaviour
         inp.tf_down = !lf_d && inp.down;
         inp.tf_dashLeft = !lf_dashL && inp.dashLeft;
         inp.tf_dashRight = !lf_dashR && inp.dashRight;
+        inp.tf_bump = !lf_bump && inp.bumpHeld;
 
         // Super press edge — tracked on its own channel (not Enough(), not movement alone)
         inp.tf_super = !lf_super && inp.superHeld;
@@ -221,10 +210,13 @@ public class Inputs
     public bool dashLeft = false;
     public bool dashRight = false;
 
-    /// <summary>Super held (Interact and/or stick-back). Use for hold-to-charge (Bahrue).</summary>
+    /// <summary>North / Interact held. Not a direction.</summary>
     public bool superHeld = false;
 
-    public bool bump => up;
+    /// <summary>Jump / south button. Not a direction.</summary>
+    public bool bumpHeld = false;
+
+    public bool bump => bumpHeld;
     public bool super => superHeld;
 
     public bool tf_right = false;
@@ -237,5 +229,6 @@ public class Inputs
     /// <summary>Super pressed this frame. Activation must use this + Enough(), never Enough() alone.</summary>
     public bool tf_super = false;
 
-    public bool tf_bump => tf_up;
+    /// <summary>Jump / south pressed this frame. Not the same as pushing down.</summary>
+    public bool tf_bump = false;
 }

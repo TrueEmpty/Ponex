@@ -34,6 +34,9 @@ public class DamageOnTagHitPawn : MonoBehaviour
         if (pg == null || !pg.IsLinked() || pg.player == null)
             return;
 
+        if (pawn != null)
+            return;
+
         PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
         BallInfo tbI = collision.gameObject.GetComponent<BallInfo>();
         bool pass = true;

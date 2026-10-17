@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Pawn : MonoBehaviour
+public partial class Pawn : MonoBehaviour
 {
     Database db;
     PlayerGrab pg;
@@ -32,12 +32,21 @@ public class Pawn : MonoBehaviour
         if (ren != null)
             material = ren.material;
 
+        if (selectionPiece)
+        {
+            PrepareGhost();
+            return;
+        }
+
         if (GetComponent<DestroyOnDeath>() == null)
             gameObject.AddComponent<DestroyOnDeath>();
         if (GetComponent<ClearAfterTheGame>() == null)
             gameObject.AddComponent<ClearAfterTheGame>();
 
+        if (home == Vector3.zero)
+            home = transform.position;
         RegisterWithOwner();
+        BeginRole();
     }
 
     void RegisterWithOwner()
@@ -58,17 +67,14 @@ public class Pawn : MonoBehaviour
             return;
         }
 
-        if(selectionPiece)
+        if (selectionPiece)
         {
-            foreach(Collider collider in colliders)
-            {
-                collider.enabled = false;
-            }
+            PaintGhost();
+            return;
         }
-        else
-        {
-            Updater();
-        }
+
+        Updater();
+        TickRole();
     }
 
     void Updater()
@@ -175,29 +181,36 @@ public class Pawn : MonoBehaviour
         }
         else
         {
-            Destroy(gameObject);
+            Die(null);
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (pg.IsLinked() && collision.transform.tag.ToLower().Trim() == "ball")
+        if (selectionPiece)
+            return;
+
+        if (!IsBall(collision.collider))
         {
-            //Check if you own the object
+            if (IsStructure(collision.collider))
+                Bounce(collision);
+            else
+                PassThrough(collision.collider);
+            return;
+        }
+
+        if (pg == null)
+            pg = GetComponent<PlayerGrab>();
+
+        Claim(collision.gameObject);
+        BallMovement ballMove = collision.gameObject.GetComponent<BallMovement>();
+        if (ballMove != null)
+            ballMove.BounceOffPawn(collision);
+
+        {
             PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
             BallInfo tbI = collision.gameObject.GetComponent<BallInfo>();
-            bool pass = true;
-
-            if (tpG != null)
-            {
-                if (tpG.IsLinked())
-                {
-                    if (tpG.playerIndex == pg.playerIndex)
-                    {
-                        pass = false;
-                    }
-                }
-            }
+            bool pass = !AlreadyOurBall(tpG);
 
             if (pass)
             {
@@ -267,15 +280,18 @@ public class Pawn : MonoBehaviour
                     }
                 }
 
-                //Send out Ball hit to all
-                health -= baseDamage;
-
-                if(health <= 0)
-                {
-                    Destroy(gameObject);
-                }
             }
         }
+
+        TakeBallHit(collision.gameObject);
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        if (selectionPiece || collision == null)
+            return;
+        if (!IsBall(collision.collider) && !IsStructure(collision.collider))
+            PassThrough(collision.collider);
     }
 
     Effects FindEffect(Effect effect)

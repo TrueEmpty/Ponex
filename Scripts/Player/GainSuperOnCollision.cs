@@ -18,6 +18,10 @@ public class GainSuperOnCollision : MonoBehaviour
         if (pG == null || pG.player == null || pG.player.super == null)
             return;
 
+        Pawn pawn = GetComponent<Pawn>();
+        if (pawn != null && !pawn.PaysGold)
+            return;
+
         // Only fill the meter — never activate supers.
         // (readyPercent is Drive-on for Garmen; setting it here auto-cast Drive.)
         pG.player.super.Gain(amount);

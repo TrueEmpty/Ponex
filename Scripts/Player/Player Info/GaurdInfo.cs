@@ -105,6 +105,69 @@ public class GaurdInfo : MonoBehaviour
         characterName.color = c;
         health.text = p.currentHealth + "/" + p.maxHealth;
 
-        currency.text = pg.player.super.amount + "g";
+        int gold = p.super != null ? Mathf.FloorToInt(p.super.amount) : 0;
+        if (currency != null)
+            currency.text = gold + "g";
+
+        int selected = Mathf.Clamp(Mathf.RoundToInt(p.movementSpeed), 0, 4);
+        PaintUnit(0, reflector_Im, reflector_Outline, selected, gold);
+        PaintUnit(1, attacker_Im, attacker_Outline, selected, gold);
+        PaintUnit(2, patroller_Im, patroller_Outline, selected, gold);
+        PaintUnit(3, ranger_Im, ranger_Outline, selected, gold);
+        PaintUnit(4, defender_Im, defender_Outline, selected, gold);
+
+        if (description != null)
+            description.text = Describe(p, selected);
+    }
+
+    void PaintUnit(int index, RawImage icon, Outline outline, int selected, int gold)
+    {
+        PawnType type = PawnType.Reflector;
+        if (index == 1) type = PawnType.Attacker;
+        else if (index == 2) type = PawnType.Patroller;
+        else if (index == 3) type = PawnType.Ranger;
+        else if (index == 4) type = PawnType.Defender;
+
+        if (icon != null)
+            icon.color = gold >= Pawn.CostOf(type) ? afford : broke;
+        if (outline != null)
+            outline.effectColor = index == selected ? highlighted : notHighlighted;
+    }
+
+    string Describe(Player p, int selected)
+    {
+        Gaurd gaurd = p.spawnedPlayer != null ? p.spawnedPlayer.GetComponent<Gaurd>() : null;
+        Pawn under = gaurd != null ? gaurd.hovering : null;
+        if (under != null && under.level < 3)
+        {
+            int next = under.level + 1;
+            int price = next * Pawn.CostOf(under.pawnType);
+            return "<color=#2F6BFF>Hovering:</color> <color=#FFFFFF>" + UnitName(under.pawnType)
+                + "</color> <color=#2F6BFF>" + next + "</color> <color=#FFD700>" + price + "g</color>";
+        }
+
+        PawnType type = TypeAt(selected);
+        return UnitName(type) + " <color=#FFD700>" + Pawn.CostOf(type) + "g</color>";
+    }
+
+    static PawnType TypeAt(int selected)
+    {
+        if (selected == 1) return PawnType.Attacker;
+        if (selected == 2) return PawnType.Patroller;
+        if (selected == 3) return PawnType.Ranger;
+        if (selected == 4) return PawnType.Defender;
+        return PawnType.Reflector;
+    }
+
+    static string UnitName(PawnType type)
+    {
+        switch (type)
+        {
+            case PawnType.Attacker: return "Attacker";
+            case PawnType.Patroller: return "Patroller";
+            case PawnType.Ranger: return "Ranger";
+            case PawnType.Defender: return "Defender";
+            default: return "Reflector";
+        }
     }
 }

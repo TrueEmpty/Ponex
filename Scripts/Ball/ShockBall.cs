@@ -49,7 +49,7 @@ public class ShockBall : MonoBehaviour
             baseIdle = runtimeMat.HasProperty("_Color") ? runtimeMat.color : idleColor;
         }
 
-        EnsureZapParticles();
+        zapFx = CreateZapFx(transform);
         // Begin ready to enter Zap soon so the match sees it early
         zapActive = false;
         ApplyVisuals(false);
@@ -201,19 +201,19 @@ public class ShockBall : MonoBehaviour
         }
     }
 
-    void EnsureZapParticles()
+    public static ParticleSystem CreateZapFx(Transform parent, string fxName = "ZapFX")
     {
-        Transform existing = transform.Find("ZapFX");
-        GameObject fxObj = existing != null ? existing.gameObject : new GameObject("ZapFX");
+        Transform existing = parent.Find(fxName);
+        GameObject fxObj = existing != null ? existing.gameObject : new GameObject(fxName);
         if (existing == null)
-            fxObj.transform.SetParent(transform, false);
+            fxObj.transform.SetParent(parent, false);
         fxObj.transform.localPosition = Vector3.zero;
 
-        zapFx = fxObj.GetComponent<ParticleSystem>();
-        if (zapFx == null)
-            zapFx = fxObj.AddComponent<ParticleSystem>();
+        ParticleSystem zap = fxObj.GetComponent<ParticleSystem>();
+        if (zap == null)
+            zap = fxObj.AddComponent<ParticleSystem>();
 
-        var main = zapFx.main;
+        var main = zap.main;
         main.loop = true;
         main.startLifetime = 0.28f;
         main.startSpeed = new ParticleSystem.MinMaxCurve(1.2f, 2.8f);
@@ -225,18 +225,18 @@ public class ShockBall : MonoBehaviour
         main.maxParticles = 28;
         main.gravityModifier = 0f;
 
-        var emission = zapFx.emission;
+        var emission = zap.emission;
         emission.rateOverTime = 22f;
         emission.enabled = false;
 
-        var shape = zapFx.shape;
+        var shape = zap.shape;
         shape.shapeType = ParticleSystemShapeType.Sphere;
         shape.radius = 0.28f;
 
-        var trails = zapFx.trails;
+        var trails = zap.trails;
         trails.enabled = false;
 
-        var colorOver = zapFx.colorOverLifetime;
+        var colorOver = zap.colorOverLifetime;
         colorOver.enabled = true;
         Gradient g = new Gradient();
         g.SetKeys(
@@ -266,6 +266,7 @@ public class ShockBall : MonoBehaviour
             renderer.trailMaterial = mat;
         }
 
-        zapFx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        zap.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        return zap;
     }
 }

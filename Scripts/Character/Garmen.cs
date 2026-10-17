@@ -17,7 +17,6 @@ public class Garmen : MonoBehaviour
     [Tooltip("Lift from the lifeline hub so the cannon sits on the mount, not in the wall.")]
     public float cannonOffset = 0.12f;
 
-    bool lastStickBack = false;
     bool lastAiWantSuper = false;
 
     [SerializeField]
@@ -193,48 +192,12 @@ public class Garmen : MonoBehaviour
         // Prefer ControllerLink edges (valid in LateUpdate even if PlayerGrab ran early)
         ControllerLink cL = p.cLink;
         bool interactEdge = false;
-        bool stickBack = false;
         if (cL != null)
         {
             ControllerButtons interact = cL["Interact"];
             interactEdge = interact != null && interact.wasPressedThisFrame;
-
-            bool r = PressedAxis(cL, "Move", 1, 0);
-            bool l = PressedAxis(cL, "Move", -1, 0);
-            bool u = PressedAxis(cL, "Move", 0, 1);
-            bool d = PressedAxis(cL, "Move", 0, -1);
-
-            if (p.ignoreFacing)
-                stickBack = d;
-            else
-            {
-                switch (p.facing)
-                {
-                    case Facing.Down: stickBack = u; break;
-                    case Facing.Left: stickBack = l; break;
-                    case Facing.Right: stickBack = r; break;
-                    default: stickBack = d; break;
-                }
-            }
         }
 
-        bool stickEdge = stickBack && !lastStickBack;
-        lastStickBack = stickBack;
-
-        return interactEdge || stickEdge || pg.inp.tf_super;
-    }
-
-    static bool PressedAxis(ControllerLink cL, string action, int xSign, int ySign)
-    {
-        ControllerButtons b = cL[action];
-        if (b == null)
-            return false;
-
-        const float deadzone = .5f;
-        if (xSign > 0) return b.value.x > deadzone;
-        if (xSign < 0) return b.value.x < -deadzone;
-        if (ySign > 0) return b.value.y > deadzone;
-        if (ySign < 0) return b.value.y < -deadzone;
-        return false;
+        return interactEdge || pg.inp.tf_super;
     }
 }

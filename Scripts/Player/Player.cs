@@ -559,6 +559,13 @@ public class Player
 
         if (victim != null && victim.currentHealth <= 0)
             RecordKill(victim);
+
+        if (victim != this && spawnedPlayer != null)
+        {
+            Gaurd gaurd = spawnedPlayer.GetComponent<Gaurd>();
+            if (gaurd != null)
+                gaurd.PayDamageGold(amount);
+        }
     }
 
     public void RecordGoalScored(int amount, Player victim = null)

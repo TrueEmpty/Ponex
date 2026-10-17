@@ -14,6 +14,7 @@ public class BallMovement : MonoBehaviour
     bool holdPosSet;
     Vector3 holdPos;
     Vector3 velocityBeforePhysics;
+    bool bouncedOffPawn;
 
     void Start()
     {
@@ -74,6 +75,7 @@ public class BallMovement : MonoBehaviour
         }
 
         ReleaseHold();
+        bouncedOffPawn = false;
         velocityBeforePhysics = rb.linearVelocity;
     }
 
@@ -175,7 +177,25 @@ public class BallMovement : MonoBehaviour
             ReflectOffContact(collision);
             if (bI != null)
                 bI.NoteWallBounce();
+            return;
         }
+
+        Pawn pawn = collision.collider.GetComponentInParent<Pawn>();
+        if (pawn != null && !pawn.selectionPiece)
+        {
+            BounceOffPawn(collision);
+            pawn.TakeBallHit(gameObject);
+        }
+    }
+
+    public void BounceOffPawn(Collision collision)
+    {
+        if (bouncedOffPawn || collision == null)
+            return;
+        bouncedOffPawn = true;
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
+        ReflectOffContact(collision);
     }
 
     void ReflectOffContact(Collision collision)

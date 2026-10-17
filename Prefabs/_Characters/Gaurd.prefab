@@ -86,9 +86,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hitTags:
   - Walls
-  defenders: {fileID: 0}
-  reflectors: {fileID: 0}
-  attackers: {fileID: 0}
+  defenders: {fileID: 7181452840004381113, guid: 37af0150fcf2b0d42bbf82153a68e362, type: 3}
+  reflectors: {fileID: 7597725528991602970, guid: 0c0deec56fda95542a5b6749bf296840, type: 3}
+  attackers: {fileID: 187541212077054797, guid: 6ff953f31efc29e419e7e8e81c90f883, type: 3}
+  patrollers: {fileID: 2036134060252926379, guid: 6f33d53fbe2b9a0458ca07f32262fd2e, type: 3}
+  rangers: {fileID: 1945732091154887761, guid: 06b37715a78886e4992828b840ae20bf, type: 3}
   pawns: []
   savedByPawns: 0
   thought: 0
