@@ -1308,6 +1308,30 @@ public class SkylaarScrap : MonoBehaviour
         enabled = false;
     }
 
+    Vector3 RestAboveFloor(Vector3 pivot)
+    {
+        float sink = 0.05f;
+        float size = 0f;
+        Renderer[] rends = GetComponentsInChildren<Renderer>();
+        for (int i = 0; i < rends.Length; i++)
+        {
+            if (rends[i] == null)
+                continue;
+            Bounds bounds = rends[i].bounds;
+            size = Mathf.Max(size, bounds.size.x, bounds.size.y);
+            Vector3 ext = bounds.extents;
+            float toward = ext.x * Mathf.Abs(floorDir.x) + ext.y * Mathf.Abs(floorDir.y) + ext.z * Mathf.Abs(floorDir.z);
+            float low = Vector3.Dot(bounds.center - pivot, floorDir) + toward;
+            if (low > sink)
+                sink = low;
+        }
+        float extra = size < 0.4f ? 0.42f : 0.16f;
+        float lift = sink + extra;
+        Vector3 rest = pivot - floorDir * lift;
+        rest.z = pivot.z;
+        return rest;
+    }
+
     void Update()
     {
         if (!Settled || !hasRest)
@@ -1327,8 +1351,7 @@ public class SkylaarScrap : MonoBehaviour
         body.AddForce(floorDir * 22f, ForceMode.Acceleration);
         if (owner != null && owner.GuideScrap(body))
         {
-            Vector3 rest = body.position - floorDir * 0.12f;
-            rest.z = body.position.z;
+            Vector3 rest = RestAboveFloor(body.position);
             body.position = rest;
             transform.position = rest;
             restPos = rest;
@@ -1393,8 +1416,7 @@ public class SkylaarScrap : MonoBehaviour
 
         if (IsHerGround(collision.collider) && body != null && Vector3.Dot(body.linearVelocity, floorDir) >= -0.4f)
         {
-            Vector3 rest = body.position - floorDir * 0.18f;
-            rest.z = body.position.z;
+            Vector3 rest = RestAboveFloor(body.position);
             body.position = rest;
             transform.position = rest;
             restPos = rest;
