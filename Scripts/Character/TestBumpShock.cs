@@ -4,6 +4,16 @@ public class TestBumpShock : MonoBehaviour
 {
     public float shockSeconds = 2f;
 
+    public void Shock(GameObject ballObject)
+    {
+        if (ballObject == null)
+            return;
+        ShockedBall shock = ballObject.GetComponent<ShockedBall>();
+        if (shock == null)
+            shock = ballObject.AddComponent<ShockedBall>();
+        shock.Refresh(shockSeconds);
+    }
+
     void OnCollisionEnter(Collision collision)
     {
         if (collision == null)
@@ -26,9 +36,6 @@ public class TestBumpShock : MonoBehaviour
             return;
 
         GameObject ballObject = other.attachedRigidbody != null ? other.attachedRigidbody.gameObject : other.gameObject;
-        ShockedBall shock = ballObject.GetComponent<ShockedBall>();
-        if (shock == null)
-            shock = ballObject.AddComponent<ShockedBall>();
-        shock.Refresh(shockSeconds);
+        Shock(ballObject);
     }
 }

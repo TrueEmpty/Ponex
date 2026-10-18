@@ -31,12 +31,15 @@ public class Gaurd : MonoBehaviour
 
     [SerializeField]
     Thought thought = Thought.Nothing;
-    ComputerBrain brain;
 
     bool ignoredHomeWall;
     bool pinned;
     Vector3 pinPos;
     Quaternion pinRot;
+    Vector3 aiSpot;
+    float aiSpotTimer;
+    float aiActTimer;
+    bool aiHasFreshSpot;
 
     void Awake()
     {
@@ -88,6 +91,8 @@ public class Gaurd : MonoBehaviour
         HoldStill();
         PlayerInfoNavigation();
         TickGold();
+        if (pg != null && pg.IsLinked() && pg.player != null && pg.player.computer)
+            TickComputer();
         ShowTroopGhost();
         BuyTroop();
 
@@ -117,13 +122,8 @@ public class Gaurd : MonoBehaviour
 
             if (pg.player.computer)
             {
-                ComputerAI.Decision d = brain != null
-                    ? brain.Lane
-                    : ComputerAI.Evaluate(transform, pg.player, hitTags, PaddleWall.LateralStopDistance(transform));
-                moveDir = d.moveDir;
-                thought = brain != null
-                    ? brain.Thought
-                    : (d.wantBump ? Thought.MoveUp : (d.wantSuper ? Thought.MoveDown : Thought.Nothing));
+                thought = Thought.Nothing;
+                return;
             }
             else
             {
@@ -236,6 +236,8 @@ public class Gaurd : MonoBehaviour
     {
         if (cursor == null || pg == null || pg.player == null)
             return;
+        if (pg.player.computer)
+            return;
 
         float x = 0f;
         float y = 0f;
@@ -263,7 +265,14 @@ public class Gaurd : MonoBehaviour
         }
 
         bool into, back, right, left;
-        switch (pg.player.facing)
+        if (pg.player.ignoreFacing)
+        {
+            into = y > 0f;
+            back = y < 0f;
+            right = x > 0f;
+            left = x < 0f;
+        }
+        else switch (pg.player.facing)
         {
             case Facing.Down:
                 into = y < 0f; back = y > 0f; right = x > 0f; left = x < 0f;
@@ -280,10 +289,17 @@ public class Gaurd : MonoBehaviour
         }
 
         Vector3 step = Vector3.zero;
-        if (into) step += transform.up;
-        if (back) step -= transform.up;
-        if (right) step += transform.right;
-        if (left) step -= transform.right;
+        if (pg.player.ignoreFacing)
+        {
+            step = new Vector3(x, y, 0f);
+        }
+        else
+        {
+            if (into) step += transform.up;
+            if (back) step -= transform.up;
+            if (right) step += transform.right;
+            if (left) step -= transform.right;
+        }
         step.z = 0f;
         if (step.sqrMagnitude > 1f)
             step.Normalize();
@@ -418,25 +434,44 @@ public class Gaurd : MonoBehaviour
     {
         if (cursor == null || pg == null || !pg.IsLinked() || db == null || !db.gameStart)
             return;
+        if (pg.player != null && pg.player.computer)
+            return;
 
         Pawn under = hovering;
         if (SuperPressed() && under != null && under.level < 3)
         {
-            int price = (under.level + 1) * Pawn.CostOf(under.pawnType);
-            if (SpendGold(price) && under.TryUpgrade())
-                PlayUpgradeBurst(under.transform.position);
+            TryUpgradePawn(under);
             return;
         }
 
         if (!pg.inp.tf_bump || under != null)
             return;
+        TryPlaceSelected();
+    }
+
+    bool TryUpgradePawn(Pawn under)
+    {
+        if (under == null || under.level >= 3 || aiActTimer > 0f)
+            return false;
+        int price = (under.level + 1) * Pawn.CostOf(under.pawnType);
+        if (!SpendGold(price) || !under.TryUpgrade())
+            return false;
+        aiActTimer = 0.35f;
+        PlayUpgradeBurst(under.transform.position);
+        return true;
+    }
+
+    bool TryPlaceSelected()
+    {
+        if (cursor == null || aiActTimer > 0f)
+            return false;
         int selected = SelectedUnit();
         int cost = Pawn.CostOf(TypeFor(selected));
         if (Gold < cost || SpotBlocked(cursor.transform.position, null))
-            return;
+            return false;
         GameObject prefab = PrefabFor(selected);
         if (prefab == null || !SpendGold(cost))
-            return;
+            return false;
         GameObject body = Instantiate(prefab, cursor.transform.position, Quaternion.identity);
         PlayerGrab grab = body.GetComponent<PlayerGrab>();
         if (grab != null)
@@ -444,6 +479,226 @@ public class Gaurd : MonoBehaviour
         Pawn pawn = body.GetComponent<Pawn>();
         if (pawn != null)
             pawn.home = cursor.transform.position;
+        aiActTimer = 0.45f;
+        aiHasFreshSpot = false;
+        return true;
+    }
+
+    void TickComputer()
+    {
+        if (db == null || !db.gameStart || pg == null || pg.player == null || pg.player.currentHealth <= 0)
+            return;
+        EnsureCursor();
+        if (cursor == null)
+            return;
+        if (aiActTimer > 0f)
+            aiActTimer -= Time.deltaTime;
+
+        Vector3 ballPos = ThreatPoint();
+        Pawn upgrade = pawns.Count >= 2 ? BestUpgrade(ballPos) : null;
+        bool placeFirst = pawns.Count < 3 || (pawns.Count < 6 && upgrade == null);
+        if (!placeFirst && upgrade != null)
+        {
+            MoveAuraToward(upgrade.transform.position);
+            if (Vector3.Distance(cursor.transform.position, upgrade.transform.position) < 0.55f)
+            {
+                hovering = upgrade;
+                TryUpgradePawn(upgrade);
+            }
+            return;
+        }
+
+        int unit = ChooseUnit(ballPos);
+        pg.player.movementSpeed = unit;
+        aiSpotTimer -= Time.deltaTime;
+        if (!aiHasFreshSpot || aiSpotTimer <= 0f)
+        {
+            aiSpot = ResolveSpot(SpotFor(unit, ballPos));
+            aiSpotTimer = 0.7f;
+            aiHasFreshSpot = true;
+        }
+        MoveAuraToward(aiSpot);
+        if (Vector3.Distance(cursor.transform.position, aiSpot) < 0.4f)
+            TryPlaceSelected();
+    }
+
+    void MoveAuraToward(Vector3 target)
+    {
+        if (cursor == null)
+            return;
+        Vector3 next = Vector3.MoveTowards(cursor.transform.position, target, 12f * Time.deltaTime);
+        cursor.transform.position = GaurdCursor.ClampToField(next, 0.9f);
+    }
+
+    Vector3 ThreatPoint()
+    {
+        Vector3 into = transform.up;
+        into.z = 0f;
+        if (into.sqrMagnitude < 0.0001f)
+            into = Vector3.up;
+        into.Normalize();
+        Vector3 fallback = transform.position + into * 4f;
+        GameObject[] balls;
+        try
+        {
+            balls = GameObject.FindGameObjectsWithTag("Ball");
+        }
+        catch
+        {
+            return fallback;
+        }
+        float best = float.MaxValue;
+        Vector3 pick = fallback;
+        for (int i = 0; i < balls.Length; i++)
+        {
+            if (balls[i] == null)
+                continue;
+            Vector3 pos = balls[i].transform.position;
+            float depth = Vector3.Dot(pos - transform.position, into);
+            if (depth < -0.4f)
+                continue;
+            if (depth < best)
+            {
+                best = depth;
+                pick = pos;
+            }
+        }
+        pick.z = transform.position.z;
+        return pick;
+    }
+
+    int CountType(PawnType type)
+    {
+        int n = 0;
+        for (int i = 0; i < pawns.Count; i++)
+        {
+            if (pawns[i] != null && pawns[i].pawnType == type)
+                n++;
+        }
+        return n;
+    }
+
+    int ChooseUnit(Vector3 ballPos)
+    {
+        Vector3 into = transform.up;
+        into.z = 0f;
+        if (into.sqrMagnitude > 0.0001f)
+            into.Normalize();
+        float threat = Vector3.Dot(ballPos - transform.position, into);
+        if (pawns.Count < 1 && Gold >= 1)
+            return 0;
+        if (threat < 3.6f && CountType(PawnType.Defender) < 1 && Gold >= Pawn.CostOf(PawnType.Defender))
+            return 4;
+        if (threat < 4.2f && CountType(PawnType.Reflector) < 2 && Gold >= 1)
+            return 0;
+        if (CountType(PawnType.Attacker) < 2 && Gold >= Pawn.CostOf(PawnType.Attacker) && pawns.Count >= 1)
+            return 1;
+        if (CountType(PawnType.Ranger) < 1 && Gold >= Pawn.CostOf(PawnType.Ranger) && pawns.Count >= 2)
+            return 3;
+        if (CountType(PawnType.Patroller) < 1 && Gold >= Pawn.CostOf(PawnType.Patroller) && pawns.Count >= 2)
+            return 2;
+        if (Gold >= Pawn.CostOf(PawnType.Defender) && CountType(PawnType.Defender) < 2)
+            return 4;
+        if (Gold >= 1)
+            return 0;
+        return SelectedUnit();
+    }
+
+    Vector3 SpotFor(int unit, Vector3 ballPos)
+    {
+        Vector3 into = transform.up;
+        Vector3 side = transform.right;
+        into.z = 0f;
+        side.z = 0f;
+        if (into.sqrMagnitude < 0.0001f)
+            into = Vector3.up;
+        if (side.sqrMagnitude < 0.0001f)
+            side = Vector3.right;
+        into.Normalize();
+        side.Normalize();
+        float lane = Vector3.Dot(ballPos - transform.position, side);
+        float depth = 1.7f;
+        switch (unit)
+        {
+            case 1: depth = 3.5f; break;
+            case 2: depth = 3f; lane = OpenLane(side); break;
+            case 3: depth = 2.8f; break;
+            case 4: depth = 2.3f; break;
+        }
+        return transform.position + into * depth + side * lane;
+    }
+
+    float OpenLane(Vector3 side)
+    {
+        float bestLane = 0f;
+        float bestClear = -1f;
+        for (float lane = -6f; lane <= 6.01f; lane += 1.5f)
+        {
+            float clear = 99f;
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                if (pawns[i] == null)
+                    continue;
+                float gap = Mathf.Abs(Vector3.Dot(pawns[i].transform.position - transform.position, side) - lane);
+                if (gap < clear)
+                    clear = gap;
+            }
+            if (clear > bestClear)
+            {
+                bestClear = clear;
+                bestLane = lane;
+            }
+        }
+        return bestLane;
+    }
+
+    Vector3 ResolveSpot(Vector3 desired)
+    {
+        desired = GaurdCursor.ClampToField(desired, 0.9f);
+        if (!SpotBlocked(desired, null))
+            return desired;
+        Vector3 into = transform.up;
+        Vector3 side = transform.right;
+        into.z = 0f;
+        side.z = 0f;
+        if (into.sqrMagnitude > 0.0001f)
+            into.Normalize();
+        if (side.sqrMagnitude > 0.0001f)
+            side.Normalize();
+        float[] sides = { 1.2f, -1.2f, 2.4f, -2.4f, 0f };
+        float[] depths = { 0f, 0.9f, -0.7f, 1.6f };
+        for (int s = 0; s < sides.Length; s++)
+        {
+            for (int d = 0; d < depths.Length; d++)
+            {
+                Vector3 tryPos = GaurdCursor.ClampToField(desired + side * sides[s] + into * depths[d], 0.9f);
+                if (!SpotBlocked(tryPos, null))
+                    return tryPos;
+            }
+        }
+        return desired;
+    }
+
+    Pawn BestUpgrade(Vector3 ballPos)
+    {
+        Pawn best = null;
+        float bestScore = float.MaxValue;
+        for (int i = 0; i < pawns.Count; i++)
+        {
+            Pawn pawn = pawns[i];
+            if (pawn == null || pawn.level >= 3)
+                continue;
+            int price = (pawn.level + 1) * Pawn.CostOf(pawn.pawnType);
+            if (Gold < price)
+                continue;
+            float score = Vector3.Distance(pawn.transform.position, ballPos) + pawn.level * 0.8f;
+            if (score < bestScore)
+            {
+                bestScore = score;
+                best = pawn;
+            }
+        }
+        return best;
     }
 
     bool SuperPressed()

@@ -17,6 +17,9 @@ public class Yuotay : MonoBehaviour
 
     int canDash = 0;
     float dashEnd = 0;
+    float dashStartedAt = -999f;
+    bool dashSwingArmed;
+    bool fastSwing;
     float speedIncrease = 1;
     public float speedMultiplyer = 4;
     float doubleClickTime = .3f;
@@ -44,6 +47,9 @@ public class Yuotay : MonoBehaviour
     public float swingHitSpeedMax = 22f;
     float lastBatHitTime = -999f;
     const float BatHitCooldown = 0.05f;
+    Rigidbody pendingBall;
+    Vector3 pendingVel;
+    int pendingFrames;
 
     [SerializeField]
     public List<Vector4> swingPoints = new List<Vector4>();
@@ -360,19 +366,32 @@ public class Yuotay : MonoBehaviour
 
         if (!swinging && batHitPoint != null)
         {
-            // lastNonZeroMoveDir is screen/AbsAxes space; bat poses are local — convert for top (Z=180) etc.
             int swingLocal = MoveDirToLocalBatX(lastNonZeroMoveDir);
-            // Wind up opposite the swing arc (local +X during SwingBat)
             Vector3 gotoPos = new Vector3(-swingLocal * 2f, -2f, -1.5f);
             batHitPoint.localPosition = Vector3.Lerp(batHitPoint.localPosition, gotoPos, facingSpeed * Time.deltaTime);
 
-            if (moveDir == 0 && swingTimer + swingTimeDelay < Time.time && !swung)
+            if (moveDir == 0 && !swung)
             {
-                swinging = true;
-                swung = true;
-                StartCoroutine(SwingBat(swingLocal));
+                bool dashSnap = dashSwingArmed && Time.time - dashStartedAt <= 0.25f;
+                if (dashSnap)
+                {
+                    dashSwingArmed = false;
+                    swinging = true;
+                    swung = true;
+                    StartCoroutine(SwingBat(swingLocal, true));
+                }
+                else if (swingTimer + swingTimeDelay < Time.time)
+                {
+                    dashSwingArmed = false;
+                    swinging = true;
+                    swung = true;
+                    StartCoroutine(SwingBat(swingLocal, false));
+                }
             }
         }
+
+        if (dashSwingArmed && Time.time - dashStartedAt > 0.25f)
+            dashSwingArmed = false;
 
         lastMoveDir = moveDir;
     }
@@ -431,6 +450,8 @@ public class Yuotay : MonoBehaviour
     {
         speedIncrease = speedMultiplyer;
         dashEnd = dashTime;
+        dashStartedAt = Time.time;
+        dashSwingArmed = true;
         d.readyPercent = 0;
         d.Spend();
         canDash = dir > 0 ? 2 : -2;
@@ -506,7 +527,7 @@ public class Yuotay : MonoBehaviour
     {
         if (collision == null || collision.gameObject == null)
             return;
-        if (!collision.gameObject.CompareTag("Ball"))
+        if (!IsBallHit(collision))
             return;
         if (Time.time - lastBatHitTime < BatHitCooldown)
             return;
@@ -515,16 +536,23 @@ public class Yuotay : MonoBehaviour
         if (ballRb == null)
             ballRb = collision.gameObject.GetComponent<Rigidbody>();
         if (ballRb == null)
+            ballRb = collision.collider.GetComponentInParent<Rigidbody>();
+        if (ballRb == null)
             return;
 
-        // Away from the mit / wall = into the field along paddle forward
-        Vector3 awayFromMit = transform.up;
-        awayFromMit.z = 0f;
-        if (awayFromMit.sqrMagnitude < 0.0001f)
-            awayFromMit = Vector3.up;
-        awayFromMit.Normalize();
+        Vector3 intoField = transform.up;
+        intoField.z = 0f;
+        if (intoField.sqrMagnitude < 0.0001f)
+            intoField = Vector3.up;
+        intoField.Normalize();
 
-        // Blend a little contact normal so glancing hits still look natural
+        // Swing face: into the field, plus the bat's sideways travel so a real swing still angles the ball.
+        Vector3 swingDir = intoField;
+        Vector3 swingLateral = transform.right;
+        swingLateral.z = 0f;
+        if (swingLateral.sqrMagnitude > 0.0001f && lastNonZeroMoveDir != 0)
+            swingDir = (intoField + swingLateral.normalized * (lastNonZeroMoveDir * 0.35f)).normalized;
+
         if (collision.contactCount > 0)
         {
             Vector3 n = -collision.GetContact(0).normal;
@@ -532,12 +560,13 @@ public class Yuotay : MonoBehaviour
             if (n.sqrMagnitude > 0.0001f)
             {
                 n.Normalize();
-                // Prefer field direction so we don't bounce back into the mit
-                if (Vector3.Dot(n, awayFromMit) < 0f)
-                    n = Vector3.Reflect(n, awayFromMit);
-                awayFromMit = (awayFromMit * 0.75f + n * 0.25f).normalized;
+                if (Vector3.Dot(n, intoField) < 0f)
+                    n = Vector3.Reflect(n, intoField);
+                swingDir = (swingDir * 0.75f + n * 0.25f).normalized;
             }
         }
+
+        swingDir = LeaveTheMit(swingDir, ballRb.position, intoField);
 
         float speed;
         if (bunting)
@@ -551,20 +580,75 @@ public class Yuotay : MonoBehaviour
         else
             speed = idleHitSpeed;
 
-        Vector3 v = awayFromMit * speed;
+        Vector3 v = swingDir * speed;
         v.z = 0f;
         ballRb.linearVelocity = v;
+        pendingBall = ballRb;
+        pendingVel = v;
+        pendingFrames = 3;
         lastBatHitTime = Time.time;
 
         if (bunting)
             YuotaySfx.PlayBunt();
         else if (swinging)
-            YuotaySfx.PlayBatHit();
+            YuotaySfx.PlayBatHit(1f, fastSwing ? 1.45f : 1f);
         else
             YuotaySfx.PlayBunt(0.5f); // soft dribble contact
     }
 
-    IEnumerator SwingBat(int curDir)
+    void LateUpdate()
+    {
+        if (pendingFrames <= 0 || pendingBall == null)
+            return;
+        pendingBall.linearVelocity = pendingVel;
+        pendingFrames--;
+    }
+
+    static bool IsBallHit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ball"))
+            return true;
+        if (collision.rigidbody != null && collision.rigidbody.CompareTag("Ball"))
+            return true;
+        return collision.collider != null && collision.collider.GetComponentInParent<BallInfo>() != null;
+    }
+
+    /// <summary>
+    /// Keeps the swing's angle when it already leaves the mit. If that angle points at the mit,
+    /// the toward-mit part is flipped so the ball still carries the swing but travels away.
+    /// </summary>
+    Vector3 LeaveTheMit(Vector3 swingDir, Vector3 ballPos, Vector3 intoField)
+    {
+        Transform mit = pg != null && pg.player != null && pg.player.spawnedLifeline != null
+            ? pg.player.spawnedLifeline.transform
+            : null;
+        if (mit == null)
+            return swingDir;
+
+        Vector3 away = ballPos - mit.position;
+        away.z = 0f;
+        if (away.sqrMagnitude < 0.04f)
+            away = intoField;
+        else
+            away.Normalize();
+
+        float leaving = Vector3.Dot(swingDir, away);
+        if (leaving >= 0.2f)
+            return swingDir;
+
+        Vector3 toward = -away;
+        float aimed = Vector3.Dot(swingDir, toward);
+        Vector3 lateral = swingDir - toward * aimed;
+        Vector3 corrected = lateral + away * Mathf.Max(aimed, 0.35f);
+        float into = Vector3.Dot(corrected, intoField);
+        if (into < 0.2f)
+            corrected += intoField * (0.2f - into);
+        if (corrected.sqrMagnitude < 0.0001f)
+            return intoField;
+        return corrected.normalized;
+    }
+
+    IEnumerator SwingBat(int curDir, bool fast)
     {
         Player p = pg.player;
         if (p == null || batHitPoint == null)
@@ -573,7 +657,10 @@ public class Yuotay : MonoBehaviour
             yield break;
         }
 
-        YuotaySfx.PlaySwingWhoosh();
+        fastSwing = fast;
+        float rate = fast ? swingSpeed * 1.85f : swingSpeed;
+        float power = fast ? 2f : 1f;
+        YuotaySfx.PlaySwingWhoosh(0.8f, fast ? 1.55f : 1f);
 
         float lP = 0;
         Vector3 startPos = new Vector3(0, -2, 0);
@@ -582,7 +669,7 @@ public class Yuotay : MonoBehaviour
 
         while (lP < 1)
         {
-            lP += swingSpeed * Time.deltaTime;
+            lP += rate * Time.deltaTime;
             curPos = Vector3.Lerp(startPos, endPos, lP);
             float opMiss = (Mathf.Abs(.5f - lP) * 2);
 
@@ -593,17 +680,18 @@ public class Yuotay : MonoBehaviour
             curPos.x = curDir * (missing * 2);
             curPos.z = (opMiss * -1.5f);
 
-            p.pushBack = 500 + (missing * 4500);
+            p.pushBack = (500 + (missing * 4500)) * power;
 
             batHitPoint.localPosition = curPos;
             ClampToSide();
             yield return new WaitForEndOfFrame();
         }
 
-        yield return new WaitForSecondsRealtime(.1f);
+        yield return new WaitForSecondsRealtime(fast ? 0.04f : .1f);
 
         p.pushBack = basePushBack;
         swinging = false;
+        fastSwing = false;
         ClampToSide();
         yield return null;
     }

@@ -35,6 +35,8 @@ public class SandDuneDeflect : MonoBehaviour
                 continue;
             if (!Affects(hit))
                 continue;
+            if (!Database.MatchPlayActive && IsBall(hit))
+                continue;
 
             Rigidbody rb = hit.attachedRigidbody;
             if (rb == null)
@@ -116,6 +118,15 @@ public class SandDuneDeflect : MonoBehaviour
     {
         float t = 1f - Mathf.Clamp01(dist / Mathf.Max(0.05f, worldRadius));
         return t * t * t * t;
+    }
+
+    static bool IsBall(Collider hit)
+    {
+        if (hit.CompareTag("Ball"))
+            return true;
+        if (hit.attachedRigidbody != null && hit.attachedRigidbody.CompareTag("Ball"))
+            return true;
+        return hit.GetComponent<BallInfo>() != null || hit.GetComponentInParent<BallInfo>() != null;
     }
 
     static bool Affects(Collider hit)

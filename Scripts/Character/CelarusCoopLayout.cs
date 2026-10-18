@@ -96,56 +96,78 @@ public static class CelarusCoopLayout
             players[i].celarusShareHostIndex = -1;
         }
 
-        if (gametype != Gametype.Coop)
-            return;
-
         for (int f = 0; f < 4; f++)
         {
             Facing facing = (Facing)f;
+            List<int> teams = new List<int>(4);
             List<Player> wall = PlayersOnWall(players, facing);
-            List<Player> celarus = new List<Player>(2);
-            bool blocksTeammate = false;
-
             for (int i = 0; i < wall.Count; i++)
             {
-                Player p = wall[i];
-                if (IsCelarusPlayer(p))
-                    celarus.Add(p);
-                else if (!IsUnblockedTeammate(p))
-                    blocksTeammate = true;
+                if (!teams.Contains(wall[i].team))
+                    teams.Add(wall[i].team);
             }
 
-            if (blocksTeammate)
+            for (int t = 0; t < teams.Count; t++)
             {
-                for (int i = 0; i < celarus.Count; i++)
-                    ApplyHalfHealth(celarus[i]);
-            }
+                int team = teams[t];
+                List<Player> celarus = new List<Player>(2);
+                bool blocksTeammate = false;
+                for (int i = 0; i < wall.Count; i++)
+                {
+                    Player p = wall[i];
+                    if (p.team != team)
+                        continue;
+                    if (IsCelarusPlayer(p))
+                        celarus.Add(p);
+                    else if (!IsUnblockedTeammate(p))
+                        blocksTeammate = true;
+                }
 
-            if (celarus.Count < 2)
-                continue;
+                if (blocksTeammate && celarus.Count < 2)
+                {
+                    for (int i = 0; i < celarus.Count; i++)
+                        ApplyHalfHealth(celarus[i]);
+                }
 
-            celarus.Sort((a, b) =>
-            {
-                int ha = HostPriority(ReadPhaseLock(a));
-                int hb = HostPriority(ReadPhaseLock(b));
-                if (ha != hb)
-                    return ha.CompareTo(hb);
-                int c = a.position.CompareTo(b.position);
-                return c != 0 ? c : a.index.CompareTo(b.index);
-            });
+                if (celarus.Count < 2)
+                    continue;
 
-            Player host = celarus[0];
-            host.celarusShareHost = true;
-            host.celarusShareGuest = false;
-            host.celarusShareHostIndex = host.index;
+                celarus.Sort((a, b) =>
+                {
+                    int ha = HostPriority(ReadPhaseLock(a));
+                    int hb = HostPriority(ReadPhaseLock(b));
+                    if (ha != hb)
+                        return ha.CompareTo(hb);
+                    int c = a.position.CompareTo(b.position);
+                    return c != 0 ? c : a.index.CompareTo(b.index);
+                });
 
-            for (int i = 1; i < celarus.Count; i++)
-            {
-                celarus[i].celarusShareHost = false;
-                celarus[i].celarusShareGuest = true;
-                celarus[i].celarusShareHostIndex = host.index;
+                Player host = celarus[0];
+                host.celarusShareHost = true;
+                host.celarusShareGuest = false;
+                host.celarusShareHostIndex = host.index;
+                DoublePool(host);
+
+                for (int i = 1; i < celarus.Count; i++)
+                {
+                    celarus[i].celarusShareHost = false;
+                    celarus[i].celarusShareGuest = true;
+                    celarus[i].celarusShareHostIndex = host.index;
+                    DoublePool(celarus[i]);
+                    celarus[i].currentHealth = host.currentHealth;
+                    celarus[i].maxHealth = host.maxHealth;
+                }
             }
         }
+    }
+
+    static void DoublePool(Player p)
+    {
+        if (p == null || p.sharedHealthDoubled)
+            return;
+        p.maxHealth = Mathf.Max(1, p.maxHealth * 2);
+        p.currentHealth = p.maxHealth;
+        p.sharedHealthDoubled = true;
     }
 
     /// <summary>After every Celarus on the wall has spawned, point guests at the host lifeline.</summary>

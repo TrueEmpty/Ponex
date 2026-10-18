@@ -49,6 +49,8 @@ public class Bahrue : MonoBehaviour
     Thought thought = Thought.Nothing;
     ComputerBrain brain;
     PaddleWall.LaneLock lane;
+    bool ignoredHomeWall;
+    float ignoreHomeWallUntil;
 
     // Start is called before the first frame update
     void Start()
@@ -115,6 +117,13 @@ public class Bahrue : MonoBehaviour
 
             if (pg.player != null)
                 lane.Ensure(rb, pg.player.facing);
+            if (!ignoredHomeWall || Time.time < ignoreHomeWallUntil)
+            {
+                PaddleWall.IgnoreHomeWallCollisions(transform, hitTags, null);
+                if (!ignoredHomeWall)
+                    ignoreHomeWallUntil = Time.time + 1.25f;
+                ignoredHomeWall = true;
+            }
             // Dash/contact can overshoot soft wall stop — push out so leave-input always works
             PaddleWall.Unstick(rb, transform, hitTags);
             lane.Clamp(rb);
@@ -392,7 +401,7 @@ public class Bahrue : MonoBehaviour
 
         pg.player.bump.readyPercent = bP;
 
-        bool bumpHeld = pg.inp.up || thought == Thought.MoveUp;
+        bool bumpHeld = pg.inp.up || pg.inp.bump || thought == Thought.MoveUp;
         bool bumpPressed = bumpHeld && !bumpWasHeld;
         bumpWasHeld = bumpHeld;
 

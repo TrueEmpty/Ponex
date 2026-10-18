@@ -42,8 +42,10 @@ public class MeteorBall : MonoBehaviour
         builtMesh = true;
 
         sphereCol = GetComponent<SphereCollider>();
-        if (sphereCol != null)
-            sphereCol.enabled = false;
+        if (sphereCol == null)
+            sphereCol = gameObject.AddComponent<SphereCollider>();
+        sphereCol.enabled = true;
+        sphereCol.isTrigger = false;
 
         meshFilter = GetComponent<MeshFilter>();
         if (meshFilter == null)
@@ -53,10 +55,8 @@ public class MeteorBall : MonoBehaviour
         meshFilter.sharedMesh = meteorMesh;
 
         meshCollider = GetComponent<MeshCollider>();
-        if (meshCollider == null)
-            meshCollider = gameObject.AddComponent<MeshCollider>();
-        meshCollider.sharedMesh = meteorMesh;
-        meshCollider.convex = true;
+        if (meshCollider != null)
+            meshCollider.enabled = false;
     }
 
     Mesh CreateRockMesh()

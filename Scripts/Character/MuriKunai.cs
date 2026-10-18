@@ -303,7 +303,7 @@ public class MuriKunai : MonoBehaviour
         lastBallHitId = ballId;
         lastBallHitTime = Time.time;
         if (shield != null)
-            shield.AddCharge(shield.kunaiCharge);
+            shield.AddCharge(shield.kunaiCharge * 2f);
     }
 
     bool dying;

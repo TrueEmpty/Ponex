@@ -378,6 +378,41 @@ public class ControllerLink : MonoBehaviour
     }
 
     /// <summary>
+    /// Start / Escape on this controller, including when the Menu action binding did not fire.
+    /// </summary>
+    public bool RawMenuPressed()
+    {
+        if (playerInput == null)
+            return false;
+
+        for (int i = 0; i < playerInput.devices.Count; i++)
+        {
+            InputDevice device = playerInput.devices[i];
+            if (device is Gamepad pad)
+            {
+                if (pad.startButton != null && pad.startButton.wasPressedThisFrame)
+                    return true;
+            }
+            else if (device is Keyboard keyboard)
+            {
+                if (keyboard.escapeKey.wasPressedThisFrame)
+                    return true;
+            }
+            else if (device is Joystick joystick)
+            {
+                for (int n = 7; n <= 9; n++)
+                {
+                    ButtonControl button = joystick.TryGetChildControl("button" + n) as ButtonControl;
+                    if (button != null && button.wasPressedThisFrame)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Hold Leave (Select / Backspace / Delete) to drop this controller.
     /// Main Menu: removes the player. Character Select: removes if above minPlayers, else CPU.
     /// Past Character Select / in match: converts the slot to CPU.

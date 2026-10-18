@@ -27,6 +27,7 @@ public class Test : MonoBehaviour
     ComputerBrain brain;
     PaddleWall.LaneLock lane;
     bool ignoredHomeWall;
+    float ignoreHomeWallUntil;
 
     // Start is called before the first frame update
     void Start()
@@ -62,9 +63,11 @@ public class Test : MonoBehaviour
 
             if (pg.player != null)
                 lane.Ensure(rb, pg.player.facing);
-            if (!ignoredHomeWall)
+            if (!ignoredHomeWall || Time.time < ignoreHomeWallUntil)
             {
                 PaddleWall.IgnoreHomeWallCollisions(transform, hitTags, null);
+                if (!ignoredHomeWall)
+                    ignoreHomeWallUntil = Time.time + 1.25f;
                 ignoredHomeWall = true;
             }
             // Dash can overshoot soft wall stop — push out so leave-input always works

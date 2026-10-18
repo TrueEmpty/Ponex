@@ -38,7 +38,7 @@ public class Tic : MonoBehaviour
     public float plungerTravel = 1.6f;
     public float plungerShootSpeed = 48f;
     public float plungerReturnSpeed = 18f;
-    public float plungerLaunchSpeed = 26f;
+    public float plungerLaunchSpeed = 72f;
     public float bumpCooldown = 0.85f;
     float plungerT; // 0 rest … 1 extended
     int plungerPhase; // 0 idle, 1 shooting up, 2 returning
@@ -286,6 +286,7 @@ public class Tic : MonoBehaviour
         // Super meter always charges; at full auto-loads a bumper into the hollow
         if (pg.player.super != null)
         {
+            pg.player.super.Charge();
             pg.player.super.Charge();
             TryAutoSpawnBumper();
         }

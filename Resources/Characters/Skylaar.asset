@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c2e9a1b4d8f46c3a5e0b9d2f1c83470, type: 3}
+  m_Name: Skylaar
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  rosterOrder: 16
+  characterName: Skylaar
+  maxHealth: 8
+  movementSpeed: 3.1
+  pushBack: 800
+  ignoreFacing: 0
+  bump:
+    amount: 1
+    max: 1
+    cost: 1
+    speed: 2
+    readyPercent: 0
+  super:
+    amount: 1
+    max: 1
+    cost: 0
+    speed: 8
+    readyPercent: 0
+  dash:
+    amount: 1
+    max: 1
+    cost: 1
+    speed: 2
+    readyPercent: 0
+  character:
+    prefabs: {fileID: 8100000000000000001, guid: b8d4f2c05e3a4b7f9c1d6e8a20495731, type: 3}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+  lifeline:
+    prefabs: {fileID: 0}
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+  selector: {fileID: 0}
+  playerInfo: {fileID: 0}
+  superName: Fairwing
+  superDescription: Fly the Fairwing along her wall. Up loops, down dives, and left or right barrel-rolls through the ball. Rebuild the plane from the pieces that fall on her side.
+  portraitColor: {r: 0.95, g: 0.55, b: 0.12, a: 1}
+  portrait: {fileID: 2800000, guid: c9e503d16f4b4c809d2e7f9b31506842, type: 3}
+  icon: {fileID: 2800000, guid: d0f614e27a5c4d91ae3f80ac42617953, type: 3}
+  active: 1

@@ -94,6 +94,8 @@ public class Player
     [System.NonSerialized] public bool celarusShareGuest;
     /// <summary>Celarus coop: host player index (-1 none).</summary>
     [System.NonSerialized] public int celarusShareHostIndex = -1;
+    /// <summary>Tic or Celarus pair already received the shared double health pool.</summary>
+    [System.NonSerialized] public bool sharedHealthDoubled;
 
     #region Selections
     public bool characterSelected = false;
@@ -426,6 +428,7 @@ public class Player
             if (arcadeInfiniteHealth)
             {
                 currentHealth = maxHealth;
+                MirrorSharedHealth();
                 return 0;
             }
             int leftover = amount - lost;
@@ -435,6 +438,7 @@ public class Player
             if (lost > 0)
                 RecordDamageTaken(lost);
 
+            MirrorSharedHealth();
             return lost;
         }
 
@@ -445,7 +449,51 @@ public class Player
         int healFloor = CharacterCreationManager.IsActive ? 1 : 0;
         if (currentHealth < healFloor)
             currentHealth = healFloor;
+        MirrorSharedHealth();
         return 0;
+    }
+
+    /// <summary>
+    /// Tic wing/host and Celarus sun/moon pairs keep one pool: both bars always match.
+    /// </summary>
+    public void MirrorSharedHealth()
+    {
+        if (mirroringHealth)
+            return;
+        Database db = Database.instance;
+        if (db == null || db.players == null)
+            return;
+
+        mirroringHealth = true;
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player other = db.players[i];
+            if (other == null || other == this || !SharesHealthPool(other))
+                continue;
+            other.maxHealth = maxHealth;
+            other.currentHealth = currentHealth;
+            if (other.currentHealth <= 0)
+                other.RecordDeath(null);
+        }
+        mirroringHealth = false;
+    }
+
+    bool mirroringHealth;
+
+    bool SharesHealthPool(Player other)
+    {
+        if (other == null || other.team != team || other.facing != facing)
+            return false;
+
+        if ((ticHostFused || ticWingForm) && (other.ticHostFused || other.ticWingForm))
+        {
+            int mine = ticHostFused ? index : ticPartnerIndex;
+            int theirs = other.ticHostFused ? other.index : other.ticPartnerIndex;
+            if (mine >= 0 && mine == theirs)
+                return true;
+        }
+
+        return celarusShareHostIndex >= 0 && other.celarusShareHostIndex == celarusShareHostIndex;
     }
 
     /// <summary>Goal/ball damage with per-ball dedupe. Returns actual HP lost.</summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
+[DefaultExecutionOrder(32000)]
 public class BallMovement : MonoBehaviour
 {
     Rigidbody rb;
@@ -16,11 +17,21 @@ public class BallMovement : MonoBehaviour
     Vector3 velocityBeforePhysics;
     bool bouncedOffPawn;
 
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();
         bI = GetComponent<BallInfo>();
         db = Database.instance;
+    }
+
+    void Start()
+    {
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
+        if (bI == null)
+            bI = GetComponent<BallInfo>();
+        if (db == null)
+            db = Database.instance;
     }
 
     /// <summary>When true, ball stays at zero velocity (Tic plunger bay after lifeline catch).</summary>
@@ -49,15 +60,19 @@ public class BallMovement : MonoBehaviour
         }
         if (db != null && db.FieldPlaySize > 0.01f)
             holdPos.z = db.FieldPlaySize;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
         if (!rb.isKinematic)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
-        }
         rb.position = holdPos;
         transform.position = holdPos;
         velocityBeforePhysics = Vector3.zero;
+    }
+
+    void LateUpdate()
+    {
+        if (PreMatchHold)
+            HoldStill();
     }
 
     void ReleaseHold()
@@ -179,6 +194,10 @@ public class BallMovement : MonoBehaviour
                 bI.NoteWallBounce();
             return;
         }
+
+        TestBumpShock bumpShock = collision.collider.GetComponentInParent<TestBumpShock>();
+        if (bumpShock != null)
+            bumpShock.Shock(gameObject);
 
         Pawn pawn = collision.collider.GetComponentInParent<Pawn>();
         if (pawn != null && !pawn.selectionPiece)

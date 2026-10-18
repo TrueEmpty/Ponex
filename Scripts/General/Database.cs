@@ -39,6 +39,7 @@ public class Database : MonoBehaviour
     public int[] ballSlots = new int[] { -1, -1, -1, -1, -1 };
 
     int fieldSize = 0;
+    float playPlaneZ = 0f;
     /// <summary>Current match playfield depth/plane (framed Z). 0 before a match starts.</summary>
     public float FieldPlaySize => fieldSize;
 
@@ -2232,6 +2233,7 @@ public class Database : MonoBehaviour
 
             // Fit Z so top/bottom walls meet the camera frustum (keep Test Zone as-is)
             float framed = FieldCameraFit.Apply(fSpawned.transform, Camera.main, fieldSize);
+            playPlaneZ = fSpawned.transform.position.z;
             SetFieldPlaySize(framed);
             yield return null;
             Physics.SyncTransforms();
@@ -2286,12 +2288,13 @@ public class Database : MonoBehaviour
                     ComputerAI.AssignMatchBrain(p);
             }
 
-            // Tic same-wall pairs: side-by-side or fused machine + wing bumper
-            TicCoopLayout.Prepare(players, fieldSize);
             Yuotay.PrepareSameWallSeats(players, fieldSize);
-            CelarusCoopLayout.Prepare(players, gametype);
             if (gametype == Gametype.Arcade && ArcadeRun.instance != null)
                 ArcadeRun.instance.ApplySeats();
+
+            // After seats are final: same team + side fuses Tic and shares one Celarus moon/sun.
+            TicCoopLayout.Prepare(players, fieldSize);
+            CelarusCoopLayout.Prepare(players, gametype);
 
             // Phase 2 — spawn (hosts before wing / Celarus guests so partners can find the shared object)
             List<int> spawnOrder = new List<int>(spawnCount);
@@ -2318,6 +2321,7 @@ public class Database : MonoBehaviour
             }
 
             CelarusCoopLayout.BindAfterSpawn(players);
+            PaddleWall.UnblockEmbeddedInBackWalls();
             #endregion
 
             #region Add Ball
@@ -2420,10 +2424,11 @@ public class Database : MonoBehaviour
 
         parts.Sort((a, b) => a.localPosition.x.CompareTo(b.localPosition.x));
 
-        // Measure wall span along the lifeline's right axis
-        Vector3 origin = root.position + root.up * 0.5f;
-        float leftDist = RayDistanceToWall(origin, -root.right);
-        float rightDist = RayDistanceToWall(origin, root.right);
+        // Measure wall span in world space so a flipped seat still spreads across the wall.
+        Vector3 axis = WallLateral(p.facing);
+        Vector3 origin = root.position + PaddleWall.IntoField(p.facing) * 0.5f;
+        float leftDist = RayDistanceToWall(origin, -axis);
+        float rightDist = RayDistanceToWall(origin, axis);
         if (leftDist <= 0.01f || rightDist <= 0.01f)
         {
             float half = Mathf.Max(4f, fieldSize * 0.5f);
@@ -2446,9 +2451,10 @@ public class Database : MonoBehaviour
         for (int i = 0; i < parts.Count; i++)
         {
             float t = parts.Count == 1 ? 0.5f : i / (float)(parts.Count - 1);
-            Vector3 lp = parts[i].localPosition;
-            lp.x = Mathf.Lerp(leftX, rightX, t);
-            parts[i].localPosition = lp;
+            float along = Mathf.Lerp(leftX, rightX, t);
+            Vector3 world = root.position + axis * along;
+            world.z = parts[i].position.z;
+            parts[i].position = world;
         }
     }
 
@@ -2501,8 +2507,17 @@ public class Database : MonoBehaviour
 
         Tic host = null;
         Player hostPlayer = null;
-        if (p.ticPartnerIndex >= 0 && p.ticPartnerIndex < players.Count)
-            hostPlayer = players[p.ticPartnerIndex];
+        if (p.ticPartnerIndex >= 0)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i] != null && players[i].index == p.ticPartnerIndex)
+                {
+                    hostPlayer = players[i];
+                    break;
+                }
+            }
+        }
         if (hostPlayer != null && hostPlayer.spawnedPlayer != null)
             host = hostPlayer.spawnedPlayer.GetComponent<Tic>();
 
@@ -2619,6 +2634,119 @@ public class Database : MonoBehaviour
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
+    }
+
+    static Vector3 WallLateral(Facing facing)
+    {
+        if (facing == Facing.Left || facing == Facing.Right)
+            return Vector3.up;
+        return Vector3.right;
+    }
+
+    float ClampedWallOffset(float offset)
+    {
+        float half = Mathf.Max(1.5f, fieldSize * 0.5f - 1.6f);
+        return Mathf.Clamp(offset, -half, half);
+    }
+
+    /// <summary>
+    /// Test and Master Pong keep their gap to the lifeline, but the lifeline itself
+    /// sits on the home wall on every field size.
+    /// </summary>
+    void SeatLifelineOnWall(Player p)
+    {
+        if (p == null || p.spawnedLifeline == null || p.spawnedPlayer == null)
+            return;
+        if (string.IsNullOrEmpty(p.name))
+            return;
+        if (!p.name.Equals("Test", StringComparison.OrdinalIgnoreCase)
+            && !p.name.Equals("Master Pong", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        Vector3 into = PaddleWall.IntoField(p.facing);
+        Transform life = p.spawnedLifeline.transform;
+        Transform body = p.spawnedPlayer.transform;
+        float gap = Vector3.Dot(body.position - life.position, into);
+
+        Vector3 lifePos = life.position;
+        lifePos.z = PlayPlaneZ();
+        life.position = lifePos;
+
+        SnapLifelineRearToWall(life, p.facing);
+        float now = Vector3.Dot(body.position - life.position, into);
+        float shiftAmt = gap - now;
+        if (shiftAmt < 0f)
+            shiftAmt = 0f;
+        body.position += into * shiftAmt;
+        body.position = new Vector3(body.position.x, body.position.y, life.position.z);
+        PaddleWall.PushClearOfHomeWall(body, p.facing);
+        Rigidbody bodyRb = body.GetComponent<Rigidbody>();
+        if (bodyRb != null)
+            bodyRb.position = body.position;
+
+        Rigidbody lifeRb = life.GetComponent<Rigidbody>();
+        if (lifeRb != null)
+        {
+            lifeRb.position = life.position;
+            lifeRb.rotation = life.rotation;
+        }
+    }
+
+    void SnapLifelineRearToWall(Transform lifeline, Facing facing)
+    {
+        if (lifeline == null)
+            return;
+
+        Physics.SyncTransforms();
+        Vector3 into = PaddleWall.IntoField(facing);
+        Vector3 towardHome = -into;
+        Vector3 origin = lifeline.position + into * 8f;
+        origin.z = lifeline.position.z;
+        Vector3 fieldCenter = new Vector3(0f, 0f, lifeline.position.z);
+        float maxDist = Mathf.Max(fieldSize * 2f, 40f);
+        RaycastHit[] hits = Physics.RaycastAll(origin, towardHome, maxDist, ~0, QueryTriggerInteraction.Ignore);
+        if (hits == null || hits.Length == 0)
+            return;
+
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        Vector3 wallPoint = Vector3.zero;
+        bool found = false;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Transform hitT = hits[i].transform;
+            if (hitT == null || hitT == lifeline || hitT.IsChildOf(lifeline))
+                continue;
+            string tag = hitT.tag;
+            if (tag != "Wall" && tag != "Walls" && tag != "Obstacle")
+                continue;
+            Vector3 candidate = hits[i].point;
+            candidate.z = lifeline.position.z;
+            if (Vector3.Dot(candidate - fieldCenter, towardHome) < 0.35f)
+                continue;
+            wallPoint = candidate;
+            found = true;
+            break;
+        }
+        if (!found)
+            return;
+
+        Vector3 pos = lifeline.position;
+        if (facing == Facing.Left || facing == Facing.Right)
+            pos.x = wallPoint.x;
+        else
+            pos.y = wallPoint.y;
+        pos.z = PlayPlaneZ();
+        lifeline.position = pos;
+    }
+
+    float PlayPlaneZ()
+    {
+        if (playPlaneZ > 0.01f)
+            return playPlaneZ;
+        Field_Info field = FindAnyObjectByType<Field_Info>();
+        if (field != null)
+            return field.transform.position.z;
+        return fieldSize;
     }
 
     Vector3 GetMathematicalWallPos(Facing facing)
@@ -2789,7 +2917,7 @@ public class Database : MonoBehaviour
             if (Mathf.Abs(p.ticWallSideOffset) > 0.01f)
             {
                 p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.up * p.character.positionOffset.y;
-                p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.ticWallSideOffset;
+                p.spawnedPlayer.transform.position += WallLateral(p.facing) * ClampedWallOffset(p.ticWallSideOffset);
             }
             else
             {
@@ -2808,6 +2936,7 @@ public class Database : MonoBehaviour
                 else if (p.spawnedPlayer.GetComponent<Tic>() == null && p.character != null)
                     inset = Mathf.Max(0f, p.character.positionOffset.y);
                 SnapFlushToHomeWall(p.spawnedPlayer.transform, p.facing, inset);
+                PaddleWall.PushClearOfHomeWall(p.spawnedPlayer.transform, p.facing);
             }
 
             PlayerGrab pG = p.spawnedPlayer.GetComponent<PlayerGrab>();
@@ -2834,6 +2963,7 @@ public class Database : MonoBehaviour
             {
                 p.spawnedLifeline = Instantiate(p.lifeline.prefabs);
                 PlaceLifelineOnWall(p.spawnedLifeline, p.facing, p.spawnedPlayer.transform.position, fRot, p.lifeline);
+                SeatLifelineOnWall(p);
                 SpreadTriggerLifelineParts(p.spawnedLifeline, p);
                 PlayerGrab lifePG = p.spawnedLifeline.GetComponent<PlayerGrab>();
                 if (lifePG != null)

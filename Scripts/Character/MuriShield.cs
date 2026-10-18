@@ -80,7 +80,7 @@ public class MuriShield : MonoBehaviour
         if (bump == null)
             return;
 
-        float add = Mathf.Min(Mathf.Max(0f, seconds), kunaiCharge);
+        float add = Mathf.Max(0f, seconds);
         if (add <= 0f)
             return;
 

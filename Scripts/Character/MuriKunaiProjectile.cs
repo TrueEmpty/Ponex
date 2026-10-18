@@ -30,7 +30,7 @@ public class MuriKunaiProjectile : MonoBehaviour
     bool refunded;
     float nextCrushCheck;
 
-    static readonly RaycastHit[] rayHits = new RaycastHit[24];
+    static readonly RaycastHit[] rayHits = new RaycastHit[48];
     static readonly Collider[] crushHits = new Collider[16];
 
     public void Launch(MuriKunai source, Vector3 direction, float launchSpeed)
@@ -166,7 +166,10 @@ public class MuriKunaiProjectile : MonoBehaviour
                 continue;
 
             if (IsBall(hit.collider))
+            {
+                NoteBall(hit.collider);
                 continue;
+            }
 
             if (IsOutOfBounds(hit.collider))
             {
@@ -245,16 +248,16 @@ public class MuriKunaiProjectile : MonoBehaviour
     {
         if (collision == null || collision.collider == null)
             return;
-        if (IsBall(collision.collider) && owner != null)
-            owner.OnKunaiHitBall(collision.collider.GetEntityId().GetHashCode());
+        if (IsBall(collision.collider))
+            NoteBall(collision.collider);
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (other == null || IsOwner(other) || IsKunaiPart(other))
             return;
-        if (IsBall(other) && owner != null)
-            owner.OnKunaiHitBall(other.GetEntityId().GetHashCode());
+        if (IsBall(other))
+            NoteBall(other);
         if (state == State.Flying && IsOutOfBounds(other))
         {
             Vector3 from = transform.position - flyDir * 1.5f;
@@ -375,9 +378,26 @@ public class MuriKunaiProjectile : MonoBehaviour
         return other.transform == owner.transform || other.transform.IsChildOf(owner.transform);
     }
 
+    void NoteBall(Collider other)
+    {
+        if (owner == null || other == null)
+            return;
+        int id = other.attachedRigidbody != null
+            ? other.attachedRigidbody.GetEntityId().GetHashCode()
+            : other.GetEntityId().GetHashCode();
+        owner.OnKunaiHitBall(id);
+    }
+
     static bool IsBall(Collider other)
     {
-        return other.CompareTag("Ball") || other.CompareTag("Ghost");
+        if (other == null)
+            return false;
+        if (other.CompareTag("Ball") || other.CompareTag("Ghost"))
+            return true;
+        Rigidbody body = other.attachedRigidbody;
+        if (body != null && (body.CompareTag("Ball") || body.CompareTag("Ghost")))
+            return true;
+        return other.GetComponentInParent<BallInfo>() != null;
     }
 
     static bool IsOutOfBounds(Collider other)

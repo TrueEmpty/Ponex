@@ -115,22 +115,21 @@ public class Uwrenmaw : MonoBehaviour
         if (!db.gameStart || pg.player.currentHealth <= 0)
             return;
 
-        // Jump, Super, and the other face buttons. Dash is handled on its own.
-        bool action = pg.inp.tf_up || pg.inp.tf_down || pg.inp.tf_left || pg.inp.tf_right || pg.inp.tf_super;
+        // Face buttons, bump, and super start a pillar or jump off one.
+        // Dash only speeds him up and must not cancel a pillar.
+        bool jumpOff = pg.inp.tf_up || pg.inp.tf_down || pg.inp.tf_left || pg.inp.tf_right
+            || pg.inp.tf_super || pg.inp.tf_bump;
         bool dash = pg.inp.tf_dashLeft || pg.inp.tf_dashRight;
         if (pg.player.computer)
-            Think(ref action, ref dash);
+            Think(ref jumpOff, ref dash);
 
         if (dash && pg.player.CanDash && pg.player.dash != null && pg.player.dash.Enough() && !dashing)
             StartDash();
 
-        if (action && !dashing)
+        if (jumpOff)
         {
             if (orbit != null)
-            {
-                if (growing == null)
-                    Release(false);
-            }
+                Release(dashing);
             else if (pg.player.super != null && pg.player.super.Enough())
                 BeginGrow();
         }
@@ -272,9 +271,9 @@ public class Uwrenmaw : MonoBehaviour
 
         if (BuildingUlt())
         {
-            if (BallHit(collision.collider) && !IsTail(collision.collider))
+            if (BallHit(collision.collider) && HitOurHead(collision))
                 Release(true);
-            else
+            else if (!BallHit(collision.collider))
                 ReverseCircle();
             return;
         }
@@ -659,6 +658,20 @@ public class Uwrenmaw : MonoBehaviour
             if (body != null)
                 Physics.IgnoreCollision(pillarCol, body, true);
         }
+    }
+
+    bool HitOurHead(Collision collision)
+    {
+        Collider head = GetComponent<Collider>();
+        if (head == null || collision == null)
+            return false;
+        int contacts = collision.contactCount;
+        for (int i = 0; i < contacts; i++)
+        {
+            if (collision.GetContact(i).thisCollider == head)
+                return true;
+        }
+        return false;
     }
 
     static bool BallHit(Collider hit)
@@ -1091,7 +1104,7 @@ public class Uwrenmaw : MonoBehaviour
 
         if (orbit != null)
         {
-            if (ball != null && best > 16f && lapAngle > 1.2f)
+            if (growing == null && ball != null && best > 16f && lapAngle > 1.2f)
                 action = true;
             return;
         }

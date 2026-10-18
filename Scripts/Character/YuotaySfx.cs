@@ -17,36 +17,36 @@ public static class YuotaySfx
     static bool loaded;
 
     /// <summary>Bat contact crack on a real swing.</summary>
-    public static void PlayBatHit(float volume = 1f)
+    public static void PlayBatHit(float volume = 1f, float pitchScale = 1f)
     {
         EnsureLoaded();
-        Play(hitClips, volume, 0.07f);
+        Play(hitClips, volume, 0.07f, pitchScale);
     }
 
     /// <summary>Soft deadened bunt tap.</summary>
     public static void PlayBunt(float volume = 0.85f)
     {
         EnsureLoaded();
-        Play(buntClips, volume, 0.05f);
+        Play(buntClips, volume, 0.05f, 1f);
     }
 
     /// <summary>Air whoosh while the bat is swinging.</summary>
-    public static void PlaySwingWhoosh(float volume = 0.8f)
+    public static void PlaySwingWhoosh(float volume = 0.8f, float pitchScale = 1f)
     {
         EnsureLoaded();
-        Play(whooshClips, volume, 0.06f);
+        Play(whooshClips, volume, 0.06f, pitchScale);
     }
 
     public static void PlayCatch(float volume = 1f)
     {
         EnsureLoaded();
-        Play(catchClips, volume, 0.06f);
+        Play(catchClips, volume, 0.06f, 1f);
     }
 
     public static void PlayThrow(float volume = 0.95f)
     {
         EnsureLoaded();
-        Play(throwClips, volume, 0.07f);
+        Play(throwClips, volume, 0.07f, 1f);
     }
 
     static void EnsureLoaded()
@@ -80,7 +80,7 @@ public static class YuotaySfx
         return list.ToArray();
     }
 
-    static void Play(AudioClip[] clips, float volume, float pitchJitter)
+    static void Play(AudioClip[] clips, float volume, float pitchJitter, float pitchScale)
     {
         if (clips == null || clips.Length == 0)
             return;
@@ -89,7 +89,7 @@ public static class YuotaySfx
         if (clip == null)
             return;
 
-        float pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
+        float pitch = pitchScale + Random.Range(-pitchJitter, pitchJitter);
         AudioSettings.PlayCharacterEffect(clip, volume, pitch);
     }
 }

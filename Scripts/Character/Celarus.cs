@@ -284,10 +284,11 @@ public class Celarus : MonoBehaviour
                     break;
             }
         }
-        // Keep a press until the dash actually starts. Clearing it every frame
-        // dropped the tap when the star was still on cooldown.
-        if (dash != 0)
+        // A press only counts while dash is ready. Do not store it for later.
+        if (dash != 0 && dashCooldown <= 0f && !dashing)
             pendingDashDir = dash;
+        else
+            pendingDashDir = 0;
     }
 
     void SyncReadyMeters()
@@ -1029,8 +1030,9 @@ public class Celarus : MonoBehaviour
             return;
 
         bool skateSun = ShouldSkateOnSun();
-        bool sunOn = !moving && sunGravity.gameObject.activeInHierarchy && (day || skateSun);
-        bool moonOn = !moving && !day && !skateSun && moonGravity.gameObject.activeInHierarchy;
+        bool both = ShareActive() && ShareShowsBoth();
+        bool sunOn = !moving && sunGravity.gameObject.activeInHierarchy && (both ? ShareHasSunRole() : (day || skateSun));
+        bool moonOn = !moving && moonGravity.gameObject.activeInHierarchy && (both ? ShareHasMoonRole() : (!day && !skateSun));
 
         sunHit.enabled = sunOn;
         sunGravity.active = sunOn;
@@ -1043,6 +1045,8 @@ public class Celarus : MonoBehaviour
     {
         // Sunshine / Moonlight variants stay in one phase
         if (phaseLock != CelarusPhaseLock.Cycle)
+            return;
+        if (ShareActive() && ShareShowsBoth())
             return;
         if (ShareGuestFollowingHostCycle())
             return;
@@ -1361,6 +1365,8 @@ public class Celarus : MonoBehaviour
         Player p = pg != null ? pg.player : null;
         if (p != null && p.celarusShareHost)
             ApplySharedOpeningPhase();
+        else if (phaseLock == CelarusPhaseLock.Cycle && ShareShowsBoth())
+            day = PlayingSun();
         else if (phaseLock == CelarusPhaseLock.Cycle && ShareHasSun())
             day = true;
         ApplySharedOpeningStar();
@@ -1437,6 +1443,8 @@ public class Celarus : MonoBehaviour
     {
         if (phaseLock == CelarusPhaseLock.ForceSun)
             return true;
+        if (ShareActive() && ShareShowsBoth())
+            return PlayingSun();
         // Normal Celarus always plays sun phase herself (park + flares), even beside Moonlight.
         if (phaseLock == CelarusPhaseLock.Cycle && day)
             return true;
@@ -1446,6 +1454,8 @@ public class Celarus : MonoBehaviour
     bool ShouldSkateOnSun()
     {
         if (phaseLock == CelarusPhaseLock.ForceSun)
+            return false;
+        if (ShareActive() && ShareShowsBoth())
             return false;
         if (phaseLock == CelarusPhaseLock.Cycle)
             return ShareHasSun() && !day;
@@ -1491,6 +1501,63 @@ public class Celarus : MonoBehaviour
     bool ShareHasSun()
     {
         return ShareHasLock(CelarusPhaseLock.ForceSun);
+    }
+
+    bool ShareShowsBoth()
+    {
+        return ShareHasSunRole() && ShareHasMoonRole();
+    }
+
+    bool ShareHasSunRole()
+    {
+        if (ShareHasLock(CelarusPhaseLock.ForceSun))
+            return true;
+        return ShareHasLock(CelarusPhaseLock.Cycle) && !OnlyLock(CelarusPhaseLock.ForceMoon);
+    }
+
+    bool ShareHasMoonRole()
+    {
+        if (ShareHasLock(CelarusPhaseLock.ForceMoon))
+            return true;
+        return ShareHasLock(CelarusPhaseLock.Cycle) && !OnlyLock(CelarusPhaseLock.ForceSun);
+    }
+
+    bool OnlyLock(CelarusPhaseLock lockMode)
+    {
+        if (db == null || db.players == null || pg == null || pg.player == null)
+            return false;
+        int host = pg.player.celarusShareHostIndex;
+        if (host < 0)
+            return false;
+        bool any = false;
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player other = db.players[i];
+            if (other == null || other.currentHealth <= 0)
+                continue;
+            int otherHost = other.celarusShareHostIndex >= 0 ? other.celarusShareHostIndex : -1;
+            if (otherHost != host && other.index != host)
+                continue;
+            any = true;
+            if (CelarusCoopLayout.ReadPhaseLock(other) != lockMode)
+                return false;
+        }
+        return any;
+    }
+
+    /// <summary>In a shared pair, one player runs the sun and the other the moon.</summary>
+    bool PlayingSun()
+    {
+        if (phaseLock == CelarusPhaseLock.ForceSun)
+            return true;
+        if (phaseLock == CelarusPhaseLock.ForceMoon)
+            return false;
+        if (ShareHasLock(CelarusPhaseLock.ForceSun))
+            return false;
+        if (ShareHasLock(CelarusPhaseLock.ForceMoon))
+            return true;
+        Player p = pg != null ? pg.player : null;
+        return p != null && p.celarusShareHost;
     }
 
     bool ShareHasLock(CelarusPhaseLock lockMode)
@@ -1546,6 +1613,8 @@ public class Celarus : MonoBehaviour
         Celarus host = GetShareHostCelarus();
         if (host == null || host == this || host.phaseLock != CelarusPhaseLock.Cycle)
             return;
+        if (ShareShowsBoth())
+            return;
         moving = host.moving;
         if (phaseLock == CelarusPhaseLock.Cycle && day != host.day && !host.moving)
         {
@@ -1558,6 +1627,17 @@ public class Celarus : MonoBehaviour
     {
         moving = false;
         cycle = 0f;
+        if (ShareHasSunRole() && ShareHasMoonRole())
+        {
+            if (spinPoint != null)
+                spinPoint.localRotation = Quaternion.Euler(0f, 0f, 180f);
+            SetCelestialActive(sun: true, moon: true);
+            if (phaseLock == CelarusPhaseLock.Cycle)
+                day = PlayingSun();
+            PlanetsUpdate();
+            return;
+        }
+
         if (ShareHasSun())
         {
             if (spinPoint != null)

@@ -71,6 +71,15 @@ public class ShockBall : MonoBehaviour
             BeginZap();
     }
 
+    public void ForceZap(float seconds)
+    {
+        zapActive = true;
+        stateEndsAt = Time.time + Mathf.Max(0.1f, seconds);
+        ApplySpeeds(true);
+        ApplyVisuals(true);
+        ScaleVelocityToMin();
+    }
+
     void OnCollisionEnter(Collision collision)
     {
         if (!zapActive || db == null || !db.gameStart || bI == null || !bI.ballReady || !bI.projectionOn)
@@ -256,15 +265,24 @@ public class ShockBall : MonoBehaviour
 
         var renderer = fxObj.GetComponent<ParticleSystemRenderer>();
         renderer.renderMode = ParticleSystemRenderMode.Billboard;
-        renderer.trailMaterial = renderer.sharedMaterial;
-        Shader sh = Shader.Find("Particles/Standard Unlit");
+        Shader sh = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+        if (sh == null)
+            sh = Shader.Find("Particles/Standard Unlit");
+        if (sh == null)
+            sh = Shader.Find("Sprites/Default");
         if (sh != null)
         {
             Material mat = new Material(sh);
-            mat.SetColor("_Color", new Color(1f, 0.95f, 0.4f, 1f));
+            Color glow = new Color(1f, 0.95f, 0.35f, 1f);
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", glow);
+            if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", glow);
+            mat.renderQueue = 3000;
             renderer.sharedMaterial = mat;
             renderer.trailMaterial = mat;
         }
+        fxObj.layer = parent.gameObject.layer;
 
         zap.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         return zap;

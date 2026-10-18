@@ -42,6 +42,10 @@ public static class PaddleWall
                 continue;
             if (wallTag.Equals(tag, StringComparison.OrdinalIgnoreCase))
                 return true;
+            if (isWall
+                && (wallTag.Equals("Wall", StringComparison.OrdinalIgnoreCase)
+                    || wallTag.Equals("Walls", StringComparison.OrdinalIgnoreCase)))
+                return true;
             if (isObstacle
                 && (wallTag.Equals("Walls", StringComparison.OrdinalIgnoreCase)
                     || wallTag.Equals("Wall", StringComparison.OrdinalIgnoreCase)
@@ -102,7 +106,12 @@ public static class PaddleWall
                 continue;
 
             if (MatchesWallTag(t.tag, wallTags))
+            {
+                Collider col = hits[i].collider;
+                if (IsHomeBackWall(col, paddle))
+                    continue;
                 return true;
+            }
         }
 
         return false;
@@ -183,6 +192,8 @@ public static class PaddleWall
             if (wall.transform == paddle || wall.transform.IsChildOf(paddle))
                 continue;
             if (!MatchesWallTag(wall.tag, wallTags))
+                continue;
+            if (IsHomeBackWall(wall, paddle))
                 continue;
 
             for (int s = 0; s < selfCols.Length; s++)
@@ -295,6 +306,8 @@ public static class PaddleWall
                             continue;
                         if (!MatchesWallTag(other.tag, wallTags))
                             continue;
+                        if (IsHomeBackWall(other, paddle))
+                            continue;
                         blocked = true;
                         break;
                     }
@@ -405,13 +418,6 @@ public static class PaddleWall
         if (selfCols == null || selfCols.Length == 0)
             return;
 
-        Vector3 towardHome = -paddle.up;
-        Vector3 lateral = AbsAxes(paddle.right);
-        if (towardHome.sqrMagnitude < 0.0001f)
-            towardHome = Vector3.down;
-        else
-            towardHome.Normalize();
-
         Collider[] walls = UnityEngine.Object.FindObjectsByType<Collider>(FindObjectsInactive.Exclude);
         for (int w = 0; w < walls.Length; w++)
         {
@@ -422,11 +428,7 @@ public static class PaddleWall
                 continue;
             if (!MatchesWallTag(wall.tag, wallTags))
                 continue;
-
-            Vector3 toWall = wall.bounds.center - paddle.position;
-            float behind = Vector3.Dot(toWall, towardHome);
-            float side = Mathf.Abs(Vector3.Dot(toWall, lateral));
-            if (behind <= 0.05f || behind <= side)
+            if (!IsHomeBackWall(wall, paddle))
                 continue;
 
             for (int s = 0; s < selfCols.Length; s++)
@@ -439,12 +441,124 @@ public static class PaddleWall
         }
     }
 
+    public static void PushClearOfHomeWall(Transform paddle, Facing facing)
+    {
+        if (paddle == null)
+            return;
+
+        Vector3 into = IntoField(facing);
+        Collider[] self = paddle.GetComponentsInChildren<Collider>();
+        if (self == null || self.Length == 0)
+            return;
+
+        Collider[] walls = UnityEngine.Object.FindObjectsByType<Collider>(FindObjectsInactive.Exclude);
+        for (int step = 0; step < 6; step++)
+        {
+            bool moved = false;
+            for (int w = 0; w < walls.Length; w++)
+            {
+                Collider wall = walls[w];
+                if (wall == null || wall.isTrigger || !IsHomeBackWall(wall, paddle))
+                    continue;
+                for (int s = 0; s < self.Length; s++)
+                {
+                    Collider body = self[s];
+                    if (body == null || body.isTrigger || !body.enabled)
+                        continue;
+                    if (!Physics.ComputePenetration(
+                        body, body.transform.position, body.transform.rotation,
+                        wall, wall.transform.position, wall.transform.rotation,
+                        out Vector3 sepDir, out float sepDist))
+                        continue;
+                    float along = Vector3.Dot(sepDir * (sepDist + 0.06f), into);
+                    if (along <= 0f)
+                        continue;
+                    paddle.position += into * along;
+                    moved = true;
+                }
+            }
+            if (!moved)
+                break;
+        }
+
+        Rigidbody rb = paddle.GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.position = paddle.position;
+    }
+
     public static bool IsBoundaryWallTag(string tag)
     {
         if (string.IsNullOrEmpty(tag))
             return false;
         return tag.Equals("Wall", StringComparison.OrdinalIgnoreCase)
             || tag.Equals("Walls", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// The slab behind this paddle. End walls (the lane stops) are not back walls.
+    /// </summary>
+    public static bool IsHomeBackWall(Collider wall, Transform paddle)
+    {
+        if (wall == null || paddle == null || !IsBoundaryWallTag(wall.tag))
+            return false;
+
+        Vector3 into = paddle.up;
+        into.z = 0f;
+        if (into.sqrMagnitude < 0.0001f)
+            into = Vector3.up;
+        into.Normalize();
+
+        Bounds b = wall.bounds;
+        Vector3 ext = b.extents;
+        float intoExtent = ext.x * Mathf.Abs(into.x) + ext.y * Mathf.Abs(into.y);
+        float lateralExtent = ext.x * Mathf.Abs(into.y) + ext.y * Mathf.Abs(into.x);
+        if (lateralExtent <= intoExtent + 0.05f)
+            return false;
+
+        float home = Vector3.Dot(b.center - paddle.position, -into);
+        return home > 0.15f;
+    }
+
+    /// <summary>
+    /// Anything already sitting in a back wall should not be shoved by it.
+    /// Balls still bounce. End walls still stop lane movement.
+    /// </summary>
+    public static void UnblockEmbeddedInBackWalls()
+    {
+        Collider[] all = UnityEngine.Object.FindObjectsByType<Collider>(FindObjectsInactive.Exclude);
+        for (int w = 0; w < all.Length; w++)
+        {
+            Collider wall = all[w];
+            if (wall == null || wall.isTrigger || !IsBoundaryWallTag(wall.tag))
+                continue;
+
+            int hits = Physics.OverlapBoxNonAlloc(
+                wall.bounds.center,
+                wall.bounds.extents,
+                overlapHits,
+                Quaternion.identity,
+                ~0,
+                QueryTriggerInteraction.Ignore);
+            int count = hits;
+            Collider[] found = overlapHits;
+            if (hits == overlapHits.Length)
+            {
+                found = Physics.OverlapBox(wall.bounds.center, wall.bounds.extents, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
+                count = found.Length;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider other = found[i];
+                if (other == null || other == wall || other.isTrigger)
+                    continue;
+                if (other.CompareTag("Ball") || IsBoundaryWallTag(other.tag))
+                    continue;
+                if (!IsHomeBackWall(wall, other.transform))
+                    continue;
+                Physics.IgnoreCollision(other, wall, true);
+            }
+        }
     }
 
     /// <summary>

@@ -613,6 +613,9 @@ public class MuriMove : MonoBehaviour
             // "Wall" is not in the tag list — CompareTag throws. String compare is safe.
             if (p.tag == "Walls" || p.tag == "Wall")
                 return true;
+            PartInfo info = p.GetComponent<PartInfo>();
+            if (info != null && info.part != null && info.part.canBeBorder)
+                return true;
             p = p.parent;
         }
         return false;

@@ -107,6 +107,8 @@ public class PlayerSelectorObj : MonoBehaviour
             }
 
             MoveCircle();
+            TryJumpToConfirm();
+            TryJumpToBack();
             if (ucd != null && db != null && (db.pauseMenuOpen || db.storyPauseOpen || Time.timeScale < 0.01f))
                 ucd.PollOverlaps();
             HandleActions();
@@ -295,6 +297,143 @@ public class PlayerSelectorObj : MonoBehaviour
         pC = c;
     }
 
+    void TryJumpToConfirm()
+    {
+        if (db != null && (db.gameStart || db.pauseMenuOpen || db.winnerScreen))
+            return;
+        if (!MenuDown())
+            return;
+
+        RectTransform confirm = FindActiveNamed("Confirm");
+        JumpSelectorTo(confirm);
+    }
+
+    void TryJumpToBack()
+    {
+        if (!ReadPressedDown("Interact"))
+            return;
+
+        if (IsCharacterSelectOpen())
+        {
+            Player self = FindPlayer(pI);
+            if (self != null && self.characterSelected)
+                return;
+        }
+
+        JumpSelectorTo(FindActiveBackRect());
+    }
+
+    bool MenuDown()
+    {
+        if (ReadPressedDown("Menu"))
+            return true;
+        if (cLink != null && cLink.RawMenuPressed())
+            return true;
+        if (!SharedCursor())
+            return false;
+
+        if (db != null && db.controllers != null)
+        {
+            for (int i = 0; i < db.controllers.Count; i++)
+            {
+                ControllerLink link = db.controllers[i];
+                if (link != null && link.RawMenuPressed())
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    static RectTransform FindActiveNamed(string buttonName)
+    {
+        MenuManager mm = MenuManager.instance;
+        if (mm == null)
+            return null;
+
+        MenuClass top = mm.GetOpenMenu(false);
+        RectTransform found = NamedUnder(top != null ? top.holder : null, buttonName);
+        if (found != null)
+            return found;
+
+        if (mm.menus == null || mm.openMenu == null)
+            return null;
+
+        for (int i = mm.openMenu.Count - 1; i >= 0; i--)
+        {
+            string title = mm.openMenu[i];
+            if (string.IsNullOrEmpty(title))
+                continue;
+            for (int m = 0; m < mm.menus.Count; m++)
+            {
+                MenuClass menu = mm.menus[m];
+                if (menu == null || menu.holder == null)
+                    continue;
+                if (!menu.title.Trim().Equals(title.Trim(), StringComparison.OrdinalIgnoreCase))
+                    continue;
+                found = NamedUnder(menu.holder, buttonName);
+                if (found != null)
+                    return found;
+            }
+        }
+
+        return null;
+    }
+
+    static RectTransform NamedUnder(GameObject holder, string buttonName)
+    {
+        if (holder == null || !holder.activeInHierarchy)
+            return null;
+        Transform named = FindActiveChildNamed(holder.transform, buttonName);
+        return named as RectTransform;
+    }
+
+    static Transform FindActiveChildNamed(Transform root, string name)
+    {
+        if (root == null)
+            return null;
+        if (root.name.Equals(name, StringComparison.OrdinalIgnoreCase) && root.gameObject.activeInHierarchy)
+            return root;
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindActiveChildNamed(root.GetChild(i), name);
+            if (found != null)
+                return found;
+        }
+        return null;
+    }
+
+    void JumpSelectorTo(RectTransform target)
+    {
+        if (rt == null || target == null)
+            return;
+
+        RefreshCursorBounds();
+        Vector3[] corners = new Vector3[4];
+        target.GetWorldCorners(corners);
+        rt.position = (corners[0] + corners[2]) * 0.5f;
+
+        float hW = width / 2f;
+        float hH = height / 2f;
+        rt.anchoredPosition = new Vector2(
+            Mathf.Clamp(rt.anchoredPosition.x, -hW, hW),
+            Mathf.Clamp(rt.anchoredPosition.y, -hH, hH)
+        );
+        SyncCursorBody();
+        if (ucd != null)
+            ucd.PollOverlaps();
+    }
+
+    void RefreshCursorBounds()
+    {
+        RectTransform rootRect = transform.root as RectTransform;
+        if (rootRect == null)
+            return;
+        if (rootRect.rect.width > 1f)
+            width = rootRect.rect.width;
+        if (rootRect.rect.height > 1f)
+            height = rootRect.rect.height;
+    }
+
     void MoveCircle()
     {
         if (rt == null)
@@ -397,18 +536,11 @@ public class PlayerSelectorObj : MonoBehaviour
         if (self == null)
             return;
 
-        // Super button = Interact in the input map
-        if (WasPressed("Interact"))
+        // Super button = Interact in the input map. Jump to Back is handled for every menu.
+        if (WasPressed("Interact") && self.characterSelected)
         {
-            if (self.characterSelected)
-            {
-                if (CharacterSelect.instance != null)
-                    CharacterSelect.instance.PlayerUnconfirm(pI);
-            }
-            else
-            {
-                JumpSelectorToBack();
-            }
+            if (CharacterSelect.instance != null)
+                CharacterSelect.instance.PlayerUnconfirm(pI);
         }
 
         int skinDir = 0;
@@ -432,28 +564,15 @@ public class PlayerSelectorObj : MonoBehaviour
         PlayerSkin.Cycle(target, db, skinDir);
     }
 
-    void JumpSelectorToBack()
-    {
-        if (rt == null)
-            return;
-
-        RectTransform backRt = FindActiveBackRect();
-        if (backRt == null)
-            return;
-
-        rt.position = backRt.position;
-
-        float hW = width / 2;
-        float hH = height / 2;
-        rt.anchoredPosition = new Vector2(
-            Mathf.Clamp(rt.anchoredPosition.x, -hW, hW),
-            Mathf.Clamp(rt.anchoredPosition.y, -hH, hH)
-        );
-        SyncCursorBody();
-    }
-
     static RectTransform FindActiveBackRect()
     {
+        RectTransform named = FindActiveNamed("Back");
+        if (named != null)
+        {
+            cachedActiveBack = named;
+            return named;
+        }
+
         if (cachedActiveBack != null && cachedActiveBack.gameObject.activeInHierarchy)
             return cachedActiveBack;
 

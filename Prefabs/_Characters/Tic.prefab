@@ -1580,7 +1580,7 @@ MonoBehaviour:
   plungerTravel: 1.6
   plungerShootSpeed: 48
   plungerReturnSpeed: 18
-  plungerLaunchSpeed: 26
+  plungerLaunchSpeed: 72
   bumpCooldown: 0.85
   bumperPrefab: {fileID: 545483545136210984, guid: 86664bf417e8f934d9d310ad8bbe8191, type: 3}
   wingBumperPrefab: {fileID: 1000000000000000001, guid: d4e5f60718293a4b5c6d7e8f901a2b3c, type: 3}

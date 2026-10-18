@@ -33,6 +33,13 @@ public class DamageOnTagHit : MonoBehaviour
         if (pg == null || !pg.IsLinked() || pg.player == null)
             return;
 
+        Skylaar skylaar = GetComponent<Skylaar>();
+        if (skylaar != null && skylaar.AbsorbsBallHit)
+        {
+            skylaar.NotifyBallHit();
+            return;
+        }
+
         PlayerGrab tpG = collision.gameObject.GetComponent<PlayerGrab>();
         BallInfo tbI = collision.gameObject.GetComponent<BallInfo>();
         bool pass = true;
@@ -67,13 +74,14 @@ public class DamageOnTagHit : MonoBehaviour
         int dealt = baseDamage + damageIncrease;
         if (maxDamagePerHit > 0)
             dealt = Mathf.Min(dealt, maxDamagePerHit);
+        if (skylaar != null)
+            dealt = Mathf.Max(dealt, pg.player.currentHealth);
         if (dealt <= 0)
             return;
 
         // Actual HP lost (deduped if multiple DamageOnTagHit colliders hit the same ball this frame)
         int ballId = collision.gameObject.GetEntityId().GetHashCode();
         int lost = pg.player.ApplyGoalDamage(dealt, ballId);
-        lost += ApplySharedCelarusDamage(dealt, ballId);
 
         if (lost > 0)
             pg.player.RecordGoalConceded(lost);
@@ -93,34 +101,5 @@ public class DamageOnTagHit : MonoBehaviour
 
         if (pg.player.computer && lost > 0)
             ComputerAI.OnTookGoalDamage(pg.player, lost);
-    }
-
-    int ApplySharedCelarusDamage(int dealt, int ballId)
-    {
-        if (alsoDamagePlayerIndexes == null || alsoDamagePlayerIndexes.Length == 0)
-            return 0;
-        if (db == null || db.players == null)
-            return 0;
-
-        int extraLost = 0;
-        for (int i = 0; i < alsoDamagePlayerIndexes.Length; i++)
-        {
-            int idx = alsoDamagePlayerIndexes[i];
-            if (pg != null && idx == pg.playerIndex)
-                continue;
-            Player other = null;
-            for (int p = 0; p < db.players.Count; p++)
-            {
-                if (db.players[p] != null && db.players[p].index == idx)
-                {
-                    other = db.players[p];
-                    break;
-                }
-            }
-            if (other == null || other.currentHealth <= 0)
-                continue;
-            extraLost += other.ApplyGoalDamage(dealt, ballId);
-        }
-        return extraLost;
     }
 }

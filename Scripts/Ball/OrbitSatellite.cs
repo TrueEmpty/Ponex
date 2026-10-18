@@ -89,7 +89,7 @@ public class OrbitSatellite : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!hasTarget || rb == null)
+        if (!Database.MatchPlayActive || !hasTarget || rb == null)
             return;
 
         float scale = PullScale();

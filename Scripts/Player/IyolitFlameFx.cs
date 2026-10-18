@@ -326,11 +326,11 @@ public class IyolitFlameFx : MonoBehaviour
 
             case Style.Candle:
                 tex = texB != null ? texB : texA;
-                main.duration = 1.2f;
-                main.startLifetime = new ParticleSystem.MinMaxCurve(0.3f, 0.55f);
-                main.startSpeed = new ParticleSystem.MinMaxCurve(0.4f, 1.2f);
-                main.startSize = new ParticleSystem.MinMaxCurve(0.45f, 0.95f);
-                main.maxParticles = 64;
+                main.duration = 0.6f;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(0.08f, 0.16f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0.15f, 0.45f);
+                main.startSize = new ParticleSystem.MinMaxCurve(0.22f, 0.42f);
+                main.maxParticles = 160;
                 c0 = new Color(1f, 0.9f, 0.35f, 1f);
                 c1 = new Color(1f, 0.25f, 0.05f, 0.9f);
                 break;
@@ -339,11 +339,11 @@ public class IyolitFlameFx : MonoBehaviour
                 // Short round ember sparks — plenty of them, not long streaks
                 main.gravityModifier = -0.12f;
                 tex = texEmber != null ? texEmber : (texC != null ? texC : texA);
-                main.duration = 0.35f;
-                main.startLifetime = new ParticleSystem.MinMaxCurve(0.08f, 0.18f);
-                main.startSpeed = new ParticleSystem.MinMaxCurve(0.02f, 0.18f);
-                main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.085f);
-                main.maxParticles = 48;
+                main.duration = 0.2f;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(0.03f, 0.07f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0.01f, 0.08f);
+                main.startSize = new ParticleSystem.MinMaxCurve(0.03f, 0.06f);
+                main.maxParticles = 140;
                 c0 = new Color(1f, 0.85f, 0.35f, 1f);
                 c1 = new Color(1f, 0.35f, 0.05f, 0.9f);
                 break;
@@ -365,11 +365,11 @@ public class IyolitFlameFx : MonoBehaviour
         var emission = ps.emission;
         emission.enabled = true;
         if (layer == Style.BumpEmber)
-            emission.rateOverTime = 32f;
+            emission.rateOverTime = 110f;
         else if (layer == Style.BodyAura)
             emission.rateOverTime = 28f;
         else if (layer == Style.Candle)
-            emission.rateOverTime = 36f;
+            emission.rateOverTime = 90f;
         else
             emission.rateOverTime = 22f;
 
@@ -420,7 +420,7 @@ public class IyolitFlameFx : MonoBehaviour
         velocity.enabled = true;
         velocity.space = ParticleSystemSimulationSpace.Local;
         velocity.x = 0f;
-        velocity.y = layer == Style.Candle ? 1.4f : (layer == Style.BumpEmber ? 0.25f : 0.85f);
+        velocity.y = layer == Style.Candle ? 0.35f : (layer == Style.BumpEmber ? 0.08f : 0.85f);
         velocity.z = 0f;
         velocity.orbitalX = 0f;
         velocity.orbitalY = 0f;
@@ -505,7 +505,7 @@ public class IyolitFlameFx : MonoBehaviour
         main.startRotation = SpriteRotationForUp(parent.up);
 
         var emission = ps.emission;
-        emission.rateOverTime = parentStyle == Style.Candle ? 22f : 16f;
+        emission.rateOverTime = parentStyle == Style.Candle ? 70f : 16f;
 
         var shape = ps.shape;
         shape.enabled = true;

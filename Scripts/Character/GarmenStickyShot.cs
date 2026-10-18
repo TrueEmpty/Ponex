@@ -16,6 +16,8 @@ public class GarmenStickyShot : MonoBehaviour
     bool stuck;
     bool booming;
     float stuckFor;
+    float freeUntil;
+    int ownerIndex = -1;
     Transform stuckTo;
     Transform pendingTarget;
     Vector3 pendingLocalPoint;
@@ -31,9 +33,17 @@ public class GarmenStickyShot : MonoBehaviour
         shell = GetComponent<SphereCollider>();
     }
 
+    public void Arm(int owner)
+    {
+        ownerIndex = owner;
+        freeUntil = Time.time + 0.2f;
+    }
+
     void OnCollisionEnter(Collision collision)
     {
         if (stuck || booming || pendingTarget != null || collision == null || collision.contactCount == 0)
+            return;
+        if (Time.time < freeUntil && !collision.collider.CompareTag("Ball"))
             return;
         if (IsOwnRig(collision.collider))
             return;
@@ -112,11 +122,28 @@ public class GarmenStickyShot : MonoBehaviour
             return false;
 
         PlayerGrab mine = GetComponent<PlayerGrab>();
+        int mineIndex = ownerIndex;
+        if (mine != null && mine.playerIndex >= 0)
+            mineIndex = mine.playerIndex;
+
         PlayerGrab theirs = other.GetComponentInParent<PlayerGrab>();
-        return mine != null
-            && theirs != null
-            && mine.playerIndex >= 0
-            && theirs.playerIndex == mine.playerIndex;
+        if (mineIndex >= 0 && theirs != null && theirs.playerIndex == mineIndex)
+            return true;
+
+        Database db = Database.instance;
+        if (db == null || db.players == null || mineIndex < 0)
+            return false;
+        for (int i = 0; i < db.players.Count; i++)
+        {
+            Player p = db.players[i];
+            if (p == null || p.index != mineIndex)
+                continue;
+            if (p.spawnedPlayer != null && (other.transform == p.spawnedPlayer.transform || other.transform.IsChildOf(p.spawnedPlayer.transform)))
+                return true;
+            if (p.spawnedLifeline != null && (other.transform == p.spawnedLifeline.transform || other.transform.IsChildOf(p.spawnedLifeline.transform)))
+                return true;
+        }
+        return false;
     }
 
     void Boom()

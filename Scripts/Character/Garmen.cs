@@ -70,6 +70,11 @@ public class Garmen : MonoBehaviour
                         pPg.playerIndex = pg.playerIndex;
                     }
 
+                    GarmenStickyShot sticky = pro.GetComponent<GarmenStickyShot>();
+                    if (sticky == null)
+                        sticky = pro.AddComponent<GarmenStickyShot>();
+                    sticky.Arm(pg.playerIndex);
+
                     p.bump.Spend();
                     gbC = 0;
                 }

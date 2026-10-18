@@ -195,10 +195,7 @@ public class UwrenmawPillar : MonoBehaviour
         if (!IsDamagingHit(collision.collider))
             return;
         if (!complete)
-        {
-            owner.BreakGrow(this);
             return;
-        }
         if (hp <= 0)
             return;
         owner.DamagePillar(this, collision.gameObject);
