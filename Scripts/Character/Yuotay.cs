@@ -78,8 +78,16 @@ public class Yuotay : MonoBehaviour
         if (!string.IsNullOrEmpty(p.name)
             && p.name.Equals("Yuotay", System.StringComparison.OrdinalIgnoreCase))
             return true;
-        return p.character != null && p.character.prefabs != null
-            && p.character.prefabs.GetComponent<Yuotay>() != null;
+        if (p.character == null || p.character.prefabs == null)
+            return false;
+        try
+        {
+            return p.character.prefabs.GetComponent<Yuotay>() != null;
+        }
+        catch (MissingReferenceException)
+        {
+            return false;
+        }
     }
 
     /// <summary>Two Yuotays on one wall sit side-by-side so a bat cannot spawn on top of the other and get shoved to the far wall.</summary>

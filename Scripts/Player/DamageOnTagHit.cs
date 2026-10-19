@@ -97,6 +97,10 @@ public class DamageOnTagHit : MonoBehaviour
 
             if (tpG.player.computer)
                 ComputerAI.OnPaddleHitBall(tpG.player);
+
+            MothershipVamp vamp = collision.gameObject.GetComponent<MothershipVamp>();
+            if (vamp != null)
+                vamp.OnDealt(tpG.playerIndex, lost);
         }
 
         if (pg.player.computer && lost > 0)

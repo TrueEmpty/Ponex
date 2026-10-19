@@ -1,0 +1,326 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1736737881852273335
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3707736439865098730}
+  m_Layer: 0
+  m_Name: Fleet Despawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3707736439865098730
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1736737881852273335}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.30311838, z: -0.9529529, w: 0}
+  m_LocalPosition: {x: 0, y: 0.00463, z: 0.00437}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 304245025961320496}
+  m_LocalEulerAnglesHint: {x: 35.29, y: 0, z: -180}
+--- !u!1 &6034969525909929052
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2446061387169289157}
+  m_Layer: 0
+  m_Name: Side Lazer 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2446061387169289157
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6034969525909929052}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.9537657, w: 0.30055138}
+  m_LocalPosition: {x: 0.00548, y: -0.007, z: 0.00207}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 304245025961320496}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -145.019}
+--- !u!1 &6278415977210989863
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5486378795427936899}
+  m_Layer: 0
+  m_Name: Fleet Spawn 2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5486378795427936899
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6278415977210989863}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.07264407, y: 0.28890014, z: -0.9257805, w: -0.23278788}
+  m_LocalPosition: {x: -0.002029991, y: -0.004889998, z: 0.00020999908}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 304245025961320496}
+  m_LocalEulerAnglesHint: {x: 30.072, y: -18.111, z: -213.132}
+--- !u!1 &7365443498704717456
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2989623383519834161}
+  m_Layer: 0
+  m_Name: Side Lazer 2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2989623383519834161
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7365443498704717456}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.956665, w: -0.291191}
+  m_LocalPosition: {x: -0.00559, y: -0.00748, z: 0.00213}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 304245025961320496}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -213.859}
+--- !u!1 &8571215700303380172
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2800812979294447426}
+  m_Layer: 0
+  m_Name: Fleet Spawn 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2800812979294447426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8571215700303380172}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.039277077, y: 0.1358663, z: -0.9510073, w: 0.27492315}
+  m_LocalPosition: {x: 0.002220001, y: -0.0048600007, z: 0.00020999908}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 304245025961320496}
+  m_LocalEulerAnglesHint: {x: 13.699, y: 8.846, z: -146.688}
+--- !u!1 &9197064701098067031
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3789349210542113824}
+  m_Layer: 0
+  m_Name: Main Lazer Port
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3789349210542113824
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9197064701098067031}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.9999934, w: 0.0036495966}
+  m_LocalPosition: {x: 0, y: -0.008860001, z: 0.00218}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 304245025961320496}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -179.582}
+--- !u!1001 &266376759118120923
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 131.32
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 131.32
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 131.32
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -17.841364
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -7.468254
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 492557315b700c142912ff546db1e552, type: 2}
+    - target: {fileID: 919132149155446097, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      propertyPath: m_Name
+      value: Mothership
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3789349210542113824}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2446061387169289157}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2989623383519834161}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2800812979294447426}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5486378795427936899}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3707736439865098730}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8100000000000000991}
+  m_SourcePrefab: {fileID: 100100000, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+--- !u!1 &8100000000000000992 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+  m_PrefabInstance: {fileID: 266376759118120923}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8100000000000000991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8100000000000000992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4e8a1b27d6f4a0b9c3d5e7f10293848, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Mothership
+  fleetPrefab: {fileID: 8200000000000000004, guid: b2ceb18131bccad419a6889dacd32a5b, type: 3}
+  progress: 0
+  progressPerSecond: 0.33333334
+  progressLossOnHit: 8
+  active: 0
+  laserCooldown: 3
+  laserCooldownLeft: 0
+  shieldCooldown: 6
+  shieldCooldownLeft: 0
+  fleetCooldown: 12
+  fleetCooldownLeft: 0
+  bumpCooldown: 3
+  bumpCooldownLeft: 0
+  rotationSpeed: 70
+  shieldUnlocked: 0
+  fleetUnlocked: 0
+  superCharging: 0
+  mainBeamFiring: 0
+--- !u!4 &304245025961320496 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d5fcb967f29a2f408a53c63f62a353f, type: 3}
+  m_PrefabInstance: {fileID: 266376759118120923}
+  m_PrefabAsset: {fileID: 0}

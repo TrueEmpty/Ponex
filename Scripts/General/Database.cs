@@ -43,6 +43,9 @@ public class Database : MonoBehaviour
     /// <summary>Current match playfield depth/plane (framed Z). 0 before a match starts.</summary>
     public float FieldPlaySize => fieldSize;
 
+    /// <summary>World Z of the spawned field, after the camera fit.</summary>
+    public float ActivePlayPlaneZ => PlayPlaneZ();
+
     public void SetFieldPlaySize(float size)
     {
         fieldSize = Mathf.Max(1, Mathf.RoundToInt(size));
@@ -2575,6 +2578,31 @@ public class Database : MonoBehaviour
         PlayerSkin.Apply(go, p, this);
     }
 
+    static void EnsureMothership(Player p)
+    {
+        if (p == null || p.spawnedPlayer == null)
+            return;
+        bool named = !string.IsNullOrEmpty(p.name)
+            && p.name.Equals("Mothership", System.StringComparison.OrdinalIgnoreCase);
+        Mothership existing = p.spawnedPlayer.GetComponent<Mothership>();
+        if (existing == null)
+            existing = p.spawnedPlayer.GetComponentInChildren<Mothership>(true);
+        if (!named && existing == null)
+            return;
+        if (p.spawnedPlayer.GetComponent<PlayerGrab>() == null)
+            p.spawnedPlayer.AddComponent<PlayerGrab>();
+        if (existing != null && existing.gameObject == p.spawnedPlayer)
+            return;
+        Mothership ship = p.spawnedPlayer.GetComponent<Mothership>();
+        if (ship == null)
+            ship = p.spawnedPlayer.AddComponent<Mothership>();
+        if (existing != null && existing != ship)
+        {
+            ship.fleetPrefab = existing.fleetPrefab;
+            Destroy(existing);
+        }
+    }
+
     void PlaceLifelineOnWall(GameObject lifeline, Facing facing, Vector3 playerWorldPos, Vector3 facingEuler, ObjectInfo lifeInfo)
     {
         if (lifeline == null)
@@ -2910,6 +2938,7 @@ public class Database : MonoBehaviour
         else
         {
             p.spawnedPlayer = Instantiate(p.character.prefabs);
+            EnsureMothership(p);
             p.spawnedPlayer.transform.position = pPos;
             p.spawnedPlayer.transform.rotation = Quaternion.Euler(fRot + p.character.rotationOffset);
             p.spawnedPlayer.transform.position += p.spawnedPlayer.transform.right * p.character.positionOffset.x;

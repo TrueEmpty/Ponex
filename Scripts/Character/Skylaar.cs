@@ -50,6 +50,7 @@ public class Skylaar : MonoBehaviour
     Transform dock;
     float laneMin = -8f;
     float laneMax = 8f;
+    float ceilingAlt = 16f;
 
     bool rolling => rollLeft > 0f;
 
@@ -135,7 +136,7 @@ public class Skylaar : MonoBehaviour
         planeRoot.localScale = Vector3.one;
         FitPlaneScale();
         CacheParts();
-        GlowRenderers(planeRoot, 1f);
+        PaintOwned(planeRoot.gameObject);
         planeRoot.SetParent(transform, true);
         planeRoot.localPosition = new Vector3(0f, 0.05f, 0f);
         planeRoot.localRotation = Quaternion.identity;
@@ -220,13 +221,49 @@ public class Skylaar : MonoBehaviour
         }
     }
 
-    void GlowRenderers(Transform root, float alpha)
+    public void PaintOwned(GameObject root)
+    {
+        if (root == null || pg == null || pg.player == null)
+            return;
+        PlayerSkin.Apply(root, pg.player, Database.instance);
+    }
+
+    void FadeShip(Transform root, float alpha)
     {
         if (root == null)
             return;
         Renderer[] rends = root.GetComponentsInChildren<Renderer>(true);
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
         for (int i = 0; i < rends.Length; i++)
-            GlowMaterial(rends[i], alpha);
+        {
+            Renderer rend = rends[i];
+            if (rend == null)
+                continue;
+            Material mat = rend.material;
+            if (mat.HasProperty("_Surface"))
+                mat.SetFloat("_Surface", 1f);
+            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite", 0);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.DisableKeyword("_ALPHATEST_ON");
+            mat.EnableKeyword("_ALPHABLEND_ON");
+            mat.renderQueue = 3000;
+
+            rend.GetPropertyBlock(block);
+            Color color = mat.HasProperty("_BaseColor") ? mat.GetColor("_BaseColor") : mat.color;
+            if (block.HasColor("_BaseColor"))
+                color = block.GetColor("_BaseColor");
+            else if (block.HasColor("_Color"))
+                color = block.GetColor("_Color");
+            color.a = alpha;
+            if (mat.HasProperty("_BaseColor"))
+                block.SetColor("_BaseColor", color);
+            if (mat.HasProperty("_Color"))
+                block.SetColor("_Color", color);
+            rend.SetPropertyBlock(block);
+        }
     }
 
     public static void GlowMaterial(Renderer rend, float alpha)
@@ -372,6 +409,7 @@ public class Skylaar : MonoBehaviour
         Vector3 into = Into();
         Vector3 lateral = Lateral();
         MeasureLane(lateral);
+        MeasureCeiling(into);
 
         if (flying)
             Fly(into, lateral);
@@ -406,9 +444,9 @@ public class Skylaar : MonoBehaviour
         float along = Vector3.Dot(pos, lateral);
         if (Mathf.Abs(pitch) < 12f)
         {
-            if (along > laneMax - 0.08f)
+            if (along > laneMax - 0.02f)
                 patrolSign = -1f;
-            else if (along < laneMin + 0.08f)
+            else if (along < laneMin + 0.02f)
                 patrolSign = 1f;
         }
 
@@ -425,8 +463,9 @@ public class Skylaar : MonoBehaviour
 
         Vector3 next = pos + wish * Time.fixedDeltaTime;
         float lane = Vector3.Dot(next, lateral);
-        float clamped = Mathf.Clamp(lane, laneMin + 0.08f, laneMax - 0.08f);
+        float clamped = Mathf.Clamp(lane, laneMin, laneMax);
         next += lateral * (clamped - lane);
+        next = ClampUnderCeiling(next, into);
         next.z = PlayZ();
         if (alt < 0.42f)
         {
@@ -471,6 +510,7 @@ public class Skylaar : MonoBehaviour
             next -= into * floorGap;
         else if (floorGap < 0f)
             next -= into * floorGap;
+        next = ClampUnderCeiling(next, into);
         next.z = PlayZ();
         rb.MovePosition(next);
         transform.position = next;
@@ -580,7 +620,7 @@ public class Skylaar : MonoBehaviour
         }
 
         SkylaarScrap nearest = null;
-        float best = 1.55f;
+        float best = 2.4f;
         for (int i = 0; i < loose.Count; i++)
         {
             SkylaarScrap scrap = loose[i];
@@ -691,6 +731,12 @@ public class Skylaar : MonoBehaviour
         return floor;
     }
 
+    void MarkForMatchEnd(GameObject go)
+    {
+        if (go != null && go.GetComponent<ClearAfterTheGame>() == null)
+            go.AddComponent<ClearAfterTheGame>();
+    }
+
     void Install(SkylaarScrap scrap)
     {
         PartState part = FindPart(scrap.PartKey);
@@ -726,8 +772,8 @@ public class Skylaar : MonoBehaviour
             if (rends[i] == null)
                 continue;
             rends[i].enabled = true;
-            GlowMaterial(rends[i], 1f);
         }
+        PaintOwned(piece.gameObject);
     }
 
     Transform GhostSlot(string key)
@@ -771,7 +817,7 @@ public class Skylaar : MonoBehaviour
             planeRoot.SetParent(transform, true);
             planeRoot.localPosition = new Vector3(0f, 0.05f, 0f);
             planeRoot.localRotation = Quaternion.identity;
-            GlowRenderers(planeRoot, 1f);
+            PaintOwned(planeRoot.gameObject);
             BoxCollider hull = planeRoot.GetComponent<BoxCollider>();
             if (hull == null)
                 hull = planeRoot.gameObject.AddComponent<BoxCollider>();
@@ -833,6 +879,7 @@ public class Skylaar : MonoBehaviour
             scrap = part.transform.gameObject.AddComponent<SkylaarScrap>();
         scrap.Setup(this, part.key, -into);
         scrap.Glow();
+        MarkForMatchEnd(scrap.gameObject);
         Vector3 lateral = Lateral();
         float side = crashSpread ? Random.Range(-14f, 14f) : Random.Range(-5f, 5f);
         float pop = crashSpread ? Random.Range(4f, 8f) : Random.Range(3.2f, 5.5f);
@@ -847,6 +894,7 @@ public class Skylaar : MonoBehaviour
             return;
         Vector3 into = Into();
         GameObject bay = new GameObject("Fairwing Bay");
+        MarkForMatchEnd(bay);
         dock = bay.transform;
         Vector3 spot = home + into * 0.45f;
         spot.z = PlayZ();
@@ -861,7 +909,8 @@ public class Skylaar : MonoBehaviour
             ghost.transform.localRotation = Quaternion.identity;
             ghost.transform.localScale = planeRoot != null ? planeRoot.localScale : Vector3.one;
             StripColliders(ghost);
-            GlowRenderers(ghost.transform, 0.22f);
+            PaintOwned(ghost);
+            FadeShip(ghost.transform, 0.22f);
         }
 
         if (planeRoot != null)
@@ -962,8 +1011,37 @@ public class Skylaar : MonoBehaviour
             laneMax = here + half;
             return;
         }
-        laneMin = here - neg + 0.05f;
-        laneMax = here + pos - 0.05f;
+        laneMin = here - neg - 0.2f;
+        laneMax = here + pos + 0.2f;
+    }
+
+    void MeasureCeiling(Vector3 into)
+    {
+        into.z = 0f;
+        if (into.sqrMagnitude < 0.0001f)
+            into = Vector3.up;
+        into.Normalize();
+        Vector3 origin = floorAnchor + into * 0.35f;
+        origin.z = PlayZ();
+        float dist = RayToLaneEnd(origin, into);
+        if (dist < 1f)
+        {
+            float span = 20f;
+            Database db = Database.instance;
+            if (db != null)
+                span = Mathf.Max(10f, db.FieldPlaySize);
+            ceilingAlt = span - 1.25f;
+            return;
+        }
+        ceilingAlt = 0.35f + dist - 1.25f;
+    }
+
+    Vector3 ClampUnderCeiling(Vector3 next, Vector3 into)
+    {
+        float alt = Vector3.Dot(next - floorAnchor, into);
+        if (alt > ceilingAlt)
+            next -= into * (alt - ceilingAlt);
+        return next;
     }
 
     static float RayToLaneEnd(Vector3 origin, Vector3 dir)
@@ -1125,7 +1203,7 @@ public class Skylaar : MonoBehaviour
         Vector3 lateral = Lateral();
         Vector3 pos = piece.position;
         float lane = Vector3.Dot(pos, lateral);
-        float clamped = Mathf.Clamp(lane, laneMin + 0.2f, laneMax - 0.2f);
+        float clamped = Mathf.Clamp(lane, laneMin, laneMax);
         pos += lateral * (clamped - lane);
         float alt = Vector3.Dot(pos - floorAnchor, into);
         if (alt < 0.08f)
@@ -1256,9 +1334,8 @@ public class SkylaarScrap : MonoBehaviour
 
     public void Glow()
     {
-        Renderer[] rends = GetComponentsInChildren<Renderer>(true);
-        for (int i = 0; i < rends.Length; i++)
-            Skylaar.GlowMaterial(rends[i], 1f);
+        if (owner != null)
+            owner.PaintOwned(gameObject);
     }
 
     public void Toss(Vector3 velocity, Vector3 towardFloor)

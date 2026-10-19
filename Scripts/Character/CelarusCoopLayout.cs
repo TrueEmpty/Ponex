@@ -13,10 +13,21 @@ public static class CelarusCoopLayout
             return false;
         if (IsCelarusName(p.name))
             return true;
-        if (p.character != null && p.character.prefabs != null
-            && p.character.prefabs.GetComponent<Celarus>() != null)
-            return true;
-        return false;
+        return PrefabHas<Celarus>(p.character != null ? p.character.prefabs : null);
+    }
+
+    static bool PrefabHas<T>(GameObject prefab) where T : Component
+    {
+        if (prefab == null)
+            return false;
+        try
+        {
+            return prefab.GetComponent<T>() != null;
+        }
+        catch (MissingReferenceException)
+        {
+            return false;
+        }
     }
 
     public static bool IsCelarusName(string name)
@@ -43,13 +54,10 @@ public static class CelarusCoopLayout
                 return true;
         }
 
-        if (p.character != null && p.character.prefabs != null)
-        {
-            if (p.character.prefabs.GetComponent<MuriMove>() != null)
-                return true;
-            if (p.character.prefabs.GetComponent<NariMove>() != null)
-                return true;
-        }
+        if (p.character != null && PrefabHas<MuriMove>(p.character.prefabs))
+            return true;
+        if (p.character != null && PrefabHas<NariMove>(p.character.prefabs))
+            return true;
 
         return false;
     }
@@ -63,7 +71,7 @@ public static class CelarusCoopLayout
                 return live.phaseLock;
         }
 
-        if (p != null && p.character != null && p.character.prefabs != null)
+        if (p != null && p.character != null && PrefabHas<Celarus>(p.character.prefabs))
         {
             Celarus prefab = p.character.prefabs.GetComponent<Celarus>();
             if (prefab != null)

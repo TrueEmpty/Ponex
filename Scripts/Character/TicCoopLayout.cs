@@ -16,10 +16,21 @@ public static class TicCoopLayout
         if (!string.IsNullOrEmpty(p.name)
             && p.name.Equals("Tic", System.StringComparison.OrdinalIgnoreCase))
             return true;
-        if (p.character != null && p.character.prefabs != null
-            && p.character.prefabs.GetComponent<Tic>() != null)
-            return true;
-        return false;
+        return PrefabHas<Tic>(p.character != null ? p.character.prefabs : null);
+    }
+
+    static bool PrefabHas<T>(GameObject prefab) where T : Component
+    {
+        if (prefab == null)
+            return false;
+        try
+        {
+            return prefab.GetComponent<T>() != null;
+        }
+        catch (MissingReferenceException)
+        {
+            return false;
+        }
     }
 
     /// <summary>Call once before the StartGame spawn loop.</summary>
