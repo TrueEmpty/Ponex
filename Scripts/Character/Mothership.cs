@@ -327,7 +327,7 @@ public class Mothership : MonoBehaviour
     {
         if (port == null)
             return;
-        float homing = progress >= 20f ? 55f : 0f;
+        float homing = progress >= 20f ? 170f : 0f;
         if (count <= 1)
         {
             MothershipLaser.Shoot(this, port, port.up, homing, true);
@@ -509,7 +509,7 @@ public class Mothership : MonoBehaviour
                 grabs[i].playerIndex = pg.playerIndex;
         }
         if (!mine && grantSuper)
-            AddSuper(22f);
+            AddSuper(30f);
     }
 
     bool SameOwner(PlayerGrab ballGrab)
@@ -632,10 +632,17 @@ public class MothershipLaser : MonoBehaviour
     bool untilWall;
     bool scored;
     float flown;
+    float maxRange = 1600f;
     LineRenderer line;
     readonly System.Collections.Generic.HashSet<int> bounced = new System.Collections.Generic.HashSet<int>();
 
     public static void Shoot(Mothership owner, Transform port, Vector3 direction, float homing, bool grantSuper, bool untilWall = false)
+    {
+        Vector3 origin = port != null ? port.position : Vector3.zero;
+        Shoot(owner, origin, direction, homing, grantSuper, untilWall, 1600f);
+    }
+
+    public static void Shoot(Mothership owner, Vector3 origin, Vector3 direction, float homing, bool grantSuper, bool untilWall, float maxRange)
     {
         GameObject go = new GameObject("Side Lazer");
         MothershipLaser laser = go.AddComponent<MothershipLaser>();
@@ -645,13 +652,13 @@ public class MothershipLaser : MonoBehaviour
         if (laser.dir.sqrMagnitude < 0.0001f)
             laser.dir = Vector3.up;
         laser.dir.Normalize();
-        Vector3 origin = port.position;
         origin.z = PlayZ(owner);
         laser.head = origin + laser.dir * 0.4f;
         laser.head.z = origin.z;
         laser.homing = homing;
         laser.grantSuper = grantSuper;
         laser.untilWall = untilWall;
+        laser.maxRange = Mathf.Max(0.5f, maxRange);
         laser.line = go.AddComponent<LineRenderer>();
         laser.line.positionCount = 2;
         laser.line.startWidth = 0.07f;
@@ -683,7 +690,7 @@ public class MothershipLaser : MonoBehaviour
         Vector3 next = head + dir * step;
         next.z = head.z;
         flown += step;
-        if (flown > 1600f)
+        if (flown > maxRange)
         {
             Destroy(gameObject);
             return;
@@ -778,7 +785,7 @@ public class MothershipLaser : MonoBehaviour
     void Steer()
     {
         BallInfo[] balls = Object.FindObjectsByType<BallInfo>(FindObjectsInactive.Exclude);
-        float best = 7f;
+        float best = 28f;
         Vector3 aim = dir;
         for (int i = 0; i < balls.Length; i++)
         {
@@ -789,13 +796,17 @@ public class MothershipLaser : MonoBehaviour
             float dist = to.magnitude;
             if (dist > best || dist < 0.05f)
                 continue;
-            if (Vector3.Angle(dir, to) > 70f)
+            if (Vector3.Angle(dir, to) > 110f)
                 continue;
             best = dist;
             aim = to / dist;
         }
         if (aim != dir)
             dir = Vector3.RotateTowards(dir, aim, homing * Mathf.Deg2Rad * Time.deltaTime, 0f);
+        dir.z = 0f;
+        if (dir.sqrMagnitude < 0.0001f)
+            dir = Vector3.up;
+        dir.Normalize();
     }
 }
 
@@ -980,7 +991,7 @@ public class MothershipFleet : MonoBehaviour
         arcSign = side >= 0f ? 1f : -1f;
         arcRadius = Mathf.Max(8f, ship.ShipRadius() * 2.6f);
         angle = Mathf.Atan2(outDir.y, outDir.x) * Mathf.Rad2Deg;
-        speed = Mathf.Max(20f, arcRadius * 0.66f);
+        speed = Mathf.Max(16f, arcRadius * 0.52f);
         SnapPlane();
         transform.rotation = Face(outDir);
         SphereCollider sphere = Mothership.FitSphere(gameObject);
@@ -1068,12 +1079,15 @@ public class MothershipFleet : MonoBehaviour
         if (shotWait > 0f)
             return;
         shotWait = 0.7f;
-        Vector3 aim = transform.up;
+        Vector3 aim = -transform.right;
         aim.z = 0f;
         if (aim.sqrMagnitude < 0.001f)
             aim = outDir;
-        Transform port = shotPort != null ? shotPort : transform;
-        MothershipLaser.Shoot(owner, port, aim, 0f, true, true);
+        aim.Normalize();
+        float nose = Mathf.Max(0.35f, bodyRadius * 0.92f);
+        Vector3 origin = transform.position + aim * nose;
+        float range = Mathf.Clamp(bodyRadius * 0.35f, 3.2f, 8f);
+        MothershipLaser.Shoot(owner, origin, aim, 0f, true, true, range);
     }
 
     void CheckCrash()
@@ -1213,8 +1227,8 @@ public class MothershipFleet : MonoBehaviour
         travel.z = 0f;
         if (travel.sqrMagnitude < 0.0001f)
             travel = Vector3.up;
-        // The fleet mesh nose is local -X. Roll it onto local +Y, which is the travel direction.
-        return Quaternion.LookRotation(Vector3.forward, travel.normalized) * Quaternion.Euler(0f, 0f, 90f);
+        // The fleet mesh nose is local -X. Roll that nose onto local +Y, the travel direction.
+        return Quaternion.LookRotation(Vector3.forward, travel.normalized) * Quaternion.Euler(0f, 0f, -90f);
     }
 }
 
