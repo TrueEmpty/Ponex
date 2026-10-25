@@ -203,6 +203,12 @@ public class Mothership : MonoBehaviour
         if (Database.instance == null || !Database.instance.gameStart || pg.player.currentHealth <= 0)
             return;
 
+        if (pg.player.super != null)
+        {
+            pg.player.super.speed = float.PositiveInfinity;
+            pg.player.super.readyPercent = 0f;
+        }
+
         TickProgress();
         RefreshStats();
         ReadInput();
@@ -248,13 +254,14 @@ public class Mothership : MonoBehaviour
         if (progress >= 25f) shieldCooldown = 4.2f;
         if (progress >= 45f) shieldCooldown *= 0.75f;
         if (progress >= 65f) shieldCooldown = 2.4f;
+        if (progress >= 100f) shieldCooldown = 1.75f;
 
         fleetCooldown = 14f;
         if (progress >= 60f) fleetCooldown = 9f;
         if (progress >= 70f) fleetCooldown = 6.5f;
         if (progress >= 80f) fleetCooldown = 4.5f;
         if (progress >= 90f) fleetCooldown = 3f;
-        if (progress >= 100f) fleetCooldown = 1.1f;
+        if (progress >= 100f) fleetCooldown = 0.6f;
 
         shieldUnlocked = progress >= 15f;
         fleetUnlocked = progress >= 30f;
@@ -327,7 +334,9 @@ public class Mothership : MonoBehaviour
     {
         if (port == null)
             return;
-        float homing = progress >= 20f ? 170f : 0f;
+        float homing = 0f;
+        if (progress >= 20f) homing = 170f;
+        if (progress >= 90f) homing = 360f;
         if (count <= 1)
         {
             MothershipLaser.Shoot(this, port, port.up, homing, true);
@@ -374,8 +383,8 @@ public class Mothership : MonoBehaviour
             GameObject go = new GameObject("Main Lazer");
             beam = go.AddComponent<MothershipBeam>();
         }
-        beam.Begin(this, mainPort != null ? mainPort : transform, 5f);
-        yield return new WaitForSeconds(5f);
+        beam.Begin(this, mainPort != null ? mainPort : transform, 9f);
+        yield return new WaitForSeconds(9f);
         mainBeamFiring = false;
         if (beam != null)
             beam.End();
@@ -397,7 +406,9 @@ public class Mothership : MonoBehaviour
         MothershipShield shield = go.AddComponent<MothershipShield>();
         float radius = ShipRadius() * 1.15f;
         bool vamp = progress >= 55f;
-        float hold = progress >= 85f ? 1f : 0.5f;
+        float hold = 0.5f;
+        if (progress >= 85f) hold = 2f;
+        if (progress >= 90f) hold += 1.1f;
         shield.Begin(this, radius, 0.25f, hold, vamp);
     }
 
@@ -509,7 +520,12 @@ public class Mothership : MonoBehaviour
                 grabs[i].playerIndex = pg.playerIndex;
         }
         if (!mine && grantSuper)
-            AddSuper(30f);
+            GrantHitSuper();
+    }
+
+    public void GrantHitSuper(float amount = 30f)
+    {
+        AddSuper(amount);
     }
 
     bool SameOwner(PlayerGrab ballGrab)
@@ -633,16 +649,17 @@ public class MothershipLaser : MonoBehaviour
     bool scored;
     float flown;
     float maxRange = 1600f;
+    float shotSpeed = Speed;
     LineRenderer line;
     readonly System.Collections.Generic.HashSet<int> bounced = new System.Collections.Generic.HashSet<int>();
 
     public static void Shoot(Mothership owner, Transform port, Vector3 direction, float homing, bool grantSuper, bool untilWall = false)
     {
         Vector3 origin = port != null ? port.position : Vector3.zero;
-        Shoot(owner, origin, direction, homing, grantSuper, untilWall, 1600f);
+        Shoot(owner, origin, direction, homing, grantSuper, untilWall, 1600f, Speed);
     }
 
-    public static void Shoot(Mothership owner, Vector3 origin, Vector3 direction, float homing, bool grantSuper, bool untilWall, float maxRange)
+    public static void Shoot(Mothership owner, Vector3 origin, Vector3 direction, float homing, bool grantSuper, bool untilWall, float maxRange, float shotSpeed = Speed)
     {
         GameObject go = new GameObject("Side Lazer");
         MothershipLaser laser = go.AddComponent<MothershipLaser>();
@@ -659,6 +676,7 @@ public class MothershipLaser : MonoBehaviour
         laser.grantSuper = grantSuper;
         laser.untilWall = untilWall;
         laser.maxRange = Mathf.Max(0.5f, maxRange);
+        laser.shotSpeed = Mathf.Max(1f, shotSpeed);
         laser.line = go.AddComponent<LineRenderer>();
         laser.line.positionCount = 2;
         laser.line.startWidth = 0.07f;
@@ -683,7 +701,7 @@ public class MothershipLaser : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        float step = Speed * Time.deltaTime;
+        float step = shotSpeed * Time.deltaTime;
         if (homing > 0f)
             Steer();
         head.z = PlayZ(owner);
@@ -761,7 +779,9 @@ public class MothershipLaser : MonoBehaviour
         int id = col.GetInstanceID();
         if (!bounced.Add(id))
             return;
-        owner.ClaimBall(col, grantSuper && !scored);
+        owner.ClaimBall(col, false);
+        if (grantSuper)
+            owner.GrantHitSuper(7.5f);
         scored = true;
         Rigidbody rb = col.attachedRigidbody;
         if (rb == null)
@@ -785,7 +805,8 @@ public class MothershipLaser : MonoBehaviour
     void Steer()
     {
         BallInfo[] balls = Object.FindObjectsByType<BallInfo>(FindObjectsInactive.Exclude);
-        float best = 28f;
+        bool tight = homing >= 300f;
+        float best = tight ? 48f : 28f;
         Vector3 aim = dir;
         for (int i = 0; i < balls.Length; i++)
         {
@@ -796,7 +817,7 @@ public class MothershipLaser : MonoBehaviour
             float dist = to.magnitude;
             if (dist > best || dist < 0.05f)
                 continue;
-            if (Vector3.Angle(dir, to) > 110f)
+            if (Vector3.Angle(dir, to) > (tight ? 155f : 110f))
                 continue;
             best = dist;
             aim = to / dist;
@@ -816,32 +837,85 @@ public class MothershipBeam : MonoBehaviour
     Transform port;
     float life;
     BoxCollider box;
+    LineRenderer core;
+    LineRenderer glow;
+    ParticleSystem bits;
+    readonly System.Collections.Generic.HashSet<int> bounced = new System.Collections.Generic.HashSet<int>();
 
     public void Begin(Mothership ship, Transform port, float seconds)
     {
         owner = ship;
         this.port = port;
         life = seconds;
+        bounced.Clear();
         transform.SetParent(null, true);
         if (box == null)
             box = gameObject.AddComponent<BoxCollider>();
         box.isTrigger = true;
-        box.size = new Vector3(1.5f, 12f, 0.4f);
-        LineRenderer line = GetComponent<LineRenderer>();
-        if (line == null)
-            line = gameObject.AddComponent<LineRenderer>();
-        line.positionCount = 2;
-        line.startWidth = 1.15f;
-        line.endWidth = 1.35f;
-        line.material = Mothership.GlowMaterial(new Color(0.55f, 0.9f, 1f, 0.85f), 2.5f, true);
-        line.useWorldSpace = true;
+        EnsureLines();
+        EnsureParticles();
         gameObject.SetActive(true);
+        if (bits != null)
+            bits.Play();
     }
 
     public void End()
     {
         life = 0f;
+        if (bits != null)
+            bits.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         gameObject.SetActive(false);
+    }
+
+    void EnsureLines()
+    {
+        if (core == null)
+            core = gameObject.AddComponent<LineRenderer>();
+        core.positionCount = 2;
+        core.startWidth = 0.14f;
+        core.endWidth = 0.1f;
+        core.material = Mothership.GlowMaterial(new Color(0.9f, 0.98f, 1f, 1f), 3.2f, false);
+        core.useWorldSpace = true;
+        if (glow == null)
+        {
+            GameObject halo = new GameObject("Beam Glow");
+            halo.transform.SetParent(transform, false);
+            glow = halo.AddComponent<LineRenderer>();
+        }
+        glow.positionCount = 2;
+        glow.startWidth = 0.42f;
+        glow.endWidth = 0.28f;
+        glow.material = Mothership.GlowMaterial(new Color(0.45f, 0.82f, 1f, 0.35f), 1.4f, true);
+        glow.useWorldSpace = true;
+    }
+
+    void EnsureParticles()
+    {
+        if (bits != null)
+            return;
+        GameObject go = new GameObject("Beam Particles");
+        go.transform.SetParent(transform, false);
+        bits = go.AddComponent<ParticleSystem>();
+        ParticleSystem.MainModule main = bits.main;
+        main.loop = true;
+        main.playOnAwake = true;
+        main.simulationSpace = ParticleSystemSimulationSpace.Local;
+        main.startLifetime = 0.35f;
+        main.startSpeed = 0f;
+        main.startSize = 0.07f;
+        main.startColor = new Color(0.75f, 0.95f, 1f, 0.85f);
+        main.maxParticles = 900;
+        ParticleSystem.EmissionModule emission = bits.emission;
+        emission.rateOverTime = 260f;
+        ParticleSystem.ShapeModule shape = bits.shape;
+        shape.shapeType = ParticleSystemShapeType.Box;
+        shape.scale = new Vector3(0.16f, 1f, 0.05f);
+        ParticleSystem.VelocityOverLifetimeModule vel = bits.velocityOverLifetime;
+        vel.enabled = true;
+        vel.space = ParticleSystemSimulationSpace.Local;
+        vel.y = 24f;
+        ParticleSystemRenderer rend = go.GetComponent<ParticleSystemRenderer>();
+        rend.material = Mothership.GlowMaterial(new Color(0.8f, 0.95f, 1f, 0.75f), 2f, true);
     }
 
     void Update()
@@ -857,25 +931,131 @@ public class MothershipBeam : MonoBehaviour
         if (aim.sqrMagnitude < 0.0001f)
             aim = Vector3.up;
         aim.Normalize();
-        LineRenderer line = GetComponent<LineRenderer>();
-        if (line != null)
+        float length = Reach(start, aim);
+        Vector3 end = start + aim * length;
+        end.z = z;
+        if (core != null)
         {
-            line.SetPosition(0, start);
-            line.SetPosition(1, start + aim * 12f);
+            core.SetPosition(0, start);
+            core.SetPosition(1, end);
         }
-        transform.position = start + aim * 6f;
+        if (glow != null)
+        {
+            glow.SetPosition(0, start);
+            glow.SetPosition(1, end);
+        }
+        transform.position = start;
         transform.rotation = Quaternion.LookRotation(Vector3.forward, aim);
+        if (box != null)
+        {
+            box.size = new Vector3(0.7f, Mathf.Max(0.2f, length), 0.4f);
+            box.center = new Vector3(0f, length * 0.5f, 0f);
+        }
+        if (bits != null)
+        {
+            bits.transform.localPosition = new Vector3(0f, length * 0.5f, 0f);
+            ParticleSystem.ShapeModule shape = bits.shape;
+            shape.scale = new Vector3(0.18f, Mathf.Max(0.2f, length), 0.06f);
+            float streak = Mathf.Clamp(length / 70f, 0.22f, 0.65f);
+            ParticleSystem.MainModule main = bits.main;
+            main.startLifetime = streak;
+            ParticleSystem.VelocityOverLifetimeModule vel = bits.velocityOverLifetime;
+            vel.y = length / streak;
+            ParticleSystem.EmissionModule emission = bits.emission;
+            emission.rateOverTime = Mathf.Clamp(length * 8f, 120f, 640f);
+        }
         if (life <= 0f)
             End();
     }
 
+    float Reach(Vector3 start, Vector3 aim)
+    {
+        float maxDist = 1600f;
+        if (Database.instance != null)
+            maxDist = Mathf.Max(Database.instance.FieldPlaySize * 4f, 80f);
+        RaycastHit[] hits = Physics.RaycastAll(start, aim, maxDist, ~0, QueryTriggerInteraction.Ignore);
+        if (hits == null || hits.Length == 0)
+            return maxDist;
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Collider col = hits[i].collider;
+            if (col == null || col.isTrigger)
+                continue;
+            if (col.GetComponentInParent<Mothership>() != null || col.GetComponentInParent<MothershipFleet>() != null)
+                continue;
+            if (col.GetComponentInParent<MothershipLaser>() != null || col.GetComponentInParent<MothershipBeam>() != null)
+                continue;
+            string tag = col.tag;
+            if (tag == "Wall" || tag == "Walls" || tag == "Obstacle")
+                return Mathf.Max(0.2f, hits[i].distance);
+        }
+        return maxDist;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        HitBall(other);
+    }
+
     void OnTriggerStay(Collider other)
     {
-        if (owner == null || other == null)
+        HitBall(other);
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other == null)
+            return;
+        bounced.Remove(other.GetInstanceID());
+    }
+
+    void HitBall(Collider other)
+    {
+        if (owner == null || other == null || port == null)
             return;
         if (other.GetComponentInParent<BallInfo>() == null && !other.CompareTag("Ball"))
             return;
         owner.ClaimBall(other, false);
+        if (!bounced.Add(other.GetInstanceID()))
+            return;
+        Vector3 aim = port.up;
+        aim.z = 0f;
+        if (aim.sqrMagnitude < 0.0001f)
+            aim = Vector3.up;
+        aim.Normalize();
+        BounceBall(other, aim);
+    }
+
+    void BounceBall(Collider col, Vector3 aim)
+    {
+        Rigidbody rb = col.attachedRigidbody;
+        if (rb == null)
+            rb = col.GetComponentInParent<Rigidbody>();
+        if (rb == null)
+            return;
+        Vector3 side = new Vector3(-aim.y, aim.x, 0f);
+        if (side.sqrMagnitude < 0.0001f)
+            side = Vector3.right;
+        side.Normalize();
+        Vector3 start = port.position;
+        Vector3 from = rb.position - start;
+        from.z = 0f;
+        if (Vector3.Dot(from, side) < 0f)
+            side = -side;
+        Vector3 vel = rb.linearVelocity;
+        vel.z = 0f;
+        Vector3 away = Vector3.Reflect(vel, side);
+        away.z = 0f;
+        if (Vector3.Dot(away, side) < 4f)
+            away += side * 10f;
+        if (away.sqrMagnitude < 0.01f)
+            away = side;
+        float speed = Mathf.Max(away.magnitude, Mathf.Max(vel.magnitude, 9f));
+        rb.linearVelocity = away.normalized * speed;
+        Vector3 pos = rb.position;
+        pos.z = MothershipLaser.PlayZ(owner);
+        rb.position = pos + side * 0.9f;
     }
 }
 
@@ -944,6 +1124,7 @@ public class MothershipShield : MonoBehaviour
         if (other.GetComponentInParent<BallInfo>() == null && !other.CompareTag("Ball"))
             return;
         owner.ClaimBall(other, false);
+        owner.GrantHitSuper();
         if (vamp)
             owner.ApplyVamp(other);
     }
@@ -951,7 +1132,7 @@ public class MothershipShield : MonoBehaviour
 
 public class MothershipFleet : MonoBehaviour
 {
-    enum Run { Out, Arc, Return }
+    enum Run { Out, Roam, Arc, Return }
 
     Mothership owner;
     Transform home;
@@ -963,6 +1144,8 @@ public class MothershipFleet : MonoBehaviour
     float arcLeft = 180f;
     float arcSign = 1f;
     float speed = 24f;
+    float roamLeft;
+    Vector3 roamGoal;
     Run run = Run.Out;
     float shotWait = 0.15f;
     float bodyRadius = 0.2f;
@@ -1026,8 +1209,33 @@ public class MothershipFleet : MonoBehaviour
             fromHub.z = 0f;
             if (fromHub.magnitude >= arcRadius)
             {
-                run = Run.Arc;
+                run = Run.Roam;
+                roamLeft = Random.Range(0.9f, 1.5f);
+                PickRoam();
+            }
+        }
+        else if (run == Run.Roam)
+        {
+            roamLeft -= dt;
+            Vector3 toGoal = roamGoal - transform.position;
+            toGoal.z = 0f;
+            if (toGoal.magnitude < 0.7f)
+                PickRoam();
+            else
+            {
+                Vector3 stepDir = toGoal.normalized;
+                transform.position += stepDir * speed * 0.7f * dt;
+                transform.rotation = Face(stepDir);
+            }
+            if (roamLeft <= 0f)
+            {
+                Vector3 fromHub = transform.position - hub;
+                fromHub.z = 0f;
+                if (fromHub.sqrMagnitude < 0.01f)
+                    fromHub = outDir;
                 angle = Mathf.Atan2(fromHub.y, fromHub.x) * Mathf.Rad2Deg;
+                arcLeft = 180f;
+                run = Run.Arc;
             }
         }
         else if (run == Run.Arc)
@@ -1074,20 +1282,55 @@ public class MothershipFleet : MonoBehaviour
         transform.position = pos;
     }
 
+    void PickRoam()
+    {
+        Vector3 fromHub = transform.position - hub;
+        fromHub.z = 0f;
+        if (fromHub.sqrMagnitude < 0.01f)
+            fromHub = outDir * arcRadius;
+        Vector3 side = new Vector3(-fromHub.y, fromHub.x, 0f);
+        if (side.sqrMagnitude < 0.0001f)
+            side = Vector3.right;
+        side.Normalize();
+        float span = Mathf.Max(1.8f, arcRadius * 0.14f);
+        roamGoal = hub + fromHub.normalized * (arcRadius + Random.Range(-0.25f, 0.45f) * span)
+            + side * Random.Range(-1f, 1f) * span;
+        roamGoal.z = hub.z;
+    }
+
     void TryShoot()
     {
         if (shotWait > 0f)
             return;
-        shotWait = 0.7f;
         Vector3 aim = -transform.right;
         aim.z = 0f;
         if (aim.sqrMagnitude < 0.001f)
             aim = outDir;
         aim.Normalize();
+        if (!BallInFront(aim))
+            return;
+        shotWait = 0.55f;
         float nose = Mathf.Max(0.35f, bodyRadius * 0.92f);
         Vector3 origin = transform.position + aim * nose;
-        float range = Mathf.Clamp(bodyRadius * 0.35f, 3.2f, 8f);
-        MothershipLaser.Shoot(owner, origin, aim, 0f, true, true, range);
+        MothershipLaser.Shoot(owner, origin, aim, 0f, true, true, 12f, 150f);
+    }
+
+    bool BallInFront(Vector3 aim)
+    {
+        BallInfo[] balls = Object.FindObjectsByType<BallInfo>(FindObjectsInactive.Exclude);
+        for (int i = 0; i < balls.Length; i++)
+        {
+            if (balls[i] == null)
+                continue;
+            Vector3 to = balls[i].transform.position - transform.position;
+            to.z = 0f;
+            float dist = to.magnitude;
+            if (dist > 12f || dist < 0.2f)
+                continue;
+            if (Vector3.Angle(aim, to) <= 18f)
+                return true;
+        }
+        return false;
     }
 
     void CheckCrash()
@@ -1151,7 +1394,7 @@ public class MothershipFleet : MonoBehaviour
         Burst();
         BounceBall(col);
         if (owner != null)
-            owner.ClaimBall(col, true);
+            owner.ClaimBall(col, false);
         Destroy(gameObject);
     }
 
