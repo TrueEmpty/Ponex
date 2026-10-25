@@ -11,6 +11,46 @@ public class Skylaar : MonoBehaviour
     public GameObject fairwingPrefab;
 
     public bool AbsorbsBallHit => flying && !rolling;
+    public bool IsReady => ready;
+    public bool IsFlying => flying;
+    public bool IsCarrying => carrying != null;
+    public bool CanRoll => rollLeft <= 0f && rollCooldown <= 0f;
+    public float Pitch => pitch;
+    public float PatrolSign => patrolSign;
+    public float Altitude => Vector3.Dot(transform.position - floorAnchor, Into());
+    public Vector3 WallInto => Into();
+    public Vector3 WallLateral => Lateral();
+
+    public bool TryNearestScrap(out float lane)
+    {
+        lane = 0f;
+        SkylaarScrap nearest = null;
+        float best = float.PositiveInfinity;
+        Vector3 lateral = Lateral();
+        for (int i = 0; i < loose.Count; i++)
+        {
+            SkylaarScrap scrap = loose[i];
+            if (scrap == null)
+                continue;
+            float gap = Vector3.Dot(scrap.transform.position - transform.position, lateral);
+            if (Mathf.Abs(gap) < best)
+            {
+                best = Mathf.Abs(gap);
+                lane = gap;
+                nearest = scrap;
+            }
+        }
+        return nearest != null;
+    }
+
+    public bool TryDockLane(out float lane)
+    {
+        lane = 0f;
+        if (dock == null)
+            return false;
+        lane = Vector3.Dot(dock.position - transform.position, Lateral());
+        return true;
+    }
 
     const float PlaneLength = 1.55f;
     const float BodyRadius = 0.16f;

@@ -12,6 +12,8 @@ public enum MothershipActive
 /// </summary>
 public class Mothership : MonoBehaviour
 {
+    const float ShipScale = 525.28f;
+
     public GameObject fleetPrefab;
 
     [Header("Progress")]
@@ -44,10 +46,10 @@ public class Mothership : MonoBehaviour
     Quaternion authored;
     float spin;
     float hitLock;
+    Collider pendingClaim;
     float fleetReturnDiscount;
     int fleetSide;
-    Transform lazer1;
-    Transform lazer2;
+    readonly Transform[] sideLazers = new Transform[8];
     Transform mainPort;
     Transform fleetSpawn1;
     Transform fleetSpawn2;
@@ -62,15 +64,14 @@ public class Mothership : MonoBehaviour
         body.useGravity = false;
         body.isKinematic = true;
         body.constraints = RigidbodyConstraints.FreezePosition;
-        if (GetComponent<Collider>() == null)
-            FitCollider();
+        FitCollider();
         if (GetComponent<DamageOnTagHit>() == null)
         {
             DamageOnTagHit dmg = gameObject.AddComponent<DamageOnTagHit>();
             dmg.tagHit = "Ball";
         }
         gameObject.layer = 3;
-        transform.localScale = new Vector3(131.32f, 131.32f, 131.32f);
+        transform.localScale = Vector3.one * ShipScale;
         CachePorts();
     }
 
@@ -97,7 +98,7 @@ public class Mothership : MonoBehaviour
         float planeZ = Database.instance.ActivePlayPlaneZ;
         Vector3 spot = new Vector3(0f, 0f, planeZ) - into * (half * 0.32f);
         spot.z = planeZ;
-        transform.localScale = new Vector3(131.32f, 131.32f, 131.32f);
+        transform.localScale = Vector3.one * ShipScale;
         transform.position = spot;
         pinned = spot;
         authored = Quaternion.Euler(180f, 0f, WallRoll(pg.player.facing));
@@ -121,9 +122,10 @@ public class Mothership : MonoBehaviour
         for (int i = 0; i < all.Length; i++)
         {
             string n = all[i].name;
-            if (n == "Side Lazer 1") lazer1 = all[i];
-            else if (n == "Side Lazer 2") lazer2 = all[i];
-            else if (n == "Main Lazer Port") mainPort = all[i];
+            if (n.StartsWith("Side Lazer ") && int.TryParse(n.Substring("Side Lazer ".Length), out int index)
+                && index >= 1 && index <= sideLazers.Length)
+                sideLazers[index - 1] = all[i];
+            else if (n == "Main Lazer" || n == "Main Lazer Port") mainPort = all[i];
             else if (n == "Fleet Spawn 1") fleetSpawn1 = all[i];
             else if (n == "Fleet Spawn 2") fleetSpawn2 = all[i];
             else if (n == "Fleet Despawn") fleetDespawn = all[i];
@@ -132,20 +134,61 @@ public class Mothership : MonoBehaviour
 
     void FitCollider()
     {
-        Renderer[] rends = GetComponentsInChildren<Renderer>();
-        if (rends.Length == 0)
-            return;
-        Bounds bounds = rends[0].bounds;
-        for (int i = 1; i < rends.Length; i++)
-            bounds.Encapsulate(rends[i].bounds);
-        BoxCollider box = gameObject.AddComponent<BoxCollider>();
-        box.center = transform.InverseTransformPoint(bounds.center);
-        Vector3 size = bounds.size;
-        Vector3 scale = transform.lossyScale;
-        box.size = new Vector3(
-            size.x / Mathf.Max(0.001f, Mathf.Abs(scale.x)),
-            size.y / Mathf.Max(0.001f, Mathf.Abs(scale.y)),
-            size.z / Mathf.Max(0.001f, Mathf.Abs(scale.z)));
+        FitSphere(gameObject);
+    }
+
+    public static SphereCollider FitSphere(GameObject go)
+    {
+        Collider[] existing = go.GetComponents<Collider>();
+        for (int i = 0; i < existing.Length; i++)
+        {
+            if (existing[i] == null)
+                continue;
+            existing[i].enabled = false;
+            Destroy(existing[i]);
+        }
+        SphereCollider sphere = go.AddComponent<SphereCollider>();
+        if (!MeshSphere(go.transform, out Vector3 center, out float radius))
+        {
+            sphere.center = Vector3.zero;
+            sphere.radius = 0.5f;
+            return sphere;
+        }
+        sphere.center = center;
+        sphere.radius = radius;
+        return sphere;
+    }
+
+    public static bool MeshSphere(Transform root, out Vector3 center, out float radius)
+    {
+        center = Vector3.zero;
+        radius = 0.5f;
+        Renderer[] rends = root.GetComponentsInChildren<Renderer>();
+        bool any = false;
+        Bounds bounds = new Bounds(root.position, Vector3.zero);
+        for (int i = 0; i < rends.Length; i++)
+        {
+            Renderer rend = rends[i];
+            if (rend == null || rend is ParticleSystemRenderer || rend is LineRenderer)
+                continue;
+            if (!any)
+            {
+                bounds = rend.bounds;
+                any = true;
+            }
+            else
+                bounds.Encapsulate(rend.bounds);
+        }
+        if (!any)
+            return false;
+        center = root.InverseTransformPoint(bounds.center);
+        float world = Mathf.Max(bounds.extents.x, Mathf.Max(bounds.extents.y, bounds.extents.z));
+        float scale = Mathf.Max(
+            Mathf.Abs(root.lossyScale.x),
+            Mathf.Abs(root.lossyScale.y),
+            Mathf.Abs(root.lossyScale.z));
+        radius = world / Mathf.Max(0.001f, scale);
+        return radius > 0.0001f;
     }
 
     void Update()
@@ -169,6 +212,11 @@ public class Mothership : MonoBehaviour
 
     void LateUpdate()
     {
+        if (pendingClaim != null)
+        {
+            ClaimBall(pendingClaim, false);
+            pendingClaim = null;
+        }
         if (!placed)
             return;
         Hold();
@@ -193,8 +241,6 @@ public class Mothership : MonoBehaviour
     {
         rotationSpeed = progress >= 5f ? 36f : 22f;
         laserCooldown = 3f;
-        if (progress >= 10f) laserCooldown = 1.5f;
-        if (progress >= 40f) laserCooldown = 1.05f;
         if (progress >= 45f) laserCooldown *= 0.75f;
         if (progress >= 75f) laserCooldown = 0.45f;
 
@@ -268,12 +314,13 @@ public class Mothership : MonoBehaviour
 
     void FireSideLasers()
     {
-        int count = 1;
-        if (progress >= 95f) count = 5;
-        else if (progress >= 35f) count = 2;
-        float span = progress >= 95f ? 64f : 40f;
-        ShootPort(lazer1, count, span);
-        ShootPort(lazer2, count, span);
+        int ports = 2;
+        if (progress >= 10f) ports = 4;
+        if (progress >= 35f) ports = 6;
+        if (progress >= 40f) ports = 8;
+        int count = progress >= 95f ? 2 : 1;
+        for (int i = 0; i < ports; i++)
+            ShootPort(sideLazers[i], count, 40f);
     }
 
     void ShootPort(Transform port, int count, float span)
@@ -354,7 +401,31 @@ public class Mothership : MonoBehaviour
         shield.Begin(this, radius, 0.25f, hold, vamp);
     }
 
-    float ShipRadius()
+    public Vector3 GunAim
+    {
+        get
+        {
+            Transform port = sideLazers != null && sideLazers.Length > 0 ? sideLazers[0] : null;
+            Vector3 aim = port != null ? port.up : transform.up;
+            aim.z = 0f;
+            if (aim.sqrMagnitude < 0.0001f)
+                aim = Vector3.up;
+            return aim.normalized;
+        }
+    }
+
+    public bool CanSuper
+    {
+        get
+        {
+            if (superCharging || mainBeamFiring)
+                return false;
+            PlayerGrab grab = pg != null ? pg : GetComponent<PlayerGrab>();
+            return grab != null && grab.IsLinked() && grab.player.super != null && grab.player.super.Enough();
+        }
+    }
+
+    public float ShipRadius()
     {
         Renderer[] rends = GetComponentsInChildren<Renderer>();
         if (rends.Length == 0)
@@ -395,12 +466,12 @@ public class Mothership : MonoBehaviour
         if (fleetPrefab == null)
             return;
         Transform from = port != null ? port : transform;
-        GameObject ship = Instantiate(fleetPrefab, from.position, Quaternion.LookRotation(Vector3.forward, from.up));
+        GameObject ship = Instantiate(fleetPrefab, from.position, MothershipFleet.Face(from.up));
         ship.transform.localScale = transform.lossyScale * 0.1f;
         MothershipFleet fleet = ship.GetComponent<MothershipFleet>();
         if (fleet == null)
             fleet = ship.AddComponent<MothershipFleet>();
-        fleet.Begin(this, fleetDespawn != null ? fleetDespawn : transform);
+        fleet.Begin(this, fleetDespawn != null ? fleetDespawn : transform, from);
     }
 
     public void FleetReturned()
@@ -423,13 +494,54 @@ public class Mothership : MonoBehaviour
         BallInfo info = col.GetComponentInParent<BallInfo>();
         if (info == null && !col.CompareTag("Ball"))
             return;
-        PlayerGrab ball = col.GetComponentInParent<PlayerGrab>();
-        if (ball == null)
+        PlayerGrab[] grabs = BallGrabs(col);
+        if (grabs.Length == 0)
             return;
-        bool mine = ball.playerIndex == pg.playerIndex;
-        ball.playerIndex = pg.playerIndex;
+        bool mine = false;
+        for (int i = 0; i < grabs.Length; i++)
+        {
+            if (SameOwner(grabs[i]))
+                mine = true;
+        }
+        for (int i = 0; i < grabs.Length; i++)
+        {
+            if (grabs[i] != null)
+                grabs[i].playerIndex = pg.playerIndex;
+        }
         if (!mine && grantSuper)
             AddSuper(22f);
+    }
+
+    bool SameOwner(PlayerGrab ballGrab)
+    {
+        if (ballGrab == null || pg == null || pg.playerIndex < 0)
+            return false;
+        if (ballGrab.playerIndex == pg.playerIndex)
+            return true;
+        return ballGrab.IsLinked() && pg.IsLinked() && ballGrab.player == pg.player;
+    }
+
+    static PlayerGrab[] BallGrabs(Collider col)
+    {
+        if (col == null)
+            return new PlayerGrab[0];
+        PlayerGrab[] grabs = col.GetComponentsInParent<PlayerGrab>(true);
+        if (grabs.Length > 0)
+            return grabs;
+        if (col.attachedRigidbody == null)
+            return grabs;
+        return col.attachedRigidbody.GetComponents<PlayerGrab>();
+    }
+
+    bool OwnsBall(Collider col)
+    {
+        PlayerGrab[] grabs = BallGrabs(col);
+        for (int i = 0; i < grabs.Length; i++)
+        {
+            if (SameOwner(grabs[i]))
+                return true;
+        }
+        return false;
     }
 
     public void ApplyVamp(Collider col)
@@ -451,11 +563,16 @@ public class Mothership : MonoBehaviour
             return;
         if (!collision.collider.CompareTag("Ball") && collision.collider.GetComponentInParent<BallInfo>() == null)
             return;
-        PlayerGrab ball = collision.collider.GetComponentInParent<PlayerGrab>();
-        if (ball != null && pg != null && ball.playerIndex == pg.playerIndex)
-            return;
+        if (pg == null)
+            pg = GetComponent<PlayerGrab>();
+        if (pg == null)
+            pg = GetComponentInParent<PlayerGrab>();
+        bool owned = OwnsBall(collision.collider);
         hitLock = 0.25f;
-        progress = Mathf.Clamp(progress - progressLossOnHit, 0f, 100f);
+        float loss = owned ? progressLossOnHit * 0.2f : progressLossOnHit;
+        progress = Mathf.Clamp(progress - loss, 0f, 100f);
+        if (!owned)
+            pendingClaim = collision.collider;
     }
 
     public static Material GlowMaterial(Color color, float emission, bool transparent)
@@ -512,11 +629,13 @@ public class MothershipLaser : MonoBehaviour
     Vector3 dir;
     float homing;
     bool grantSuper;
+    bool untilWall;
     bool scored;
+    float flown;
     LineRenderer line;
     readonly System.Collections.Generic.HashSet<int> bounced = new System.Collections.Generic.HashSet<int>();
 
-    public static void Shoot(Mothership owner, Transform port, Vector3 direction, float homing, bool grantSuper)
+    public static void Shoot(Mothership owner, Transform port, Vector3 direction, float homing, bool grantSuper, bool untilWall = false)
     {
         GameObject go = new GameObject("Side Lazer");
         MothershipLaser laser = go.AddComponent<MothershipLaser>();
@@ -526,16 +645,28 @@ public class MothershipLaser : MonoBehaviour
         if (laser.dir.sqrMagnitude < 0.0001f)
             laser.dir = Vector3.up;
         laser.dir.Normalize();
-        laser.head = port.position + laser.dir * 0.4f;
-        laser.head.z = port.position.z;
+        Vector3 origin = port.position;
+        origin.z = PlayZ(owner);
+        laser.head = origin + laser.dir * 0.4f;
+        laser.head.z = origin.z;
         laser.homing = homing;
         laser.grantSuper = grantSuper;
+        laser.untilWall = untilWall;
         laser.line = go.AddComponent<LineRenderer>();
         laser.line.positionCount = 2;
         laser.line.startWidth = 0.07f;
         laser.line.endWidth = 0.04f;
         laser.line.material = Mothership.GlowMaterial(new Color(1f, 0.35f, 0.35f, 1f), 2.2f, false);
         laser.line.useWorldSpace = true;
+    }
+
+    public static float PlayZ(Mothership owner)
+    {
+        if (Database.instance != null)
+            return Database.instance.ActivePlayPlaneZ;
+        if (owner != null)
+            return owner.transform.position.z;
+        return 0f;
     }
 
     void Update()
@@ -548,8 +679,15 @@ public class MothershipLaser : MonoBehaviour
         float step = Speed * Time.deltaTime;
         if (homing > 0f)
             Steer();
+        head.z = PlayZ(owner);
         Vector3 next = head + dir * step;
         next.z = head.z;
+        flown += step;
+        if (flown > 1600f)
+        {
+            Destroy(gameObject);
+            return;
+        }
         if (Travel(head, next))
             return;
         head = next;
@@ -583,6 +721,8 @@ public class MothershipLaser : MonoBehaviour
             }
             if (!IsWallOrStructure(col))
                 continue;
+            if (untilWall && !IsWall(col))
+                continue;
             Destroy(gameObject);
             return true;
         }
@@ -594,10 +734,15 @@ public class MothershipLaser : MonoBehaviour
         return col.GetComponentInParent<BallInfo>() != null || col.CompareTag("Ball");
     }
 
-    static bool IsWallOrStructure(Collider col)
+    static bool IsWall(Collider col)
     {
         string tag = col.tag;
-        if (tag == "Wall" || tag == "Walls" || tag == "Obstacle")
+        return tag == "Wall" || tag == "Walls" || tag == "Obstacle";
+    }
+
+    static bool IsWallOrStructure(Collider col)
+    {
+        if (IsWall(col))
             return true;
         if (col.GetComponentInParent<PlayerGrab>() != null)
             return false;
@@ -693,14 +838,22 @@ public class MothershipBeam : MonoBehaviour
         if (life <= 0f || port == null)
             return;
         life -= Time.deltaTime;
+        float z = MothershipLaser.PlayZ(owner);
+        Vector3 start = port.position;
+        start.z = z;
+        Vector3 aim = port.up;
+        aim.z = 0f;
+        if (aim.sqrMagnitude < 0.0001f)
+            aim = Vector3.up;
+        aim.Normalize();
         LineRenderer line = GetComponent<LineRenderer>();
         if (line != null)
         {
-            line.SetPosition(0, port.position);
-            line.SetPosition(1, port.position + port.up * 12f);
+            line.SetPosition(0, start);
+            line.SetPosition(1, start + aim * 12f);
         }
-        transform.position = port.position + port.up * 6f;
-        transform.rotation = Quaternion.LookRotation(Vector3.forward, port.up);
+        transform.position = start + aim * 6f;
+        transform.rotation = Quaternion.LookRotation(Vector3.forward, aim);
         if (life <= 0f)
             End();
     }
@@ -787,37 +940,55 @@ public class MothershipShield : MonoBehaviour
 
 public class MothershipFleet : MonoBehaviour
 {
+    enum Run { Out, Arc, Return }
+
     Mothership owner;
     Transform home;
-    Vector3 center;
-    float radius = 6f;
+    Transform shotPort;
+    Vector3 hub;
+    Vector3 outDir;
+    float arcRadius = 6f;
     float angle;
-    float spin = 28f;
-    bool returning;
-    float shotWait = 1.5f;
-    float traveled;
-    bool onOrbit;
+    float arcLeft = 180f;
+    float arcSign = 1f;
+    float speed = 24f;
+    Run run = Run.Out;
+    float shotWait = 0.15f;
+    float bodyRadius = 0.2f;
+    bool dying;
 
-    public void Begin(Mothership ship, Transform despawn)
+    public void Begin(Mothership ship, Transform despawn, Transform spawn)
     {
         owner = ship;
         home = despawn;
-        if (GaurdCursor.TryBounds(out Bounds box))
+        CacheShotPort();
+        hub = ship.transform.position;
+        hub.z = MothershipLaser.PlayZ(ship);
+        Vector3 fromHub = transform.position - hub;
+        fromHub.z = 0f;
+        if (fromHub.sqrMagnitude < 0.04f && spawn != null)
         {
-            center = box.center;
-            radius = Mathf.Min(box.extents.x, box.extents.y) * 0.72f;
+            fromHub = spawn.up;
+            fromHub.z = 0f;
         }
-        else
-            center = ship.transform.position;
-        center.z = ship.transform.position.z;
-        Vector3 offset = transform.position - center;
-        offset.z = 0f;
-        angle = Mathf.Atan2(offset.y, offset.x) * Mathf.Rad2Deg;
-        if (GetComponent<Collider>() == null)
-        {
-            SphereCollider sphere = gameObject.AddComponent<SphereCollider>();
-            sphere.radius = 0.35f;
-        }
+        if (fromHub.sqrMagnitude < 0.0001f)
+            fromHub = Vector3.up;
+        outDir = fromHub.normalized;
+        Vector3 facing = ship.transform.up;
+        facing.z = 0f;
+        float side = facing.x * outDir.y - facing.y * outDir.x;
+        arcSign = side >= 0f ? 1f : -1f;
+        arcRadius = Mathf.Max(8f, ship.ShipRadius() * 2.6f);
+        angle = Mathf.Atan2(outDir.y, outDir.x) * Mathf.Rad2Deg;
+        speed = Mathf.Max(20f, arcRadius * 0.66f);
+        SnapPlane();
+        transform.rotation = Face(outDir);
+        SphereCollider sphere = Mothership.FitSphere(gameObject);
+        float scale = Mathf.Max(
+            Mathf.Abs(transform.lossyScale.x),
+            Mathf.Abs(transform.lossyScale.y),
+            Mathf.Abs(transform.lossyScale.z));
+        bodyRadius = Mathf.Max(0.05f, sphere.radius * scale);
         Rigidbody body = GetComponent<Rigidbody>();
         if (body == null)
             body = gameObject.AddComponent<Rigidbody>();
@@ -827,165 +998,223 @@ public class MothershipFleet : MonoBehaviour
 
     void Update()
     {
-        if (owner == null)
+        if (owner == null || dying)
         {
-            Destroy(gameObject);
+            if (owner == null)
+                Destroy(gameObject);
             return;
         }
         float dt = Time.deltaTime;
-        if (!returning && !onOrbit)
+        hub = owner.transform.position;
+        hub.z = MothershipLaser.PlayZ(owner);
+        if (run == Run.Out)
         {
-            Vector3 outDir = transform.up;
-            outDir.z = 0f;
-            if (outDir.sqrMagnitude < 0.001f)
-                outDir = Vector3.up;
-            transform.position += outDir.normalized * 5.5f * dt;
-            if (Vector3.Distance(transform.position, center) >= radius * 0.9f)
-                onOrbit = true;
-            TryShoot();
-            CheckCrash();
-            shotWait -= dt;
-            return;
+            transform.position += outDir * speed * dt;
+            transform.rotation = Face(outDir);
+            Vector3 fromHub = transform.position - hub;
+            fromHub.z = 0f;
+            if (fromHub.magnitude >= arcRadius)
+            {
+                run = Run.Arc;
+                angle = Mathf.Atan2(fromHub.y, fromHub.x) * Mathf.Rad2Deg;
+            }
         }
-        if (!returning)
+        else if (run == Run.Arc)
         {
-            angle += spin * dt;
-            traveled += spin * dt;
-            Vector3 pos = center + new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0f) * radius;
-            pos.z = center.z;
-            Vector3 tangent = new Vector3(-Mathf.Sin(angle * Mathf.Deg2Rad), Mathf.Cos(angle * Mathf.Deg2Rad), 0f);
-            tangent = Avoid(pos, tangent);
+            float step = speed / Mathf.Max(0.5f, arcRadius) * Mathf.Rad2Deg * dt;
+            angle += arcSign * step;
+            arcLeft -= step;
+            float rad = angle * Mathf.Deg2Rad;
+            Vector3 pos = hub + new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f) * arcRadius;
+            Vector3 tangent = arcSign * new Vector3(-Mathf.Sin(rad), Mathf.Cos(rad), 0f);
             transform.position = pos;
             if (tangent.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.LookRotation(Vector3.forward, tangent);
-            TryShoot();
-            if (traveled > 300f)
-                returning = true;
-            CheckCrash();
+                transform.rotation = Face(tangent);
+            if (arcLeft <= 0f)
+                run = Run.Return;
         }
         else if (home != null)
         {
-            Vector3 next = Vector3.MoveTowards(transform.position, home.position, 4.5f * dt);
-            next.z = center.z;
-            Vector3 face = home.position - transform.position;
+            Vector3 goal = home.position;
+            goal.z = hub.z;
+            Vector3 next = Vector3.MoveTowards(transform.position, goal, speed * dt);
+            Vector3 face = goal - transform.position;
             face.z = 0f;
             transform.position = next;
             if (face.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.LookRotation(Vector3.forward, face.normalized);
-            if (Vector3.Distance(transform.position, home.position) < 0.55f)
+                transform.rotation = Face(face);
+            if (Vector3.Distance(transform.position, goal) <= Mathf.Max(1.6f, speed * dt))
             {
                 owner.FleetReturned();
                 Destroy(gameObject);
+                return;
             }
         }
+        SnapPlane();
+        TryShoot();
+        CheckCrash();
         shotWait -= dt;
     }
 
-    Vector3 Avoid(Vector3 pos, Vector3 tangent)
+    void SnapPlane()
     {
-        if (Physics.Raycast(pos, tangent, out RaycastHit hit, 1.6f, ~0, QueryTriggerInteraction.Ignore))
-        {
-            if (hit.collider != null && hit.collider.GetComponentInParent<MothershipFleet>() == null
-                && hit.collider.GetComponentInParent<Mothership>() == null)
-            {
-                Vector3 inwards = center - pos;
-                inwards.z = 0f;
-                return (tangent + inwards.normalized * 1.4f).normalized;
-            }
-        }
-        return tangent;
+        Vector3 pos = transform.position;
+        pos.z = hub.z;
+        transform.position = pos;
     }
 
     void TryShoot()
     {
         if (shotWait > 0f)
             return;
-        BallInfo[] balls = Object.FindObjectsByType<BallInfo>(FindObjectsInactive.Exclude);
-        Vector3 forward = transform.up;
-        forward.z = 0f;
-        for (int i = 0; i < balls.Length; i++)
-        {
-            if (balls[i] == null)
-                continue;
-            Vector3 to = balls[i].transform.position - transform.position;
-            to.z = 0f;
-            if (to.magnitude > 9f || Vector3.Angle(forward, to) > 18f)
-                continue;
-            shotWait = 1.5f;
-            MothershipShot.Fire(owner, transform.position, to.normalized);
-            return;
-        }
+        shotWait = 0.7f;
+        Vector3 aim = transform.up;
+        aim.z = 0f;
+        if (aim.sqrMagnitude < 0.001f)
+            aim = outDir;
+        Transform port = shotPort != null ? shotPort : transform;
+        MothershipLaser.Shoot(owner, port, aim, 0f, true, true);
     }
 
     void CheckCrash()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, 0.35f, ~0, QueryTriggerInteraction.Collide);
+        Collider[] hits = Physics.OverlapSphere(transform.position, bodyRadius, ~0, QueryTriggerInteraction.Collide);
         for (int i = 0; i < hits.Length; i++)
         {
-            if (hits[i] == null || hits[i].transform == transform || hits[i].transform.IsChildOf(transform))
+            if (!IsForeign(hits[i]))
                 continue;
-            if (hits[i].GetComponentInParent<MothershipFleet>() != null)
-                continue;
-            if (hits[i].GetComponentInParent<Mothership>() != null)
+            if (IsBall(hits[i]))
+            {
+                HitByBall(hits[i]);
+                return;
+            }
+            if (run == Run.Out)
                 continue;
             Destroy(gameObject);
             return;
         }
     }
 
+    bool IsForeign(Collider col)
+    {
+        if (col == null || col.transform == transform || col.transform.IsChildOf(transform))
+            return false;
+        if (col.GetComponentInParent<MothershipFleet>() != null)
+            return false;
+        if (col.GetComponentInParent<Mothership>() != null)
+            return false;
+        if (col.GetComponentInParent<MothershipLaser>() != null)
+            return false;
+        return true;
+    }
+
+    static bool IsBall(Collider col)
+    {
+        return col.GetComponentInParent<BallInfo>() != null || col.CompareTag("Ball");
+    }
+
     void OnCollisionEnter(Collision collision)
     {
-        if (collision == null || collision.collider == null)
+        if (dying || collision == null || collision.collider == null)
             return;
-        if (collision.collider.GetComponentInParent<MothershipFleet>() != null)
+        if (!IsForeign(collision.collider))
             return;
-        if (collision.collider.GetComponentInParent<Mothership>() != null)
+        if (IsBall(collision.collider))
+        {
+            HitByBall(collision.collider);
+            return;
+        }
+        if (run == Run.Out)
             return;
         Destroy(gameObject);
     }
-}
 
-public class MothershipShot : MonoBehaviour
-{
-    Mothership owner;
-    Vector3 dir;
-    float age;
-
-    public static void Fire(Mothership owner, Vector3 pos, Vector3 dir)
+    void HitByBall(Collider col)
     {
-        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        go.name = "Fleet Shot";
+        if (dying)
+            return;
+        dying = true;
+        Burst();
+        BounceBall(col);
+        if (owner != null)
+            owner.ClaimBall(col, true);
+        Destroy(gameObject);
+    }
+
+    void BounceBall(Collider col)
+    {
+        Rigidbody rb = col.attachedRigidbody;
+        if (rb == null)
+            rb = col.GetComponentInParent<Rigidbody>();
+        if (rb == null)
+            return;
+        Vector3 away = rb.position - transform.position;
+        away.z = 0f;
+        if (away.sqrMagnitude < 0.0001f)
+            away = transform.up;
+        away.z = 0f;
+        away.Normalize();
+        Vector3 incoming = rb.linearVelocity;
+        incoming.z = 0f;
+        Vector3 bounce = Vector3.Reflect(incoming.sqrMagnitude > 0.01f ? incoming.normalized : -away, away);
+        bounce.z = 0f;
+        if (bounce.sqrMagnitude < 0.0001f)
+            bounce = away;
+        bounce.Normalize();
+        float kept = Mathf.Max(incoming.magnitude, 9f);
+        rb.linearVelocity = bounce * kept;
+        Vector3 pos = rb.position;
+        pos.z = hub.z;
+        rb.position = pos + away * (bodyRadius + 0.35f);
+    }
+
+    void Burst()
+    {
+        GameObject go = new GameObject("Fleet Explosion");
+        Vector3 pos = transform.position;
+        pos.z = hub.z;
         go.transform.position = pos;
-        go.transform.localScale = Vector3.one * 0.16f;
-        Collider col = go.GetComponent<Collider>();
-        if (col != null)
-            col.isTrigger = true;
-        Renderer rend = go.GetComponent<Renderer>();
-        if (rend != null)
-            rend.sharedMaterial = Mothership.GlowMaterial(new Color(1f, 0.85f, 0.3f, 1f), 2f, false);
-        MothershipShot shot = go.AddComponent<MothershipShot>();
-        shot.owner = owner;
-        shot.dir = dir;
+        ParticleSystem ps = go.AddComponent<ParticleSystem>();
+        ParticleSystem.MainModule main = ps.main;
+        main.loop = false;
+        main.duration = 0.25f;
+        main.startLifetime = 0.35f;
+        main.startSpeed = Mathf.Max(3f, bodyRadius * 0.8f);
+        main.startSize = Mathf.Max(0.2f, bodyRadius * 0.18f);
+        main.startColor = new Color(1f, 0.45f, 0.15f, 1f);
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.maxParticles = 24;
+        ParticleSystem.EmissionModule emission = ps.emission;
+        emission.rateOverTime = 0f;
+        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, 14) });
+        ParticleSystem.ShapeModule shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius = Mathf.Max(0.15f, bodyRadius * 0.25f);
+        ParticleSystemRenderer rend = go.GetComponent<ParticleSystemRenderer>();
+        rend.material = Mothership.GlowMaterial(new Color(1f, 0.4f, 0.12f, 1f), 2f, false);
+        Destroy(go, 0.8f);
     }
 
-    void Update()
+    void CacheShotPort()
     {
-        age += Time.deltaTime;
-        transform.position += dir * 14f * Time.deltaTime;
-        if (age > 1.4f)
-            Destroy(gameObject);
+        Transform[] all = GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] != null && all[i].name == "Lazer")
+            {
+                shotPort = all[i];
+                return;
+            }
+        }
     }
 
-    void OnTriggerEnter(Collider other)
+    public static Quaternion Face(Vector3 travel)
     {
-        if (owner == null || other == null)
-            return;
-        if (other.GetComponentInParent<Mothership>() != null || other.GetComponentInParent<MothershipFleet>() != null)
-            return;
-        if (other.GetComponentInParent<BallInfo>() == null && !other.CompareTag("Ball"))
-            return;
-        owner.ClaimBall(other, true);
-        Destroy(gameObject);
+        travel.z = 0f;
+        if (travel.sqrMagnitude < 0.0001f)
+            travel = Vector3.up;
+        // The fleet mesh nose is local -X. Roll it onto local +Y, which is the travel direction.
+        return Quaternion.LookRotation(Vector3.forward, travel.normalized) * Quaternion.Euler(0f, 0f, 90f);
     }
 }
 
